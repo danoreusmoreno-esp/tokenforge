@@ -1,5 +1,6 @@
 import { FAMILIES } from './tokens.js';
 import { COMPONENTS } from './catalog.js';
+import { QUESTIONS, toBrief } from './brief.js';
 
 const kebab = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const fontStack = (name) =>
@@ -221,12 +222,19 @@ ${Object.entries(t).map(([n, v]) => `- \`${n}\`: ${v.size}/${v.lineHeightPx}px, 
 ## Components in this system (${comps.length})
 ${comps.map((c) => `- **${c.name}** — ${c.desc} Variants: ${c.variants.join(', ')}. States: ${c.states.join(', ')}.`).join('\n')}
 
-## Rules
+${principlesBlock(sys)}## Rules
 1. One primary button per view. Destructive actions use \`--critical-solid\`.
 2. Every interactive element shows a focus ring: \`outline: 2px solid var(--focus-ring); outline-offset: 2px\`.
 3. Text on solids uses the matching \`*-on-solid\` token; it is pre-checked for WCAG AA.
 4. Don't invent new colours; if a role is missing, ask.
 `;
+}
+
+function principlesBlock(sys) {
+  const b = sys.brand.brief;
+  if (!b?.principles?.length) return '';
+  const pr = b.principles.map((id) => QUESTIONS.principles.find((x) => x.id === id)).filter(Boolean);
+  return `## Principles (apply them when a rule below does not decide)\n${pr.map((x) => `- **${x.label}** — ${x.hint}`).join('\n')}\n- Accessibility target: WCAG 2.2 ${b.a11y}.\n\n`;
 }
 
 export function toReadme(sys) {
@@ -238,6 +246,7 @@ Files:
 - \`figma-tokens.json\` — Tokens Studio sets (global, light, dark). In Figma: Tokens Studio → Load from file → Export to Figma Variables.
 - \`tailwind.config.js\` — Tailwind theme mapped to the CSS variables
 - \`AGENTS.md\` — guide for AI coding agents (Claude Code, Cursor…)
+- \`BRIEF.md\` — goals, scope, principles and roadmap agreed in step 1
 
 Accent ${sys.brand.colors.accent} · ${sys.fonts.body} · base unit ${sys.spacingUnit}px
 `;
@@ -249,6 +258,7 @@ export const EXPORTS = [
   { id: 'figma', label: 'Figma', file: 'figma-tokens.json', fn: toFigma },
   { id: 'tailwind', label: 'Tailwind', file: 'tailwind.config.js', fn: toTailwind },
   { id: 'agents', label: 'Agent', file: 'AGENTS.md', fn: toAgents },
+  { id: 'brief', label: 'Brief', file: 'BRIEF.md', fn: toBrief },
   { id: 'readme', label: 'README', file: 'README.md', fn: toReadme },
 ];
 

@@ -38,7 +38,7 @@ function Catalogue({ brand, setComponents, open }) {
     <div className="page">
       <header className="page-hd">
         <div>
-          <span className="eyebrow">Step 2 · Components</span>
+          <span className="eyebrow">Step 3 · Components</span>
           <h1 className="t-h2">Component library</h1>
           <p className="muted t-small" style={{ maxWidth: 640, marginTop: 6 }}>
             {COMPONENTS.length} components drawn from {TOTAL} reference design systems. Each one shows what Material 3, Apple HIG, Polaris, Carbon, Fluent 2 and the rest call it. Pick the ones your system needs; each is painted with your tokens and ships with its own component tokens.

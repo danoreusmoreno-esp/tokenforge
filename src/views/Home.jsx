@@ -7,10 +7,11 @@ import { tokenCount } from '../engine/tokens.js';
 export default function Home({ sys, brands, activeId, go, onStarter, onNew, onSelect, onDelete, onDuplicate }) {
   const [confirmId, setConfirmId] = useState(null);
   const steps = [
-    { n: '01', t: 'Foundations', d: 'Colour ramps in light and dark, semantic roles solved for contrast, type scale with density, spacing per viewport, radius on three axes, elevation and motion.', to: 'foundations', ic: 'palette' },
-    { n: '02', t: 'Components', d: `${COMPONENTS.length} components from the shared inventory of the leading design systems. Pick yours, tune their tokens, see every variant and state.`, to: 'components', ic: 'grid' },
-    { n: '03', t: 'Board', d: 'Every component you picked, on one wall, painted live with your foundations.', to: 'board', ic: 'layers' },
-    { n: '04', t: 'Export', d: 'CSS variables, W3C JSON, Figma (Tokens Studio → Variables), Tailwind and an AGENTS.md for AI coding agents.', to: 'code', ic: 'code' },
+    { n: '01', t: 'Bases', d: 'Six questions before any pixel: why, for whom, where you start, who is involved, principles and personality. Your answers set the first version of everything else.', to: 'brief', ic: 'book' },
+    { n: '02', t: 'Foundations', d: 'Colour ramps in light and dark, semantic roles solved for contrast, type scale with density, spacing per viewport, radius on three axes, elevation and motion.', to: 'foundations', ic: 'palette' },
+    { n: '03', t: 'Components', d: `${COMPONENTS.length} components from the shared inventory of the leading design systems. Pick yours, tune their tokens, see every variant and state.`, to: 'components', ic: 'grid' },
+    { n: '04', t: 'Board', d: 'Every component you picked, on one wall, painted live with your foundations.', to: 'board', ic: 'layers' },
+    { n: '05', t: 'Export', d: 'CSS variables, W3C JSON, Figma (Tokens Studio → Variables), Tailwind and an AGENTS.md for AI coding agents.', to: 'code', ic: 'code' },
   ];
   return (
     <div className="page home">
@@ -19,7 +20,7 @@ export default function Home({ sys, brands, activeId, go, onStarter, onNew, onSe
         <h1 className="t-display">From one accent to a whole design system.</h1>
         <p className="t-lead muted" style={{ maxWidth: 640 }}>Build foundations from scratch, assemble a component library based on what the best systems ship, and export it to code, Figma and your AI agent.</p>
         <div className="row" style={{ marginTop: 20 }}>
-          <button className="btn primary lg" onClick={() => go('foundations')}><Icon name="rocket" size={16} />Start building</button>
+          <button className="btn primary lg" onClick={() => go('brief')}><Icon name="rocket" size={16} />Start building</button>
           <button className="btn outline lg" onClick={onNew}><Icon name="plus" size={16} />New brand</button>
         </div>
         <div className="stats">

@@ -5,6 +5,7 @@ import { loadBrands, saveBrands, loadActive, saveActive, newBrand, randomize, ra
 import Inspector from './components/Inspector.jsx';
 import { Icon } from './components/Icons.jsx';
 import Home from './views/Home.jsx';
+import Brief from './views/Brief.jsx';
 import Board from './views/Board.jsx';
 import Foundations from './views/Foundations.jsx';
 import Components from './views/Components.jsx';
@@ -12,6 +13,7 @@ import Code from './views/Code.jsx';
 
 const NAV = [
   { id: 'home', label: 'Home', icon: 'home' },
+  { id: 'brief', label: 'Bases', icon: 'book' },
   { id: 'foundations', label: 'Foundations', icon: 'palette' },
   { id: 'components', label: 'Components', icon: 'grid' },
   { id: 'board', label: 'Board', icon: 'layers' },
@@ -20,7 +22,7 @@ const NAV = [
 
 function readParams() {
   const p = new URLSearchParams(location.search);
-  return { view: p.get('view') || 'home', tab: p.get('tab') || 'color', comp: p.get('component') };
+  return { view: p.get('view'), tab: p.get('tab') || 'color', comp: p.get('component') };
 }
 
 function getTheme() {
@@ -61,7 +63,8 @@ export default function App() {
   });
   const savedActive = brands.find((b) => b.id === activeId) ?? brands[brands.length - 1];
   const [draft, setDraft] = useState(savedActive);
-  const [view, setView] = useState(init.view);
+  // First visit to a brand without answers opens the Bases questions.
+  const [view, setView] = useState(() => init.view || (savedActive?.brief?.done ? 'home' : 'brief'));
   const [tab, setTab] = useState(init.tab);
   const [detail, setDetail] = useState(init.comp);
   const [theme, setTheme] = useState(getTheme);
@@ -108,7 +111,7 @@ export default function App() {
     const b = newBrand({ name: randomName() });
     setBrands((l) => [...commit(l), b]);
     setDraft(b);
-    setView('foundations');
+    setView('brief');
   };
   const duplicate = (id) => {
     const src = id === draft.id ? draft : brands.find((b) => b.id === id);
@@ -148,6 +151,7 @@ export default function App() {
 
       <main className="main ds" data-theme={theme} style={vars}>
         {view === 'home' && <Home {...common} brands={brands} activeId={draft.id} go={go} onNew={createNew} onSelect={switchTo} onDelete={remove} onDuplicate={duplicate} onStarter={(s) => { setDraft(applyStarter(draft, s)); setView('board'); }} />}
+        {view === 'brief' && <Brief {...common} setBrand={setDraft} go={go} />}
         {view === 'foundations' && <Foundations {...common} tab={tab} setTab={setTab} />}
         {view === 'components' && (
           <Components {...common} detail={detail} setDetail={setDetail}

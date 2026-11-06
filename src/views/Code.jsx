@@ -29,9 +29,9 @@ export default function Code({ sys, brand }) {
     <div className="page">
       <header className="page-hd">
         <div>
-          <span className="eyebrow">Step 3 · Ship</span>
+          <span className="eyebrow">Step 4 · Ship</span>
           <h1 className="t-h2">Export</h1>
-          <p className="muted t-small" style={{ marginTop: 6, maxWidth: 620 }}>One payload, many targets. CSS for the web, W3C JSON for pipelines (Style Dictionary), Tokens Studio sets for Figma Variables, Tailwind, and an AGENTS.md so AI coding agents use your real tokens.</p>
+          <p className="muted t-small" style={{ marginTop: 6, maxWidth: 620 }}>One payload, many targets. CSS for the web, W3C JSON for pipelines (Style Dictionary), Tokens Studio sets for Figma Variables, Tailwind, a BRIEF.md with your goals and principles, and an AGENTS.md so AI coding agents use your real tokens.</p>
         </div>
         {!HOSTED && (
           <div className="row">

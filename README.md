@@ -4,6 +4,8 @@ Build a design system from scratch — foundations, components and exports — i
 
 ## What it does
 
+**0. Bases** — a six-step questionnaire before any pixel: why a design system, success measures, team and product scope, platforms, starting approach (scratch, audit or adopt), existing assets, people and stack, up to three principles, personality sliders, accessibility target and dark mode. Answers generate the first foundations and component set, a brief and a roadmap (`BRIEF.md`).
+
 **1. Foundations**
 - 6 colour families (accent, neutral, success, critical, warning, info) → 12-step OKLCH ramps, each with a dark twin. Step 9 is the colour you typed.
 - ~50 semantic roles (`bg-*`, `border-*`, `text-*`, `{accent,success,…}-{solid,subtle,text,border,on-solid}`) solved for WCAG AA in light and dark. Solids that can't carry a readable label get nudged.

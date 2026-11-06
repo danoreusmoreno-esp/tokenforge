@@ -50,3 +50,24 @@ test('catalogue ids are unique', () => {
   const ids = COMPONENTS.map((c) => c.id);
   assert.equal(new Set(ids).size, ids.length);
 });
+
+import { recommend, EMPTY_BRIEF, toBrief } from '../src/engine/brief.js';
+
+test('brief answers shape the generated system', () => {
+  const brief = { ...structuredClone(EMPTY_BRIEF), productType: ['mobile', 'commerce'], platforms: ['ios'], brandColor: '#0f62fe', principles: ['accessible', 'clear'], personality: { tone: 10, energy: 10, density: 5, shape: 0 } };
+  const b = recommend(brief, { ...brand });
+  assert.equal(b.colors.accent, '#0f62fe');
+  assert.equal(b.density, 'compact');
+  assert.equal(b.radius.boxes, 'none');
+  assert.ok(b.components.includes('nav-bar') && b.components.includes('rating'));
+  assert.ok(b.brief.done);
+  const md = toBrief(computeSystem(b));
+  assert.match(md, /## Principles[\s\S]*Accessible/);
+});
+
+test('exports include BRIEF.md and principles reach AGENTS.md', () => {
+  const b = recommend({ ...structuredClone(EMPTY_BRIEF), principles: ['predictable'] }, { ...brand });
+  const sys = computeSystem(b);
+  assert.ok(EXPORTS.some((e) => e.file === 'BRIEF.md'));
+  assert.match(EXPORTS.find((e) => e.id === 'agents').fn(sys), /Predictable/);
+});
