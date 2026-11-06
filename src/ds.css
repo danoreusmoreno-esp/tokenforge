@@ -296,3 +296,56 @@
 .ds .savebar { height: auto; min-height: var(--save-bar-height, 56px); padding-block: 8px; flex-wrap: nowrap; }
 .ds .savebar .row { flex-wrap: nowrap; }
 .ds .savebar > .row:first-child { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* ---------- Motion (component previews) ---------- */
+.ds .m-stage { display: contents; }
+.ds .m-stage[data-enter="fade"] > * { animation: m-fade var(--duration-base, 200ms) cubic-bezier(.23,1,.32,1) both; }
+.ds .m-stage[data-enter="slide-up"] > * { animation: m-slide var(--m-dur) var(--m-spring) both; }
+.ds .m-stage[data-enter="scale"] > * { animation: m-scale var(--m-dur) var(--m-spring) both; }
+.ds .m-stage[data-enter="blur"] > * { animation: m-blur 420ms cubic-bezier(.23,1,.32,1) both; }
+@keyframes m-fade { from { opacity: 0; } }
+@keyframes m-slide { from { opacity: 0; transform: translateY(14px); } }
+@keyframes m-scale { from { opacity: 0; transform: scale(.96); } }
+@keyframes m-blur { from { opacity: 0; filter: blur(8px); } }
+.ds.preview[data-tap="press"] :is(.btn, .chip, .seg button, .tabs button, .pager button, .card.interactive, .nav a, .navbar button, .rail-c > button, .rating button, .radio-card),
+.ds.preview[data-tap="bounce"] :is(.btn, .chip, .seg button, .tabs button, .pager button, .card.interactive, .nav a, .navbar button, .rail-c > button, .rating button, .radio-card) { transition: transform var(--m-dur) var(--m-spring), background-color 160ms ease, color 160ms ease; }
+.ds.preview[data-tap="press"] :is(.btn, .chip, .seg button, .tabs button, .pager button, .card.interactive, .nav a, .navbar button, .rail-c > button, .rating button, .radio-card):active { transform: scale(.97); transition-duration: 100ms; transition-timing-function: cubic-bezier(.23,1,.32,1); }
+.ds.preview[data-tap="bounce"] :is(.btn, .chip, .seg button, .tabs button, .pager button, .card.interactive, .nav a, .navbar button, .rail-c > button, .rating button, .radio-card):active { transform: scale(.9); transition-duration: 90ms; }
+@media (hover: hover) and (pointer: fine) {
+  .ds.preview[data-hover="lift"] :is(.btn, .card, .chip, .toast, .dialog, .popover) { transition: transform var(--m-dur) var(--m-spring), box-shadow 200ms cubic-bezier(.23,1,.32,1); }
+  .ds.preview[data-hover="lift"] :is(.btn, .card, .chip, .toast, .dialog, .popover):hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+}
+/* Sliding background (tabs, segmented): one highlight that springs to the active item */
+.ds .sliding { position: relative; isolation: isolate; }
+.ds .sliding .m-ind { position: absolute; left: 0; top: 0; z-index: -1; pointer-events: none; transition: transform var(--m-dur) var(--m-spring), width var(--m-dur) var(--m-spring); }
+.ds .seg.sliding .m-ind { background: var(--bg-surface); border-radius: calc(var(--radius-selectors) - 2px); box-shadow: var(--shadow-sm); }
+.ds .seg.sliding button.on { background: transparent; box-shadow: none; }
+.ds .tabs.sliding:not(.pill) .m-ind { top: auto; bottom: -1px; height: var(--tabs-indicator-height, 2px); background: var(--accent-solid); border-radius: 2px; }
+.ds .tabs.sliding:not(.pill) button.on::after { display: none; }
+.ds .tabs.pill.sliding .m-ind { background: var(--accent-subtle); border-radius: var(--radius-selectors); }
+.ds .tabs.pill.sliding button.on { background: transparent; }
+/* Drawn check */
+.ds.m-draw-check .box.on svg path { stroke-dasharray: 24; animation: m-draw 360ms cubic-bezier(.23,1,.32,1) both; }
+@keyframes m-draw { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+.ds.m-draw-check .box { transition: background-color 160ms ease, border-color 160ms ease; }
+/* Spring knob */
+.ds.m-spring-knob .switch::after { transition: transform var(--m-dur) var(--m-spring); }
+.ds.m-spring-knob .switch:active::after { width: calc(var(--switch-height, 20px) + 2px); }
+/* Expand (accordion) */
+.ds .bd-wrap { display: grid; grid-template-rows: 0fr; }
+.ds .bd-wrap > div { overflow: hidden; }
+.ds .bd-wrap.open { grid-template-rows: 1fr; }
+.ds.m-expand .bd-wrap { transition: grid-template-rows var(--m-dur) var(--m-spring); }
+.ds.m-expand .bd-wrap .bd { opacity: 0; transform: translateY(-4px); transition: opacity 200ms ease, transform var(--m-dur) var(--m-spring); }
+.ds.m-expand .bd-wrap.open .bd { opacity: 1; transform: none; }
+/* Stagger children */
+.ds.m-stagger :is(.menu > div, .list > div, .tl > div, .asheet > button, .col > .alert, .col > .toast) { animation: m-slide-sm var(--m-dur) var(--m-spring) both; }
+.ds.m-stagger :is(.menu > div, .list > div, .tl > div, .asheet > button, .col > .alert):nth-child(2) { animation-delay: 50ms; }
+.ds.m-stagger :is(.menu > div, .list > div, .tl > div, .asheet > button, .col > .alert):nth-child(3) { animation-delay: 100ms; }
+.ds.m-stagger :is(.menu > div, .list > div, .tl > div, .asheet > button, .col > .alert):nth-child(4) { animation-delay: 150ms; }
+.ds.m-stagger :is(.menu > div, .list > div, .tl > div, .asheet > button, .col > .alert):nth-child(n+5) { animation-delay: 200ms; }
+@keyframes m-slide-sm { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) {
+  .ds .m-stage > *, .ds.m-stagger *, .ds.m-draw-check .box.on svg path { animation-duration: 1ms !important; animation-delay: 0ms !important; }
+  .ds.preview *, .ds .sliding .m-ind, .ds .bd-wrap { transition: none !important; }
+}

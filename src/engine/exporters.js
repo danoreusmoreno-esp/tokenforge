@@ -1,5 +1,6 @@
 import { FAMILIES, computeSystem } from './tokens.js';
 import { effectiveBrand, slug } from './brands.js';
+import { motionCSS, toMotionJS, motionAgents } from './motion.js';
 import { COMPONENTS } from './catalog.js';
 import { QUESTIONS, toBrief } from './brief.js';
 
@@ -260,6 +261,7 @@ export const EXPORTS = [
   { id: 'json', label: 'W3C JSON', file: 'tokens.json', fn: toDTCG },
   { id: 'figma', label: 'Figma', file: 'figma-tokens.json', fn: toFigma },
   { id: 'tailwind', label: 'Tailwind', file: 'tailwind.config.js', fn: toTailwind },
+  { id: 'motion', label: 'Motion', file: 'motion.js', fn: (sys) => toMotionJS(family(sys).m) },
   { id: 'agents', label: 'Agente IA', file: 'AGENTS.md', fn: toAgents },
   { id: 'brief', label: 'Brief', file: 'BRIEF.md', fn: (sys) => toBrief(family(sys).m) },
   { id: 'readme', label: 'README', file: 'README.md', fn: toReadme },
@@ -302,7 +304,7 @@ function fontFaces(master) {
 
 export function toCSS(sys0) {
   const { master, m, subs } = family(sys0);
-  return [fontFaces(master), cssCore(m), ...subs.map(subCSS)].filter(Boolean).join('\n\n');
+  return [fontFaces(master), cssCore(m), ...subs.map(subCSS), motionCSS(m, master.components ?? [])].filter(Boolean).join('\n\n');
 }
 
 export function toDTCG(sys0) {
@@ -346,7 +348,7 @@ export function toFigma(sys0) {
 
 export function toAgents(sys0) {
   const { master, m, subs } = family(sys0);
-  let md = agentsCore(m);
+  let md = agentsCore(m) + motionAgents(m);
   const fonts = master.customFonts ?? [];
   if (subs.length) {
     md += `\n## Brands in this system\nOne design system, ${subs.length + 1} brands. Structure (spacing, radius, shadow, motion, status colours, components) is shared; each sub-brand overrides accent, neutral, the colour roles and fonts.\n\n| Brand | Activate with | Accent | Fonts |\n|---|---|---|---|\n| ${master.name} (master) | default (\`:root\`) | ${master.colors.accent} | ${m.fonts.heading} / ${m.fonts.body} |\n${subs.map(({ sub, slug: s, sys }) => `| ${sub.name} | \`data-brand="${s}"\` | ${sys.brand.colors.accent} | ${sys.fonts.heading} / ${sys.fonts.body} |`).join('\n')}\n\nNever mix two brands' roles in one surface. Set \`data-brand\` on the page root or on a container to switch everything inside it.\n`;

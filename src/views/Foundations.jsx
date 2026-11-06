@@ -2,6 +2,31 @@ import { useState } from 'react';
 import { FAMILIES } from '../engine/tokens.js';
 import { wcag, apca } from '../engine/color.js';
 import { Live } from '../components/Live.jsx';
+import { SPRINGS, spring } from '../engine/motion.js';
+
+/** The system spring drawn as position over time, so the bounce is visible. */
+function SpringCurve({ sys }) {
+  const p = SPRINGS[sys.brand.motion] ?? SPRINGS.standard;
+  const s = spring(p.bounce, p.duration);
+  if (!s.ms) return <p className="muted small" style={{ marginTop: 16 }}>Sin movimiento: los cambios son instantáneos.</p>;
+  const pts = s.easing.slice(7, -1).split(', ').map(Number);
+  const W = 520, H = 160, top = 24, base = H - 24;
+  const y = (v) => base - (base - top) * (v / 1.2);
+  const d = pts.map((v, i) => `${i ? 'L' : 'M'}${((i / (pts.length - 1)) * W).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  return (
+    <figure className="spring-fig">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Curva del muelle: rebote ${p.bounce}, se asienta en ${s.ms} ms`}>
+        <line x1="0" x2={W} y1={y(1)} y2={y(1)} className="spring-target" />
+        <line x1="0" x2={W} y1={base} y2={base} className="spring-axis" />
+        <path d={d} className="spring-line" />
+        <text x={W} y={y(1) - 8} textAnchor="end" className="spring-lbl">destino</text>
+        <text x="0" y={H - 6} className="spring-lbl">0 ms</text>
+        <text x={W} y={H - 6} textAnchor="end" className="spring-lbl">{s.ms} ms</text>
+      </svg>
+      <figcaption className="muted small">Muelle «{sys.brand.motion}»: rebote {p.bounce}, duración visual {Math.round(p.duration * 1000)} ms. Se exporta como <code>--spring</code> (CSS <code>linear()</code>) y en motion.js.</figcaption>
+    </figure>
+  );
+}
 
 const VP = { desktop: 'Escritorio', tablet: 'Tablet', mobile: 'Móvil' };
 const AUDIT_ES = {
@@ -129,6 +154,7 @@ function Shape({ sys, appearance }) {
           ))}
         </Live>
         <p className="mono t-caption faint" style={{ marginTop: 8 }}>ease-standard: {sys.motion.ease}</p>
+        <SpringCurve sys={sys} />
       </section>
     </>
   );

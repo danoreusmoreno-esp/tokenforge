@@ -140,6 +140,19 @@ function StepBody({ step, b, set }) {
   }
 }
 
+/** Whether a step has at least its key answer filled in. */
+function answered(stepId, b) {
+  switch (stepId) {
+    case 'why': return b.goals.length > 0;
+    case 'scope': return !!b.team && b.productType.length > 0;
+    case 'start': return !!b.approach;
+    case 'people': return b.stakeholders.length > 0;
+    case 'principles': return b.principles.length > 0;
+    case 'personality': return true;
+    default: return false;
+  }
+}
+
 function Wizard({ brand, onFinish, onSkip }) {
   const [i, setI] = useState(0);
   const [b, setB] = useState(() => ({ ...structuredClone(EMPTY_BRIEF), ...(brand.brief ?? {}), personality: { ...EMPTY_BRIEF.personality, ...(brand.brief?.personality ?? {}) } }));
@@ -153,28 +166,44 @@ function Wizard({ brand, onFinish, onSkip }) {
                     <h1 className="t-h2">Sienta las bases</h1>
           <p className="muted" style={{ maxWidth: 620, marginTop: 6 }}>Antes de colores y componentes, acordad por qué creáis un sistema de diseño, para quién y qué debe conseguir. Seis preguntas cortas; unos cinco minutos.</p>
         </div>
-        <button className="btn ghost sm" onClick={onSkip}>Saltar por ahora</button>
       </header>
-      <ol className="wsteps" aria-label="Progreso">
-        {WIZARD_STEPS.map((s, k) => (
-          <li key={s.id} className={k === i ? 'cur' : k < i ? 'done' : ''}>
-            <button onClick={() => go(k)} aria-current={k === i ? 'step' : undefined} aria-label={`Paso ${k + 1} de ${WIZARD_STEPS.length}: ${s.title}${k < i ? ' (completado)' : ''}`} title={s.title}>
-              <span className="n">{k < i ? <Icon name="check" size={14} stroke={2.6} /> : k + 1}</span>
-              {k === i && <span className="t"><b>{s.title}</b><span>Paso {k + 1} de {WIZARD_STEPS.length}</span></span>}
-            </button>
-          </li>
-        ))}
-      </ol>
-      <div className="card wcard">
-        <h2 className="t-h3">{step.title}</h2>
-        <p className="muted t-small" style={{ marginTop: 4 }}>{step.intro}</p>
-        <div className="wbody"><StepBody step={step.id} b={b} set={setB} /></div>
-        <div className="wnav">
-          <button className="btn outline" onClick={() => go(i - 1)} disabled={i === 0}><Icon name="chevLeft" size={14} />Atrás</button>
-          <span className="t-small faint">{i + 1} de {WIZARD_STEPS.length}</span>
-          {last
-            ? <button className="btn primary" onClick={() => onFinish(b)}><Icon name="sparkles" size={14} />Generar mi sistema</button>
-            : <button className="btn primary" onClick={() => go(i + 1)}>Siguiente<Icon name="chevRight" size={14} /></button>}
+      <div className="wiz-layout">
+        <aside className="wiz-rail" aria-label="Progreso del cuestionario">
+          <div className="wiz-progress">
+            <div className="wp-row"><span>Paso {i + 1} de {WIZARD_STEPS.length}</span><b className="tnum">{Math.round(((i + (answered(step.id, b) ? 1 : 0)) / WIZARD_STEPS.length) * 100)} %</b></div>
+            <div className="wp-track" role="progressbar" aria-valuemin={0} aria-valuemax={WIZARD_STEPS.length} aria-valuenow={i + 1}><i style={{ width: `${((i + (answered(step.id, b) ? 1 : 0)) / WIZARD_STEPS.length) * 100}%` }} /></div>
+          </div>
+          <ol className="vsteps">
+            {WIZARD_STEPS.map((s, k) => {
+              const ok = answered(s.id, b);
+              const state = k === i ? 'cur' : k < i ? (ok ? 'done' : 'skipped') : 'todo';
+              return (
+                <li key={s.id} className={state}>
+                  <button onClick={() => go(k)} aria-current={k === i ? 'step' : undefined}>
+                    <span className="vn" aria-hidden="true">{k < i && ok ? <Icon name="check" size={14} stroke={2.6} /> : k + 1}</span>
+                    <span className="vt">
+                      <b>{s.title}</b>
+                      {k === i && <span className="vd">{s.intro}</span>}
+                      {k < i && <span className={`vs ${ok ? '' : 'warn'}`}>{ok ? 'Respondido' : 'Sin responder'}</span>}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+          <button className="wiz-skip" onClick={onSkip}>Saltar por ahora<Icon name="chevRight" size={14} /></button>
+        </aside>
+        <div className="card wcard">
+          <h2 className="t-h3">{step.title}</h2>
+          
+          <div className="wbody"><StepBody step={step.id} b={b} set={setB} /></div>
+          <div className="wnav">
+            <button className="btn outline" onClick={() => go(i - 1)} disabled={i === 0}><Icon name="chevLeft" size={14} />Atrás</button>
+            <span className="t-small faint">{i + 1} de {WIZARD_STEPS.length}</span>
+            {last
+              ? <button className="btn primary" onClick={() => onFinish(b)}><Icon name="sparkles" size={14} />Generar mi sistema</button>
+              : <button className="btn primary" onClick={() => go(i + 1)}>Siguiente<Icon name="chevRight" size={14} /></button>}
+          </div>
         </div>
       </div>
     </div>

@@ -94,3 +94,18 @@ test('sub-brands override identity and export as data-brand themes', () => {
   assert.ok(JSON.parse(dtcg2(sys)).brand['sol-playa'].role['accent-solid']);
   assert.match(ag2(sys), /data-brand="sol-playa"/);
 });
+
+import { spring, motionFor, toMotionJS } from '../src/engine/motion.js';
+
+test('springs compile to a linear() easing that ends at 1 and overshoots when bouncy', () => {
+  const s = spring(0.3, 0.4);
+  const pts = s.easing.slice(7, -1).split(', ').map(Number);
+  assert.equal(pts.at(-1), 1);
+  assert.ok(Math.max(...pts) > 1, 'bouncy spring overshoots');
+  assert.ok(s.ms >= 400);
+  const flat = spring(0, 0.3).easing.slice(7, -1).split(', ').map(Number);
+  assert.ok(Math.max(...flat) <= 1.0001, 'no bounce, no overshoot');
+  assert.equal(motionFor({ ...brand }, 'dialog').enter, 'scale');
+  assert.equal(motionFor({ ...brand, componentMotion: { button: { tap: 'bounce' } } }, 'button').tap, 'bounce');
+  assert.match(toMotionJS(computeSystem(brand)), /visualDuration/);
+});

@@ -866,3 +866,71 @@ a.pill.sm { text-decoration: none; }
 .arch button.arch-add:hover { box-shadow: inset 0 0 0 1.5px var(--c-ink); color: var(--c-text); background: transparent; }
 .brand-pill { gap: 10px; }
 .code-wrap { margin-bottom: var(--gap); }
+.motion-panel { display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: var(--r-tile); background: var(--c-raised); }
+.motion-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.motion-fields select { height: 40px; border: 0; border-radius: 12px; background: var(--c-sheet); padding: 0 10px; font: 14px var(--c-font); color: var(--c-text); width: 100%; }
+.motion-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.motion-actions .pill:disabled { opacity: .35; cursor: default; transform: none; }
+.motion-actions .muted { flex: 1 1 240px; }
+.main .ds pre.code.motion-code, .main pre.code.motion-code { margin-top: 14px; border-radius: var(--r-tile); background: #17171a; color: #e6e6ea; font: 12.5px/1.65 var(--c-mono); padding: 16px 18px; overflow-x: auto; white-space: pre; }
+@media (max-width: 860px) { .motion-fields { grid-template-columns: 1fr 1fr; } }
+.spring-fig { margin: 20px 0 0; padding: 20px; border-radius: var(--r-tile); background: var(--c-raised); }
+.spring-fig svg { width: 100%; max-width: 560px; height: auto; display: block; overflow: visible; }
+.spring-line { fill: none; stroke: var(--c-tint-strong); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+:root[data-theme="dark"] .spring-line { stroke: var(--c-tint); }
+.spring-target { stroke: var(--c-text-3); stroke-dasharray: 4 4; stroke-width: 1; }
+.spring-axis { stroke: var(--c-edge); stroke-width: 1; }
+.spring-lbl { fill: var(--c-text-3); font: 12px var(--c-font); }
+.spring-fig figcaption { margin-top: 10px; }
+.spring-fig code { font-family: var(--c-mono); font-size: 12px; }
+
+/* Bases · layout with a vertical progress rail */
+.wizard .wsteps { display: none; }
+.wiz-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
+.wiz-rail { position: sticky; top: 0; background: var(--c-sheet); border-radius: var(--r-card); padding: 24px 20px 16px; display: flex; flex-direction: column; gap: 20px; }
+.wiz-progress { display: flex; flex-direction: column; gap: 10px; padding: 0 4px; }
+.wp-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--c-text-2); }
+.wp-row b { font: 500 22px/1 var(--c-font); color: var(--c-text); letter-spacing: -0.02em; }
+.wp-track { height: 8px; border-radius: 999px; background: var(--c-raised); overflow: hidden; }
+.wp-track i { display: block; height: 100%; border-radius: 999px; background: var(--c-ink); transition: width 420ms cubic-bezier(.23,1,.32,1); }
+.vsteps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.vsteps li { position: relative; }
+/* the connector runs from one bullet to the next */
+.vsteps li:not(:last-child)::before { content: ""; position: absolute; left: 25px; top: 46px; bottom: -6px; width: 2px; border-radius: 2px; background: var(--c-edge); }
+.vsteps li.done:not(:last-child)::before { background: var(--c-ink); }
+.vsteps button { all: unset; box-sizing: border-box; width: 100%; display: flex; gap: 14px; align-items: flex-start; padding: 8px 8px 14px 8px; border-radius: 18px; cursor: pointer;
+  transition: background-color 160ms var(--c-ease), transform 160ms var(--c-ease); }
+@media (hover: hover) and (pointer: fine) { .vsteps li:not(.cur) button:hover { background: var(--c-raised); } }
+.vsteps button:active { transform: scale(.98); }
+.vsteps button:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+.vn { width: 36px; height: 36px; flex: none; border-radius: 50%; display: grid; place-items: center; font: 500 14px/1 var(--c-font); font-variant-numeric: tabular-nums; position: relative; z-index: 1;
+  background: var(--c-sheet); color: var(--c-text-3); box-shadow: inset 0 0 0 1.5px var(--c-edge); transition: background-color 200ms var(--c-ease), color 200ms var(--c-ease), box-shadow 200ms var(--c-ease); }
+.vsteps li.done .vn { background: var(--c-ink); color: var(--c-on-ink); box-shadow: none; }
+.vsteps li.cur .vn { background: var(--c-tint); color: var(--c-tint-ink); box-shadow: 0 0 0 4px var(--c-sheet), 0 0 0 6px var(--c-tint-strong); }
+.vt { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding-top: 8px; }
+.vt b { font: 500 15px/20px var(--c-font); color: var(--c-text-2); }
+.vsteps li.cur .vt b, .vsteps li.done .vt b { color: var(--c-text); }
+.vsteps li.cur button { background: var(--c-raised); }
+.vd { font-size: 13px; line-height: 19px; color: var(--c-text-2); }
+.vs { font-size: 12px; color: var(--c-text-3); }
+.vs.warn { color: var(--c-warn); }
+.wiz-skip { all: unset; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; margin: 4px 8px 0; font-size: 13px; color: var(--c-text-2); cursor: pointer; }
+.wiz-skip:hover { color: var(--c-text); }
+.wiz-skip:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; border-radius: 6px; }
+.wiz-layout .wcard > h2 { margin-top: 4px !important; }
+.wiz-layout .wbody { margin-top: 20px; }
+@media (max-width: 1100px) {
+  .wiz-layout { grid-template-columns: minmax(0, 1fr); }
+  .wiz-rail { position: static; padding: 18px; gap: 12px; }
+  .vsteps li:not(.cur) { display: none; }
+  .vsteps li::before { display: none; }
+  .vsteps li.cur button { background: transparent; padding: 0; }
+  .wiz-skip { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .wp-track i, .vn, .vsteps button { transition: none; } }
+.vsteps li.skipped .vn { background: var(--c-sheet); color: var(--c-warn); box-shadow: inset 0 0 0 1.5px var(--c-warn); }
+.vsteps li.skipped .vt b { color: var(--c-text); }
+.motion-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.spring-line { stroke: var(--c-ink); }
+:root[data-theme="dark"] .spring-line { stroke: var(--c-ink); }
+@media (max-width: 1100px) { .wiz-layout .wcard > h2 { display: none; } }

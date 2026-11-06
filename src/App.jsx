@@ -4,7 +4,8 @@ import { cssVars } from './engine/exporters.js';
 import { loadBrands, saveBrands, loadActive, saveActive, newBrand, randomize, randomName, applyStarter, decodeBrand, uid } from './store.js';
 import Inspector from './components/Inspector.jsx';
 import { Icon } from './components/Icons.jsx';
-import { BrandVars } from './components/Live.jsx';
+import { BrandVars, MotionCfg } from './components/Live.jsx';
+import { systemSpring } from './engine/motion.js';
 import { effectiveBrand } from './engine/brands.js';
 import Home from './views/Home.jsx';
 import Brief from './views/Brief.jsx';
@@ -151,10 +152,12 @@ export default function App() {
   const current = NAV.find((n) => n.id === view) ?? NAV[0];
   // Highlights in the tool come from the brand being built: a pale step of its accent.
   const tint = sys.appearances.light.ramps.accent;
+  const motionCfg = useMemo(() => ({ brand: draft, spring: systemSpring(sys) }), [draft, sys]);
   const shellVars = { '--c-tint': tint[3], '--c-tint-strong': tint[5], '--c-tint-ink': tint[11] };
 
   return (
     <BrandVars.Provider value={vars}>
+    <MotionCfg.Provider value={motionCfg}>
     <div className="app" style={shellVars}>
       <aside className={`rail ${navOpen ? 'open' : ''}`} aria-label="Principal">
         <button className="rail-mark" onClick={() => go('home')} aria-label="Tokenforge, inicio" data-tip="Tokenforge">
@@ -200,7 +203,8 @@ export default function App() {
           {view === 'components' && (
             <Components {...common} detail={detail} setDetail={setDetail}
               setComponents={(list) => setDraft({ ...draft, components: list })}
-              setComponentToken={(id, k, val) => setDraft({ ...draft, componentTokens: { ...draft.componentTokens, [id]: { ...(draft.componentTokens?.[id] ?? {}), [k]: val } } })} />
+              setComponentToken={(id, k, val) => setDraft({ ...draft, componentTokens: { ...draft.componentTokens, [id]: { ...(draft.componentTokens?.[id] ?? {}), [k]: val } } })}
+              setComponentMotion={(id, m) => { const cm = { ...(draft.componentMotion ?? {}) }; if (m) cm[id] = m; else delete cm[id]; setDraft({ ...draft, componentMotion: cm }); }} />
           )}
           {view === 'board' && <Board {...common} onOpen={(id) => { setDetail(id); setView('components'); }} />}
           {view === 'code' && <Code {...common} />}
@@ -211,6 +215,7 @@ export default function App() {
         <Inspector brand={draft} update={setDraft} sys={sys} dirty={dirty} storageError={storageError} onSave={save} onRandom={() => setDraft(randomize(draft))} />
       </div>
     </div>
+    </MotionCfg.Provider>
     </BrandVars.Provider>
   );
 }

@@ -1,6 +1,38 @@
-import { useState } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon, Spinner } from './Icons.jsx';
-import { Live } from './Live.jsx';
+import { Live, MotionCfg } from './Live.jsx';
+import { motionFor, defaultMotion } from '../engine/motion.js';
+
+// The component-specific effect chosen for the preview being rendered.
+const Effect = createContext('none');
+
+/** Measures the active item so a highlight can slide to it (Motion's shared layout idea, in CSS). */
+function useSlide(index) {
+  const ref = useRef(null);
+  const [box, setBox] = useState(null);
+  useLayoutEffect(() => {
+    const el = ref.current?.querySelectorAll(':scope > button')[index];
+    if (el) setBox({ x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight });
+  }, [index]);
+  return [ref, box];
+}
+
+/** Counts up to the value with the system spring when the effect is on. */
+function AnimatedNumber({ value }) {
+  const effect = useContext(Effect);
+  const { spring } = useContext(MotionCfg);
+  const [n, setN] = useState(effect === 'number' ? 0 : value);
+  useEffect(() => {
+    if (effect !== 'number' || matchMedia('(prefers-reduced-motion: reduce)').matches) { setN(value); return undefined; }
+    const ms = Math.max(spring.ms * 2, 600);
+    const t0 = performance.now();
+    let raf;
+    const tick = (t) => { const k = Math.min(1, (t - t0) / ms); const e = 1 - Math.pow(1 - k, 4); setN(Math.round(value * e)); if (k < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [effect, value, spring.ms]);
+  return <>{n}</>;
+}
 
 const BADGE_ES = { neutral: 'Neutro', accent: 'Acento', success: 'Éxito', warning: 'Aviso', critical: 'Crítico', info: 'Info' };
 const statusIcon = { info: 'info', success: 'check2', warning: 'alert', critical: 'alert' };
@@ -35,12 +67,26 @@ function Check({ on: initial, label, dis, radio, ind }) {
 
 function Seg({ items = ['Día', 'Semana', 'Mes'] }) {
   const [i, setI] = useState(1);
-  return <div className="seg">{items.map((t, k) => <button key={t} className={k === i ? 'on' : ''} onClick={() => setI(k)}>{t}</button>)}</div>;
+  const slide = useContext(Effect) === 'sliding-bg';
+  const [ref, box] = useSlide(i);
+  return (
+    <div className={`seg ${slide ? 'sliding' : ''}`} ref={ref}>
+      {slide && box && <span className="m-ind" aria-hidden="true" style={{ width: box.w, height: box.h, transform: `translate(${box.x}px, ${box.y}px)` }} />}
+      {items.map((t, k) => <button key={t} className={k === i ? 'on' : ''} onClick={() => setI(k)}>{t}</button>)}
+    </div>
+  );
 }
 
 function Tabs({ pill, items = ['Resumen', 'Tokens', 'Componentes', 'Ajustes'] }) {
   const [i, setI] = useState(0);
-  return <div className={`tabs ${pill ? 'pill' : ''}`}>{items.map((t, k) => <button key={t} className={k === i ? 'on' : ''} onClick={() => setI(k)}>{t}</button>)}</div>;
+  const slide = useContext(Effect) === 'sliding-bg';
+  const [ref, box] = useSlide(i);
+  return (
+    <div className={`tabs ${pill ? 'pill' : ''} ${slide ? 'sliding' : ''}`} ref={ref}>
+      {slide && box && <span className="m-ind" aria-hidden="true" style={pill ? { width: box.w, height: box.h, transform: `translate(${box.x}px, ${box.y}px)` } : { width: box.w - 16, transform: `translateX(${box.x + 8}px)` }} />}
+      {items.map((t, k) => <button key={t} className={k === i ? 'on' : ''} onClick={() => setI(k)}>{t}</button>)}
+    </div>
+  );
 }
 
 function Chips({ v }) {
@@ -63,7 +109,10 @@ function Acc() {
   const [o, setO] = useState(0);
   const items = [['¿Qué son los design tokens?', 'Valores con nombre para color, tipografía, espaciado y más, compartidos por diseño y código.'], ['¿Cómo se construye el modo oscuro?', 'Cada rampa tiene su gemelo oscuro; los roles apuntan al paso correcto en cada tema.'], ['¿Puedo exportarlo a Figma?', 'Sí, como sets de Tokens Studio que puedes llevar a las Variables de Figma.']];
   return <div className="acc">{items.map(([q, a], k) => (
-    <div key={q}><div className="hd" onClick={() => setO(o === k ? -1 : k)}>{q}<Icon name={o === k ? 'minus' : 'plus'} size={14} /></div>{o === k && <div className="bd">{a}</div>}</div>
+    <div key={q}>
+      <div className="hd" role="button" tabIndex={0} aria-expanded={o === k} onClick={() => setO(o === k ? -1 : k)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setO(o === k ? -1 : k))}>{q}<Icon name={o === k ? 'minus' : 'plus'} size={14} /></div>
+      <div className={`bd-wrap ${o === k ? 'open' : ''}`}><div><div className="bd">{a}</div></div></div>
+    </div>
   ))}</div>;
 }
 
@@ -313,7 +362,7 @@ export const PREVIEWS = {
   stat: ({ st }) => (
     <div className="stat card" style={{ width: '100%', maxWidth: 320 }}>
       <div className="row" style={{ justifyContent: 'space-between' }}><span className="t-small muted">Preparación del espacio</span><span className={`badge ${st === 'down' ? 'critical' : 'success'}`}>{st === 'down' ? '−3%' : '+6%'}</span></div>
-      <div className="num" style={{ margin: '8px 0 12px' }}>98<span className="t-lead muted">%</span></div>
+      <div className="num" style={{ margin: '8px 0 12px' }}><AnimatedNumber value={98} /><span className="t-lead muted">%</span></div>
       <Chart />
     </div>
   ),
@@ -359,7 +408,45 @@ export const PREVIEWS = {
   kbd: () => <div className="row t-small">Buscar <kbd>⌘</kbd><kbd>K</kbd> · Publicar <kbd>⌘</kbd><kbd>⏎</kbd></div>,
 };
 
-export function Preview({ id, ...props }) {
+const TARGETS = '.btn, .chip, .card, .toast, .fab, .dialog, .popover';
+
+/**
+ * A live preview with the component's motion: tap and hover gestures always,
+ * the entrance only when asked (playground), and the component's own effect.
+ */
+export function Preview({ id, entrance = false, replay = 0, motion, ...props }) {
+  const { brand, spring } = useContext(MotionCfg);
+  const m = motion ?? (brand ? motionFor(brand, id) : defaultMotion(id));
   const R = PREVIEWS[id];
-  return <Live className="preview">{R ? <R {...props} /> : <span className="faint">Sin vista previa</span>}</Live>;
+  const follow = m.hover === 'magnetic' || m.hover === 'tilt';
+  const move = (e) => {
+    const el = e.target.closest?.(TARGETS);
+    if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const r = el.getBoundingClientRect();
+    const dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+    const dy = (e.clientY - (r.top + r.height / 2)) / r.height;
+    el.style.transition = 'transform 120ms cubic-bezier(.23,1,.32,1)';
+    el.style.transform = m.hover === 'magnetic'
+      ? `translate(${(dx * 10).toFixed(1)}px, ${(dy * 8).toFixed(1)}px)`
+      : `perspective(600px) rotateX(${(-dy * 10).toFixed(1)}deg) rotateY(${(dx * 12).toFixed(1)}deg)`;
+    el.dataset.followed = '1';
+  };
+  const leave = (e) => {
+    e.currentTarget.querySelectorAll('[data-followed]').forEach((el) => {
+      el.style.transition = `transform ${Math.max(spring.ms, 1)}ms ${spring.easing}`;
+      el.style.transform = '';
+      delete el.dataset.followed;
+    });
+  };
+  return (
+    <Live className={`preview m-${m.effect}`} data-tap={m.tap} data-hover={m.hover}
+      style={{ '--m-spring': spring.easing, '--m-dur': `${Math.max(spring.ms, 1)}ms` }}
+      onPointerMove={follow ? move : undefined} onPointerLeave={follow ? leave : undefined}>
+      <Effect.Provider value={m.effect}>
+        <div className="m-stage" key={replay} data-enter={entrance ? m.enter : 'none'}>
+          {R ? <R {...props} /> : <span className="faint">Sin vista previa</span>}
+        </div>
+      </Effect.Provider>
+    </Live>
+  );
 }

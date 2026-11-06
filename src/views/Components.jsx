@@ -3,6 +3,7 @@ import { COMPONENTS, CATEGORIES, SYSTEMS, FEATURED, CORE_IDS, systemLabel } from
 import { componentTokens } from '../engine/exporters.js';
 import { Preview } from '../components/previews.jsx';
 import { Icon } from '../components/Icons.jsx';
+import { ENTER, HOVER, TAP, EFFECTS, EFFECT_FOR, SPRINGS, motionFor, defaultMotion } from '../engine/motion.js';
 
 const TOTAL = FEATURED.length;
 
@@ -104,7 +105,58 @@ function Catalogue({ brand, setComponents, open }) {
   );
 }
 
-function Detail({ id, sys, brand, setComponents, setComponentToken, back }) {
+function motionSnippet(id, m, brand) {
+  const p = SPRINGS[brand.motion] ?? SPRINGS.standard;
+  const enter = { fade: ['{ opacity: 0 }', '{ opacity: 1 }'], 'slide-up': ['{ opacity: 0, y: 12 }', '{ opacity: 1, y: 0 }'], scale: ['{ opacity: 0, scale: 0.96 }', '{ opacity: 1, scale: 1 }'], blur: ["{ opacity: 0, filter: 'blur(6px)' }", "{ opacity: 1, filter: 'blur(0px)' }"] }[m.enter];
+  const props = [
+    enter && `initial={${enter[0]}}`, enter && `animate={${enter[1]}}`, enter && `exit={${enter[0]}}`,
+    m.hover === 'lift' && 'whileHover={{ y: -3 }}',
+    m.tap === 'press' && 'whileTap={{ scale: 0.97 }}', m.tap === 'bounce' && 'whileTap={{ scale: 0.92 }}',
+    `transition={{ type: 'spring', bounce: ${p.bounce}, visualDuration: ${p.duration} }}`,
+  ].filter(Boolean);
+  const tag = ['button', 'icon-button', 'fab', 'chip'].includes(id) ? 'button' : 'div';
+  const extra = {
+    'sliding-bg': `\n// Fondo deslizante: un único resaltado compartido\n{items.map((it) => (\n  <button key={it} onClick={() => setActive(it)}>\n    {active === it && <motion.span layoutId="${id}-highlight" className="highlight" />}\n    {it}\n  </button>\n))}`,
+    number: `\n// Número animado\nconst value = useSpring(0, { bounce: 0, visualDuration: 0.8 }); useEffect(() => value.set(98), []);`,
+    'draw-check': `\n// Check que se dibuja\n<motion.path d="M5 12.5l4.5 4.5L19 7.5" initial={{ pathLength: 0 }} animate={{ pathLength: checked ? 1 : 0 }} />`,
+    'spring-knob': `\n// Interruptor con muelle\n<motion.span layout className="knob" transition={{ type: 'spring', bounce: 0.3, visualDuration: 0.25 }} />`,
+    expand: `\n// Despliegue suave\n<motion.div animate={{ height: open ? 'auto' : 0, opacity: open ? 1 : 0 }} style={{ overflow: 'hidden' }} />`,
+    stagger: `\n// Escalonado\n<motion.ul variants={{ show: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="show" />`,
+  }[m.effect] ?? '';
+  return `import { motion } from 'motion/react';\n\n<motion.${tag}\n  ${props.join('\n  ')}\n/>${extra}`;
+}
+
+function MotionPanel({ id, brand, setComponentMotion, onReplay }) {
+  const m = motionFor(brand, id);
+  const def = defaultMotion(id);
+  const effects = ['none', ...(EFFECT_FOR[id] ? [EFFECT_FOR[id]] : [])];
+  const p = SPRINGS[brand.motion] ?? SPRINGS.standard;
+  const set = (k, val) => setComponentMotion(id, { ...m, [k]: val });
+  const field = (k, label, opts, list) => (
+    <label className="ins-field"><span>{label}</span>
+      <select value={m[k]} onChange={(e) => set(k, e.target.value)}>{list.map((o) => <option key={o} value={o}>{opts[o]}{o === def[k] && o !== 'none' ? ' · recomendado' : ''}</option>)}</select>
+    </label>
+  );
+  const changed = JSON.stringify(m) !== JSON.stringify(def);
+  return (
+    <div className="motion-panel">
+      <div className="motion-fields">
+        {field('enter', 'Entrada', ENTER, Object.keys(ENTER))}
+        {field('hover', 'Hover', HOVER, Object.keys(HOVER))}
+        {field('tap', 'Pulsación', TAP, Object.keys(TAP))}
+        {field('effect', 'Efecto', EFFECTS, effects)}
+      </div>
+      <div className="motion-actions">
+        <button className="pill dark" onClick={onReplay} disabled={m.enter === 'none' && m.effect !== 'number' && m.effect !== 'stagger'}><Icon name="rocket" size={15} />Reproducir</button>
+        {changed && <button className="pill sm" onClick={() => setComponentMotion(id, null)}>Volver a lo recomendado</button>}
+        <span className="muted small">Muelle del sistema: rebote {p.bounce} · {Math.round(p.duration * 1000)} ms ({brand.motion}). Cámbialo en Movimiento, en el inspector.</span>
+      </div>
+    </div>
+  );
+}
+
+function Detail({ id, sys, brand, setComponents, setComponentToken, setComponentMotion, back }) {
+  const [replay, setReplay] = useState(0);
   const c = COMPONENTS.find((x) => x.id === id);
   const [v, setV] = useState(c.variants[0]);
   const [s, setS] = useState(c.sizes.includes('md') ? 'md' : c.sizes[0]);
@@ -129,13 +181,20 @@ function Detail({ id, sys, brand, setComponents, setComponentToken, back }) {
       <section className="fd-sec">
         <h2 className="t-h4">Zona de pruebas</h2>
         <div className="playground">
-          <div className="pg-stage"><Preview id={id} v={v} s={s} st={st} /></div>
+          <div className="pg-stage"><Preview id={id} v={v} s={s} st={st} entrance replay={replay} /></div>
           <div className="pg-controls">
             <label className="ins-field"><span>Variante</span><select value={v} onChange={(e) => setV(e.target.value)}>{c.variants.map((x) => <option key={x} value={x}>{tv(x)}</option>)}</select></label>
             <label className="ins-field"><span>Tamaño</span><select value={s} onChange={(e) => setS(e.target.value)}>{c.sizes.map((x) => <option key={x} value={x}>{tv(x)}</option>)}</select></label>
             <label className="ins-field"><span>Estado</span><select value={st} onChange={(e) => setSt(e.target.value)}>{c.states.map((x) => <option key={x} value={x}>{tv(x)}</option>)}</select></label>
           </div>
         </div>
+      </section>
+
+      <section className="fd-sec" aria-labelledby="h-motion">
+        <h2 id="h-motion" className="t-h4">Movimiento</h2>
+        <p>Cómo entra, cómo responde al pasar el ratón y al pulsar, y su efecto propio. Pruébalo en la zona de pruebas: el hover y la pulsación funcionan siempre; la entrada, con Reproducir.</p>
+        <MotionPanel id={id} brand={brand} setComponentMotion={setComponentMotion} onReplay={() => setReplay((r) => r + 1)} />
+        <pre className="code motion-code">{motionSnippet(id, motionFor(brand, id), brand)}</pre>
       </section>
 
       <section className="fd-sec">

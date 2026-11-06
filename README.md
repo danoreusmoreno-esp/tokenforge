@@ -18,6 +18,8 @@ The interface is in Spanish. Code exports (`tokens.css`, JSON, Tailwind, `AGENTS
 
 **Brands, logos and fonts** — upload a logo per brand; add up to 4 sub-brands inside the same system (each with its own accent, neutral, fonts and logo; structure, status colours and components are shared). Exports put the master at `:root` and each sub-brand under `[data-brand="…"]`, add per-brand sets to the Figma file and list brands in AGENTS.md. Upload your own font files (WOFF2, WOFF, TTF, OTF) or type any Google Fonts family; uploaded fonts are emitted as `@font-face` pointing to `./fonts/`.
 
+**Motion** — springs in the Motion (motion.dev) model (bounce + visual duration) compiled to CSS `linear()`; per component: entrance, hover, tap and its own effect (sliding background, animated number, drawn check, spring knob, smooth expand, stagger). Exported as keyframes and `data-enter/hover/tap` rules in tokens.css and as presets for `motion/react` in `motion.js`.
+
 **2. Components** — a catalogue of 48 components taken from the shared inventory of Material 3, Carbon, Polaris, Atlassian, Primer, Fluent 2, Spectrum and Radix/shadcn. Pick what goes into your system, see every variant and state, tune component tokens.
 
 **3. Board** — every chosen component on one wall, painted live.
