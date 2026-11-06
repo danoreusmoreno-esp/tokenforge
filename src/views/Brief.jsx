@@ -43,13 +43,13 @@ function StepBody({ step, b, set }) {
     case 'why':
       return (
         <>
-          <Q title="What problems should it solve?" help="Choose all that apply.">
+          <Q title="¿Qué problemas debe resolver?" help="Elige todos los que apliquen.">
             <Choices options={QUESTIONS.goals} value={b.goals} onChange={up('goals')} />
           </Q>
-          <Q title="In your own words, why now?" help="Optional. One or two sentences you could say to leadership.">
-            <textarea id="brief-why" className="input" value={b.why} onChange={(e) => up('why')(e.target.value)} placeholder="Our checkout, admin and app look like three different companies, and every rebrand takes a month." />
+          <Q title="Con tus palabras, ¿por qué ahora?" help="Opcional. Una o dos frases que podrías decirle a dirección.">
+            <textarea id="brief-why" className="input" value={b.why} onChange={(e) => up('why')(e.target.value)} placeholder="El checkout, el panel y la app parecen de tres empresas distintas, y cada cambio de marca nos lleva un mes." />
           </Q>
-          <Q title="How will you know it is working?" help="Pick the measures you will track.">
+          <Q title="¿Cómo sabrás que funciona?" help="Elige las métricas que vas a seguir.">
             <Choices options={QUESTIONS.success} value={b.success} onChange={up('success')} />
           </Q>
         </>
@@ -57,43 +57,43 @@ function StepBody({ step, b, set }) {
     case 'scope':
       return (
         <>
-          <Q title="How big is the team that will use it?"><Choices multi={false} options={QUESTIONS.team} value={b.team} onChange={up('team')} /></Q>
-          <Q title="How many products or brands?"><Choices multi={false} options={QUESTIONS.products} value={b.products} onChange={up('products')} /></Q>
-          <Q title="What kind of product is it?" help="Choose all that apply. This decides which components you start with."><Choices options={QUESTIONS.productType} value={b.productType} onChange={up('productType')} /></Q>
-          <Q title="Which platforms?"><Choices options={QUESTIONS.platforms} value={b.platforms} onChange={up('platforms')} /></Q>
+          <Q title="¿Qué tamaño tiene el equipo que lo usará?"><Choices multi={false} options={QUESTIONS.team} value={b.team} onChange={up('team')} /></Q>
+          <Q title="¿Cuántos productos o marcas?"><Choices multi={false} options={QUESTIONS.products} value={b.products} onChange={up('products')} /></Q>
+          <Q title="¿Qué tipo de producto es?" help="Elige todos los que apliquen. Decide con qué componentes empiezas."><Choices options={QUESTIONS.productType} value={b.productType} onChange={up('productType')} /></Q>
+          <Q title="¿En qué plataformas?"><Choices options={QUESTIONS.platforms} value={b.platforms} onChange={up('platforms')} /></Q>
         </>
       );
     case 'start':
       return (
         <>
-          <Q title="Which approach fits you?" help="There is no wrong answer. It depends on your time, people and long-term goals.">
+          <Q title="¿Qué enfoque te encaja?" help="No hay respuesta incorrecta: depende de tu tiempo, tu equipo y tus objetivos a largo plazo.">
             <Choices multi={false} options={QUESTIONS.approach} value={b.approach} onChange={up('approach')} />
           </Q>
           {b.approach === 'adopt' && (
-            <Q title="Which system would you adapt?">
+            <Q title="¿Qué sistema adaptarías?">
               <Choices multi={false} options={FEATURED.map((k) => ({ id: k, label: SYSTEMS[k].name, hint: SYSTEMS[k].org }))} value={b.framework} onChange={up('framework')} />
             </Q>
           )}
           {b.approach === 'audit' && (
-            <div className="alert info"><Icon name="info" size={16} /><div><b>Do a visual inventory</b>Screenshot every colour, font, icon, button, form and pattern across platforms, including states. Group them and mark duplicates: those are the first things to consolidate.</div></div>
+            <div className="alert info"><Icon name="info" size={16} /><div><b>Haz un inventario visual</b>Captura cada color, tipografía, icono, botón, formulario y patrón en todas las plataformas, incluidos sus estados. Agrúpalos y marca los duplicados: es lo primero que hay que consolidar.</div></div>
           )}
-          <Q title="What do you already have?" help="Reuse it as the starting point.">
+          <Q title="¿Qué tienes ya?" help="Úsalo como punto de partida.">
             <Choices options={QUESTIONS.assets} value={b.assets} onChange={up('assets')} />
           </Q>
           <div className="q-row">
             <label className="field" htmlFor="brief-color">
-              <span className="label">Brand colour</span>
+              <span className="label">Color de marca</span>
               <div className="input"><input id="brief-color" value={b.brandColor} onChange={(e) => up('brandColor')(e.target.value)} placeholder="#0f62fe" />
                 <label className="swatch-sm" style={{ background: /^#?[0-9a-f]{6}$/i.test(b.brandColor) ? (b.brandColor.startsWith('#') ? b.brandColor : `#${b.brandColor}`) : 'var(--bg-muted)' }}>
-                  <input type="color" aria-label="Pick brand colour" onChange={(e) => up('brandColor')(e.target.value)} />
+                  <input type="color" aria-label="Elegir color de marca" onChange={(e) => up('brandColor')(e.target.value)} />
                 </label>
               </div>
-              <span className="help">Optional. Becomes your accent.</span>
+              <span className="help">Opcional. Será tu color de acento.</span>
             </label>
             <label className="field" htmlFor="brief-font">
-              <span className="label">Brand font</span>
-              <input id="brief-font" className="input" value={b.brandFont} onChange={(e) => up('brandFont')(e.target.value)} placeholder="e.g. Manrope (Google Fonts name)" />
-              <span className="help">Optional. Leave empty and we suggest one.</span>
+              <span className="label">Tipografía de marca</span>
+              <input id="brief-font" className="input" value={b.brandFont} onChange={(e) => up('brandFont')(e.target.value)} placeholder="p. ej. Manrope (nombre en Google Fonts)" />
+              <span className="help">Opcional. Si la dejas vacía, te proponemos una.</span>
             </label>
           </div>
         </>
@@ -101,22 +101,22 @@ function StepBody({ step, b, set }) {
     case 'people':
       return (
         <>
-          <Q title="Who should be involved?" help="Find champions outside design too: engineering, product, support. Many systems start with one person.">
+          <Q title="¿Quién debería participar?" help="Busca defensores también fuera de diseño: desarrollo, producto, soporte. Muchos sistemas empiezan con una sola persona.">
             <Choices options={QUESTIONS.stakeholders} value={b.stakeholders} onChange={up('stakeholders')} />
           </Q>
-          <Q title="What will you build it with?"><Choices options={QUESTIONS.stack} value={b.stack} onChange={up('stack')} /></Q>
+          <Q title="¿Con qué tecnología lo vais a construir?"><Choices options={QUESTIONS.stack} value={b.stack} onChange={up('stack')} /></Q>
         </>
       );
     case 'principles':
       return (
-        <Q title={`Your principles (${b.principles.length}/3)`} help="Good principles start with a why, are specific, and translate into practice.">
+        <Q title={`Tus principios (${b.principles.length}/3)`} help="Un buen principio parte de un porqué, es concreto y se puede llevar a la práctica.">
           <Choices options={QUESTIONS.principles} value={b.principles} onChange={up('principles')} max={3} />
         </Q>
       );
     case 'personality':
       return (
         <>
-          <Q title="Personality" help="Drag each slider. They set type, radius, density, shadow and motion.">
+          <Q title="Personalidad" help="Mueve cada deslizador. Definen tipografía, radio, densidad, sombra y movimiento.">
             <div className="sliders">
               {PERSONALITY.map((s) => (
                 <label key={s.id} className="pslider" htmlFor={`p-${s.id}`}>
@@ -127,10 +127,10 @@ function StepBody({ step, b, set }) {
               ))}
             </div>
           </Q>
-          <Q title="Accessibility target"><Choices multi={false} options={[{ id: 'AA', label: 'WCAG 2.2 AA', hint: 'The common legal and industry baseline.' }, { id: 'AAA', label: 'WCAG 2.2 AAA', hint: 'Stricter contrast; for public sector or health.' }]} value={b.a11y} onChange={up('a11y')} /></Q>
-          <Q title="Dark mode"><Choices multi={false} options={[{ id: 'yes', label: 'From day one' }, { id: 'later', label: 'Later' }, { id: 'no', label: 'Not needed' }]} value={b.darkMode} onChange={up('darkMode')} /></Q>
-          <Q title="Anything else we should know?" help="Deadlines, legal requirements, legacy code…">
-            <textarea id="brief-constraints" className="input" value={b.constraints} onChange={(e) => up('constraints')(e.target.value)} placeholder="Launch in Q2; must support right-to-left languages." />
+          <Q title="Nivel de accesibilidad"><Choices multi={false} options={[{ id: 'AA', label: 'WCAG 2.2 AA', hint: 'La referencia legal y del sector más habitual.' }, { id: 'AAA', label: 'WCAG 2.2 AAA', hint: 'Contraste más estricto; para sector público o salud.' }]} value={b.a11y} onChange={up('a11y')} /></Q>
+          <Q title="Modo oscuro"><Choices multi={false} options={[{ id: 'yes', label: 'Desde el primer día' }, { id: 'later', label: 'Más adelante' }, { id: 'no', label: 'No hace falta' }]} value={b.darkMode} onChange={up('darkMode')} /></Q>
+          <Q title="¿Algo más que debamos saber?" help="Plazos, requisitos legales, código heredado…">
+            <textarea id="brief-constraints" className="input" value={b.constraints} onChange={(e) => up('constraints')(e.target.value)} placeholder="Lanzamiento en el 2.º trimestre; debe soportar idiomas de derecha a izquierda." />
           </Q>
         </>
       );
@@ -149,13 +149,13 @@ function Wizard({ brand, onFinish, onSkip }) {
     <div className="page wizard">
       <header className="page-hd" style={{ alignItems: 'flex-start' }}>
         <div>
-          <span className="eyebrow">Step 1 · Bases</span>
-          <h1 className="t-h2">Set the bases</h1>
-          <p className="muted" style={{ maxWidth: 620, marginTop: 6 }}>Before colours and components, agree on why you are building a design system, for whom, and what it should achieve. Six short questions; about five minutes.</p>
+          <span className="eyebrow">Paso 1 · Bases</span>
+          <h1 className="t-h2">Sienta las bases</h1>
+          <p className="muted" style={{ maxWidth: 620, marginTop: 6 }}>Antes de colores y componentes, acordad por qué creáis un sistema de diseño, para quién y qué debe conseguir. Seis preguntas cortas; unos cinco minutos.</p>
         </div>
-        <button className="btn ghost sm" onClick={onSkip}>Skip for now</button>
+        <button className="btn ghost sm" onClick={onSkip}>Saltar por ahora</button>
       </header>
-      <ol className="wsteps" aria-label="Progress">
+      <ol className="wsteps" aria-label="Progreso">
         {WIZARD_STEPS.map((s, k) => (
           <li key={s.id} className={k === i ? 'cur' : k < i ? 'done' : ''}>
             <button onClick={() => go(k)} aria-current={k === i ? 'step' : undefined}>
@@ -169,17 +169,18 @@ function Wizard({ brand, onFinish, onSkip }) {
         <p className="muted t-small" style={{ marginTop: 4 }}>{step.intro}</p>
         <div className="wbody"><StepBody step={step.id} b={b} set={setB} /></div>
         <div className="wnav">
-          <button className="btn outline" onClick={() => go(i - 1)} disabled={i === 0}><Icon name="chevLeft" size={14} />Back</button>
-          <span className="t-small faint">{i + 1} of {WIZARD_STEPS.length}</span>
+          <button className="btn outline" onClick={() => go(i - 1)} disabled={i === 0}><Icon name="chevLeft" size={14} />Atrás</button>
+          <span className="t-small faint">{i + 1} de {WIZARD_STEPS.length}</span>
           {last
-            ? <button className="btn primary" onClick={() => onFinish(b)}><Icon name="sparkles" size={14} />Generate my system</button>
-            : <button className="btn primary" onClick={() => go(i + 1)}>Next<Icon name="chevRight" size={14} /></button>}
+            ? <button className="btn primary" onClick={() => onFinish(b)}><Icon name="sparkles" size={14} />Generar mi sistema</button>
+            : <button className="btn primary" onClick={() => go(i + 1)}>Siguiente<Icon name="chevRight" size={14} /></button>}
         </div>
       </div>
     </div>
   );
 }
 
+const ES_VAL = { compact: 'compacta', snug: 'ajustada', default: 'normal', comfortable: 'cómoda', spacious: 'amplia', none: 'ninguna', subtle: 'sutil', medium: 'media', strong: 'fuerte', snappy: 'ágil', standard: 'estándar', expressive: 'expresivo' };
 const lbl = (list, id) => QUESTIONS[list].find((x) => x.id === id)?.label ?? id;
 
 function Summary({ sys, brand, onEdit, go }) {
@@ -187,79 +188,79 @@ function Summary({ sys, brand, onEdit, go }) {
   const scope = recommendedScope(b);
   const pr = b.principles.map((id) => QUESTIONS.principles.find((x) => x.id === id)).filter(Boolean);
   const roadmap = [
-    { t: 'Bases', d: 'Brief agreed: goals, scope, approach, people and principles.', done: true, to: null },
-    { t: 'Foundations', d: 'Review colour, type, spacing, radius, elevation and the contrast audit.', to: 'foundations' },
-    { t: 'Components', d: `${brand.components.length} components proposed for your product. Add or remove.`, to: 'components' },
-    { t: 'Board', d: 'Check everything together, in light and dark.', to: 'board' },
-    { t: 'Export and roll out', d: 'Ship tokens, BRIEF.md and AGENTS.md; share with your champions.', to: 'code' },
+    { t: 'Bases', d: 'Brief acordado: objetivos, alcance, enfoque, personas y principios.', done: true, to: null },
+    { t: 'Foundations', d: 'Revisa color, tipografía, espaciado, radio, elevación y la auditoría de contraste.', to: 'foundations' },
+    { t: 'Componentes', d: `${brand.components.length} componentes propuestos para tu producto. Añade o quita los que quieras.`, to: 'components' },
+    { t: 'Tablero', d: 'Revisa todo junto, en claro y en oscuro.', to: 'board' },
+    { t: 'Exportar y desplegar', d: 'Entrega los tokens, el BRIEF.md y el AGENTS.md, y compártelos con tus defensores.', to: 'code' },
   ];
   return (
     <div className="page">
       <header className="page-hd">
         <div>
-          <span className="eyebrow">Step 1 · Bases</span>
-          <h1 className="t-h2">{brand.name} brief</h1>
-          <p className="muted" style={{ marginTop: 6, maxWidth: 640 }}>A design system for {scaleLabel(b)}. Your answers set the first version of the foundations and the component list below.</p>
+          <span className="eyebrow">Paso 1 · Bases</span>
+          <h1 className="t-h2">Brief de {brand.name}</h1>
+          <p className="muted" style={{ marginTop: 6, maxWidth: 640 }}>Un sistema de diseño para {scaleLabel(b)}. Tus respuestas han generado la primera versión de las foundations y la lista de componentes.</p>
         </div>
-        <button className="btn outline sm" onClick={onEdit}><Icon name="edit" size={14} />Edit answers</button>
+        <button className="btn outline sm" onClick={onEdit}><Icon name="edit" size={14} />Editar respuestas</button>
       </header>
 
       <section className="fd-sec">
         <div className="brief-grid">
           <div className="card">
-            <span className="eyebrow">Why</span>
-            <ul className="blist">{b.goals.length ? b.goals.map((g) => <li key={g}>{lbl('goals', g)}</li>) : <li className="faint">No goals chosen</li>}</ul>
+            <span className="eyebrow">Por qué</span>
+            <ul className="blist">{b.goals.length ? b.goals.map((g) => <li key={g}>{lbl('goals', g)}</li>) : <li className="faint">Sin objetivos elegidos</li>}</ul>
             {b.why && <p className="t-small muted quote">“{b.why}”</p>}
           </div>
           <div className="card">
-            <span className="eyebrow">Success measures</span>
-            <ul className="blist">{b.success.length ? b.success.map((g) => <li key={g}>{lbl('success', g)}</li>) : <li className="faint">None yet</li>}</ul>
+            <span className="eyebrow">Métricas de éxito</span>
+            <ul className="blist">{b.success.length ? b.success.map((g) => <li key={g}>{lbl('success', g)}</li>) : <li className="faint">Ninguna todavía</li>}</ul>
           </div>
           <div className="card">
-            <span className="eyebrow">Scope</span>
+            <span className="eyebrow">Alcance</span>
             <div className="row" style={{ marginBottom: 8 }}><span className="badge accent">{scope.level}</span></div>
             <p className="t-small muted">{scope.text}</p>
             <p className="t-small" style={{ marginTop: 8 }}>{[...b.productType.map((x) => lbl('productType', x)), ...b.platforms.map((x) => lbl('platforms', x))].join(' · ') || '—'}</p>
           </div>
           <div className="card">
-            <span className="eyebrow">Starting point</span>
-            <p className="t-small"><b>{b.approach ? lbl('approach', b.approach) : 'Not chosen'}</b>{b.approach === 'adopt' && b.framework ? ` — ${systemLabel(b.framework)}` : ''}</p>
-            <p className="t-small muted" style={{ marginTop: 6 }}>Assets: {b.assets.map((x) => lbl('assets', x)).join(', ') || 'none'}</p>
-            <p className="t-small muted" style={{ marginTop: 6 }}>People: {b.stakeholders.map((x) => lbl('stakeholders', x)).join(', ') || '—'}</p>
-            <p className="t-small muted" style={{ marginTop: 6 }}>Stack: {b.stack.map((x) => lbl('stack', x)).join(', ') || '—'}</p>
+            <span className="eyebrow">Punto de partida</span>
+            <p className="t-small"><b>{b.approach ? lbl('approach', b.approach) : 'Sin elegir'}</b>{b.approach === 'adopt' && b.framework ? ` — ${systemLabel(b.framework)}` : ''}</p>
+            <p className="t-small muted" style={{ marginTop: 6 }}>Recursos: {b.assets.map((x) => lbl('assets', x)).join(', ') || 'ninguno'}</p>
+            <p className="t-small muted" style={{ marginTop: 6 }}>Personas: {b.stakeholders.map((x) => lbl('stakeholders', x)).join(', ') || '—'}</p>
+            <p className="t-small muted" style={{ marginTop: 6 }}>Tecnología: {b.stack.map((x) => lbl('stack', x)).join(', ') || '—'}</p>
           </div>
         </div>
       </section>
 
       <section className="fd-sec">
-        <h2 className="t-h3">Principles</h2>
+        <h2 className="t-h3">Principios</h2>
         <div className="princ-grid">
           {pr.length ? pr.map((x, k) => (
-            <div key={x.id} className={`princ p${k}`}><span className="t-caption">Principle {k + 1}</span><b className="t-h3">{x.label}</b><p className="t-small">{x.hint}</p></div>
-          )) : <p className="t-small faint">No principles chosen. <button className="link" onClick={onEdit} style={{ background: 'none', border: 0, padding: 0, font: 'inherit' }}>Add them</button>.</p>}
+            <div key={x.id} className={`princ p${k}`}><span className="t-caption">Principio {k + 1}</span><b className="t-h3">{x.label}</b><p className="t-small">{x.hint}</p></div>
+          )) : <p className="t-small faint">No has elegido principios. <button className="link" onClick={onEdit} style={{ background: 'none', border: 0, padding: 0, font: 'inherit' }}>Añádelos</button>.</p>}
         </div>
       </section>
 
       <section className="fd-sec">
-        <h2 className="t-h3">Proposed foundations</h2>
+        <h2 className="t-h3">Foundations propuestas</h2>
         <div className="found-row">
-          <div><span className="t-caption faint">Accent</span><b className="row" style={{ gap: 6 }}><i className="dot" style={{ background: brand.colors.accent }} />{brand.colors.accent}</b></div>
-          <div><span className="t-caption faint">Type</span><b>{sys.fonts.heading} / {sys.fonts.body}</b></div>
-          <div><span className="t-caption faint">Density</span><b>{brand.density} · {sys.type.desktop.body.size}px body</b></div>
-          <div><span className="t-caption faint">Radius</span><b>{sys.radius.boxes}/{sys.radius.fields}/{sys.radius.selectors}px</b></div>
-          <div><span className="t-caption faint">Elevation · motion</span><b>{brand.shadow} · {brand.motion}</b></div>
-          <div><span className="t-caption faint">Accessibility</span><b>WCAG {b.a11y} · {sys.audit.filter((r) => r.wcagPass).length}/{sys.audit.length} pairs pass</b></div>
+          <div><span className="t-caption faint">Acento</span><b className="row" style={{ gap: 6 }}><i className="dot" style={{ background: brand.colors.accent }} />{brand.colors.accent}</b></div>
+          <div><span className="t-caption faint">Tipografía</span><b>{sys.fonts.heading} / {sys.fonts.body}</b></div>
+          <div><span className="t-caption faint">Densidad</span><b>{ES_VAL[brand.density]} · texto a {sys.type.desktop.body.size}px</b></div>
+          <div><span className="t-caption faint">Radio</span><b>{sys.radius.boxes}/{sys.radius.fields}/{sys.radius.selectors}px</b></div>
+          <div><span className="t-caption faint">Elevación · movimiento</span><b>{ES_VAL[brand.shadow]} · {ES_VAL[brand.motion]}</b></div>
+          <div><span className="t-caption faint">Accesibilidad</span><b>WCAG {b.a11y} · {sys.audit.filter((r) => r.wcagPass).length}/{sys.audit.length} pares cumplen</b></div>
         </div>
       </section>
 
       <section className="fd-sec">
-        <h2 className="t-h3">Roadmap</h2>
+        <h2 className="t-h3">Hoja de ruta</h2>
         <ol className="roadmap">
           {roadmap.map((r, k) => (
             <li key={r.t} className={r.done ? 'done' : ''}>
               <span className="n">{r.done ? <Icon name="check" size={12} stroke={3} /> : k + 1}</span>
               <div style={{ flex: 1 }}><b>{r.t}</b><p className="t-small muted">{r.d}</p></div>
-              {r.to && <button className="btn outline sm" onClick={() => go(r.to)}>Open<Icon name="chevRight" size={14} /></button>}
+              {r.to && <button className="btn outline sm" onClick={() => go(r.to)}>Abrir<Icon name="chevRight" size={14} /></button>}
             </li>
           ))}
         </ol>

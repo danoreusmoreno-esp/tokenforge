@@ -62,7 +62,7 @@ test('brief answers shape the generated system', () => {
   assert.ok(b.components.includes('nav-bar') && b.components.includes('rating'));
   assert.ok(b.brief.done);
   const md = toBrief(computeSystem(b));
-  assert.match(md, /## Principles[\s\S]*Accessible/);
+  assert.match(md, /## Principios[\s\S]*Accesible/);
 });
 
 test('exports include BRIEF.md and principles reach AGENTS.md', () => {

@@ -81,7 +81,7 @@ button { font-family: inherit; }
 .stats div { border: 1px solid var(--border-subtle); border-radius: var(--radius-boxes); padding: 14px 16px; background: var(--bg-surface); }
 .stats b { display: block; font: 700 var(--text-h2-size)/1.1 var(--font-heading); }
 .stats span { font-size: var(--text-caption-size); color: var(--text-secondary); }
-.steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
 .step-card { text-align: left; display: flex; flex-direction: column; gap: 8px; font: inherit; color: inherit; }
 .starter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .starter { display: flex; gap: 12px; align-items: center; text-align: left; font: inherit; color: inherit; }
@@ -264,3 +264,4 @@ button { font-family: inherit; }
 @media (max-width: 720px) { .wizard .wsteps .t { display: none; } .wizard .wsteps { grid-template-columns: repeat(6, 1fr); } .brief-grid, .princ-grid, .found-row, .q-row { grid-template-columns: 1fr; } .pslider { grid-template-columns: 64px 1fr 64px; } .wcard { padding: 16px; } }
 
 .q legend.t-h4 { font: 600 var(--text-lead-size)/var(--text-lead-line-height) var(--font-heading); }
+.wizard .wsteps li { min-width: 0; }

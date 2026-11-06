@@ -6,6 +6,25 @@ import { Icon } from '../components/Icons.jsx';
 
 const TOTAL = FEATURED.length;
 
+// Display labels for variant, size and state ids (the ids stay in English: they are props).
+const VAL_ES = {
+  primary: 'principal', secondary: 'secundario', outline: 'contorno', ghost: 'fantasma', destructive: 'destructivo',
+  solid: 'sólido', attached: 'unidos', spaced: 'separados', inline: 'en línea', standalone: 'independiente', subtle: 'sutil',
+  regular: 'normal', extended: 'extendido', floating: 'flotante', filled: 'relleno', single: 'simple', multi: 'múltiple',
+  dropzone: 'zona de arrastre', button: 'botón', range: 'rango', card: 'tarjeta', filter: 'filtro', input: 'entrada', static: 'estático',
+  display: 'solo lectura', line: 'línea', pill: 'píldora', numbered: 'numerada', simple: 'simple', collapsed: 'contraída',
+  horizontal: 'horizontal', vertical: 'vertical', neutral: 'neutro', accent: 'acento', success: 'éxito', warning: 'aviso',
+  critical: 'crítico', info: 'info', linear: 'lineal', circular: 'circular', text: 'texto', block: 'bloque', avatar: 'avatar',
+  right: 'derecha', bottom: 'inferior', elevated: 'elevada', zebra: 'cebra', image: 'imagen', initials: 'iniciales',
+  default: 'por defecto', hover: 'hover', focus: 'foco', disabled: 'deshabilitado', loading: 'cargando', selected: 'seleccionado',
+  visited: 'visitado', error: 'error', 'read-only': 'solo lectura', open: 'abierto', idle: 'en reposo', dragging: 'arrastrando',
+  uploading: 'subiendo', unchecked: 'sin marcar', checked: 'marcado', indeterminate: 'indeterminado', off: 'apagado', on: 'encendido',
+  removable: 'eliminable', current: 'actual', active: 'activo', badge: 'con badge', complete: 'completado', upcoming: 'pendiente',
+  dismissible: 'descartable', saving: 'guardando', today: 'hoy', interactive: 'interactiva', up: 'sube', down: 'baja',
+  expanded: 'expandido', compact: 'compacta', sm: 'S', md: 'M', lg: 'L',
+};
+const tv = (x) => VAL_ES[x] ?? x;
+
 function Coverage({ refs }) {
   return (
     <span className="coverage" title={refs.map(systemLabel).join(', ')} aria-label={`In ${refs.length} of ${TOTAL} systems`}>
@@ -20,7 +39,7 @@ function NamesTable({ c }) {
       {FEATURED.map((k) => (
         <a key={k} className={`name-row ${c.names[k] ? '' : 'none'}`} href={SYSTEMS[k].url} target="_blank" rel="noreferrer">
           <span className="sys"><b>{systemLabel(k)}</b><span className="t-caption faint">{SYSTEMS[k].org}</span></span>
-          <span className="mono t-caption">{c.names[k] ?? 'No direct equivalent'}</span>
+          <span className="mono t-caption">{c.names[k] ?? 'Sin equivalente directo'}</span>
         </a>
       ))}
     </div>
@@ -38,26 +57,26 @@ function Catalogue({ brand, setComponents, open }) {
     <div className="page">
       <header className="page-hd">
         <div>
-          <span className="eyebrow">Step 3 · Components</span>
-          <h1 className="t-h2">Component library</h1>
+          <span className="eyebrow">Paso 3 · Componentes</span>
+          <h1 className="t-h2">Librería de componentes</h1>
           <p className="muted t-small" style={{ maxWidth: 640, marginTop: 6 }}>
-            {COMPONENTS.length} components drawn from {TOTAL} reference design systems. Each one shows what Material 3, Apple HIG, Polaris, Carbon, Fluent 2 and the rest call it. Pick the ones your system needs; each is painted with your tokens and ships with its own component tokens.
+            {COMPONENTS.length} componentes basados en {TOTAL} sistemas de diseño de referencia. Cada uno indica cómo lo llaman Material 3, Apple HIG, Polaris, Carbon, Fluent 2 y el resto. Elige los que necesita tu sistema: todos se pintan con tus tokens y traen sus propios tokens de componente.
           </p>
         </div>
         <div className="row">
-          <span className="badge accent">{brand.components.length} in system</span>
-          <button className="btn outline sm" onClick={() => setComponents([...CORE_IDS])}>Core set</button>
-          <button className="btn outline sm" onClick={() => setComponents(COMPONENTS.map((c) => c.id))}>Add all</button>
-          <button className="btn ghost sm" onClick={() => setComponents([])}>Clear</button>
+          <span className="badge accent">{brand.components.length} en el sistema</span>
+          <button className="btn outline sm" onClick={() => setComponents([...CORE_IDS])}>Set básico</button>
+          <button className="btn outline sm" onClick={() => setComponents(COMPONENTS.map((c) => c.id))}>Añadir todos</button>
+          <button className="btn ghost sm" onClick={() => setComponents([])}>Quitar todos</button>
         </div>
       </header>
       <div className="tabs pill" style={{ marginBottom: 16, flexWrap: 'wrap' }}>
-        <button className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')}>All</button>
+        <button className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')}>Todos</button>
         {CATEGORIES.map((c) => <button key={c.id} className={filter === c.id ? 'on' : ''} onClick={() => setFilter(c.id)}>{c.name}</button>)}
       </div>
-      <div className="sys-filter" role="group" aria-label="Filter by design system">
-        <span className="t-caption faint">Seen in</span>
-        <button className={sys === 'all' ? 'on' : ''} onClick={() => setSys('all')}>Any system</button>
+      <div className="sys-filter" role="group" aria-label="Filtrar por sistema de diseño">
+        <span className="t-caption faint">Presente en</span>
+        <button className={sys === 'all' ? 'on' : ''} onClick={() => setSys('all')}>Cualquiera</button>
         {FEATURED.map((k) => <button key={k} className={sys === k ? 'on' : ''} onClick={() => setSys(k)}>{systemLabel(k)} <span className="faint">{COMPONENTS.filter((c) => c.refs.includes(k)).length}</span></button>)}
       </div>
       {cats.filter((cat) => COMPONENTS.some((c) => c.cat === cat.id && visible(c))).map((cat) => (
@@ -70,10 +89,10 @@ function Catalogue({ brand, setComponents, open }) {
                 <div className="cat-meta">
                   <div style={{ minWidth: 0 }}>
                     <button className="cat-name" onClick={() => open(c.id)}>{c.name}</button>
-                    <div className="t-caption faint row" style={{ gap: 6 }}><Coverage refs={c.refs} />{sys !== 'all' && c.names[sys] ? <span className="mono">{c.names[sys]}</span> : <span>{c.refs.length}/{TOTAL}{c.core ? ' · core' : ''}</span>}</div>
+                    <div className="t-caption faint row" style={{ gap: 6 }}><Coverage refs={c.refs} />{sys !== 'all' && c.names[sys] ? <span className="mono">{c.names[sys]}</span> : <span>{c.refs.length}/{TOTAL}{c.core ? ' · básico' : ''}</span>}</div>
                   </div>
-                  <label className="check" title={enabled.has(c.id) ? 'Remove from system' : 'Add to system'}>
-                    <span className={`switch ${enabled.has(c.id) ? 'on' : ''}`} role="switch" aria-checked={enabled.has(c.id)} aria-label={`Include ${c.name}`} tabIndex={0}
+                  <label className="check" title={enabled.has(c.id) ? 'Quitar del sistema' : 'Añadir al sistema'}>
+                    <span className={`switch ${enabled.has(c.id) ? 'on' : ''}`} role="switch" aria-checked={enabled.has(c.id)} aria-label={`Incluir ${c.name}`} tabIndex={0}
                       onClick={() => toggle(c.id)} onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && (e.preventDefault(), toggle(c.id))} />
                   </label>
                 </div>
@@ -96,84 +115,84 @@ function Detail({ id, sys, brand, setComponents, setComponentToken, back }) {
   const snippet = `/* ${c.name} — uses your tokens */\n.${id} {\n${Object.entries(tokens).map(([k, val]) => `  --${id}-${k}: ${val};`).join('\n')}${Object.keys(tokens).length ? '\n' : ''}  font-family: var(--font-body);\n  border-radius: var(--radius-${['card', 'dialog', 'drawer', 'popover', 'alert', 'toast', 'table'].includes(id) ? 'boxes' : ['checkbox', 'radio', 'chip', 'tabs', 'segmented', 'badge'].includes(id) ? 'selectors' : 'fields'});\n  transition: all var(--duration-base) var(--ease-standard);\n}`;
   return (
     <div className="page">
-      <button className="btn ghost sm" onClick={back} style={{ marginBottom: 12 }}><Icon name="chevLeft" size={14} />All components</button>
+      <button className="btn ghost sm" onClick={back} style={{ marginBottom: 12 }}><Icon name="chevLeft" size={14} />Todos los componentes</button>
       <header className="page-hd">
         <div>
           <span className="eyebrow">{CATEGORIES.find((k) => k.id === c.cat).name}</span>
           <h1 className="t-h2">{c.name}</h1>
           <p className="muted" style={{ marginTop: 6, maxWidth: 620 }}>{c.desc}</p>
-          <div style={{ marginTop: 10 }} className="row"><Coverage refs={c.refs} /><span className="t-caption faint">In {c.refs.length} of {TOTAL} reference systems</span></div>
+          <div style={{ marginTop: 10 }} className="row"><Coverage refs={c.refs} /><span className="t-caption faint">En {c.refs.length} de {TOTAL} sistemas de referencia</span></div>
         </div>
         <button className={`btn ${enabled ? 'outline' : 'primary'}`} onClick={() => setComponents(enabled ? brand.components.filter((x) => x !== id) : [...brand.components, id])}>
-          <Icon name={enabled ? 'check' : 'plus'} size={14} />{enabled ? 'In your system' : 'Add to system'}
+          <Icon name={enabled ? 'check' : 'plus'} size={14} />{enabled ? 'En tu sistema' : 'Añadir al sistema'}
         </button>
       </header>
 
       <section className="fd-sec">
-        <h2 className="t-h4">Playground</h2>
+        <h2 className="t-h4">Zona de pruebas</h2>
         <div className="playground">
           <div className="pg-stage"><Preview id={id} v={v} s={s} st={st} /></div>
           <div className="pg-controls">
-            <label className="ins-field"><span>Variant</span><select value={v} onChange={(e) => setV(e.target.value)}>{c.variants.map((x) => <option key={x}>{x}</option>)}</select></label>
-            <label className="ins-field"><span>Size</span><select value={s} onChange={(e) => setS(e.target.value)}>{c.sizes.map((x) => <option key={x}>{x}</option>)}</select></label>
-            <label className="ins-field"><span>State</span><select value={st} onChange={(e) => setSt(e.target.value)}>{c.states.map((x) => <option key={x}>{x}</option>)}</select></label>
+            <label className="ins-field"><span>Variante</span><select value={v} onChange={(e) => setV(e.target.value)}>{c.variants.map((x) => <option key={x} value={x}>{tv(x)}</option>)}</select></label>
+            <label className="ins-field"><span>Tamaño</span><select value={s} onChange={(e) => setS(e.target.value)}>{c.sizes.map((x) => <option key={x} value={x}>{tv(x)}</option>)}</select></label>
+            <label className="ins-field"><span>Estado</span><select value={st} onChange={(e) => setSt(e.target.value)}>{c.states.map((x) => <option key={x} value={x}>{tv(x)}</option>)}</select></label>
           </div>
         </div>
       </section>
 
       <section className="fd-sec">
-        <h2 className="t-h4">Variants</h2>
+        <h2 className="t-h4">Variantes</h2>
         <div className="variant-grid">
           {c.variants.map((x) => (
-            <div key={x} className="variant"><span className="t-caption faint mono">{x}</span><div className="variant-stage"><Preview id={id} v={x} s={s} st={c.states[0]} /></div></div>
+            <div key={x} className="variant"><span className="t-caption faint mono">{tv(x)}</span><div className="variant-stage"><Preview id={id} v={x} s={s} st={c.states[0]} /></div></div>
           ))}
         </div>
       </section>
 
       {c.states.length > 1 && (
         <section className="fd-sec">
-          <h2 className="t-h4">States</h2>
+          <h2 className="t-h4">Estados</h2>
           <div className="variant-grid">
             {c.states.map((x) => (
-              <div key={x} className="variant"><span className="t-caption faint mono">{x}</span><div className="variant-stage"><Preview id={id} v={v} s={s} st={x} /></div></div>
+              <div key={x} className="variant"><span className="t-caption faint mono">{tv(x)}</span><div className="variant-stage"><Preview id={id} v={v} s={s} st={x} /></div></div>
             ))}
           </div>
         </section>
       )}
 
       <section className="fd-sec">
-        <h2 className="t-h4">In the reference systems</h2>
-        <p className="muted t-small" style={{ marginBottom: 10 }}>What each system calls it. Open a row to read that system’s guidance.</p>
+        <h2 className="t-h4">En los sistemas de referencia</h2>
+        <p className="muted t-small" style={{ marginBottom: 10 }}>Cómo lo llama cada sistema. Abre una fila para leer su documentación.</p>
         <NamesTable c={c} />
       </section>
 
       <section className="fd-sec two-col">
         <div>
-          <h2 className="t-h4">Component tokens</h2>
-          <p className="muted t-small" style={{ marginBottom: 10 }}>Override per component. Everything else inherits from the foundations.</p>
-          {Object.keys(c.tokens).length === 0 && <p className="t-small faint">This component only uses foundation tokens.</p>}
+          <h2 className="t-h4">Tokens de componente</h2>
+          <p className="muted t-small" style={{ marginBottom: 10 }}>Se ajustan por componente. Todo lo demás se hereda de las foundations.</p>
+          {Object.keys(c.tokens).length === 0 && <p className="t-small faint">Este componente solo usa tokens de las foundations.</p>}
           {Object.entries(c.tokens).map(([k, def]) => {
             const cur = brand.componentTokens?.[id]?.[k] ?? def;
             return (
               <label key={k} className="tok-row">
                 <span className="mono t-caption">--{id}-{k}</span>
                 <input type="number" value={cur} onChange={(e) => setComponentToken(id, k, e.target.value === '' ? def : Number(e.target.value))} aria-label={`${id} ${k}`} />
-                {cur !== def && <button className="btn ghost sm" onClick={() => setComponentToken(id, k, def)}>Reset</button>}
+                {cur !== def && <button className="btn ghost sm" onClick={() => setComponentToken(id, k, def)}>Restablecer</button>}
               </label>
             );
           })}
-          <h2 className="t-h4" style={{ marginTop: 20 }}>Guidelines</h2>
+          <h2 className="t-h4" style={{ marginTop: 20 }}>Pautas de uso</h2>
           <ul className="t-small muted guide">
-            <li>Visible focus ring on every interactive part: <code className="inl">--focus-ring</code>.</li>
-            <li>Labels on solids use the matching <code className="inl">*-on-solid</code> role (AA checked).</li>
-            <li>Respect <code className="inl">prefers-reduced-motion</code>; durations come from motion tokens.</li>
-            {c.cat === 'actions' && <li>One primary action per view; destructive actions confirm first.</li>}
-            {c.cat === 'inputs' && <li>Always pair with a visible label; errors explain how to fix.</li>}
-            {c.cat === 'overlays' && <li>Trap focus while open, close on Escape, return focus to the trigger.</li>}
+            <li>Anillo de foco visible en cada parte interactiva: <code className="inl">--focus-ring</code>.</li>
+            <li>El texto sobre sólidos usa su rol <code className="inl">*-on-solid</code> (comprobado AA).</li>
+            <li>Respeta <code className="inl">prefers-reduced-motion</code>; las duraciones salen de los tokens de movimiento.</li>
+            {c.cat === 'actions' && <li>Una sola acción principal por vista; las acciones destructivas piden confirmación.</li>}
+            {c.cat === 'inputs' && <li>Siempre con etiqueta visible; los errores explican cómo corregirlos.</li>}
+            {c.cat === 'overlays' && <li>Retén el foco mientras está abierto, cierra con Escape y devuelve el foco al disparador.</li>}
           </ul>
         </div>
         <div>
-          <h2 className="t-h4">Snippet</h2>
+          <h2 className="t-h4">Código</h2>
           <pre className="code">{snippet}</pre>
         </div>
       </section>

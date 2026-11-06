@@ -12,19 +12,19 @@ export default function Board({ sys, appearance, onOpen }) {
         <div className="ramp">{ramp.accent.map((h, i) => <span key={i} style={{ background: h }} title={`accent-${i + 1} ${h}`} />)}</div>
         <div className="ramp small">{ramp.neutral.map((h, i) => <span key={i} style={{ background: h }} title={`neutral-${i + 1} ${h}`} />)}</div>
         <div className="row" style={{ marginTop: 10 }}>
-          {['success', 'warning', 'critical', 'info'].map((f) => <span key={f} className="row t-caption muted" style={{ gap: 6 }}><i style={{ width: 12, height: 12, borderRadius: 4, background: ramp[f][8], display: 'inline-block' }} />{f}</span>)}
+          {['success', 'warning', 'critical', 'info'].map((f) => <span key={f} className="row t-caption muted" style={{ gap: 6 }}><i style={{ width: 12, height: 12, borderRadius: 4, background: ramp[f][8], display: 'inline-block' }} />{{ success: 'éxito', warning: 'aviso', critical: 'crítico', info: 'info' }[f]}</span>)}
         </div>
       </div>
       <div className="card bcard span2 specimen">
         <div className="t-display" style={{ fontFamily: 'var(--font-heading)', color: 'var(--accent-text)' }}>Aa</div>
         <div className="col" style={{ gap: 4 }}>
           <span className="t-h3">{sys.fonts.heading}</span>
-          <span className="t-small muted">Body in {sys.fonts.body} · {sys.type.desktop.body.size}/{sys.type.desktop.body.lineHeightPx}px</span>
+          <span className="t-small muted">Texto en {sys.fonts.body} · {sys.type.desktop.body.size}/{sys.type.desktop.body.lineHeightPx}px</span>
           <span className="mono t-caption faint">{sys.fonts.mono} 0123456789</span>
         </div>
       </div>
       {cards.map((c) => (
-        <div key={c.id} className="card bcard" onClick={() => onOpen(c.id)} title={`Open ${c.name}`}>
+        <div key={c.id} className="card bcard" onClick={() => onOpen(c.id)} title={`Abrir ${c.name}`}>
           <div className="bcard-label">{c.name}</div>
           <div className="bcard-body"><Preview id={c.id} /></div>
         </div>

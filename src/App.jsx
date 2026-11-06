@@ -12,12 +12,12 @@ import Components from './views/Components.jsx';
 import Code from './views/Code.jsx';
 
 const NAV = [
-  { id: 'home', label: 'Home', icon: 'home' },
+  { id: 'home', label: 'Inicio', icon: 'home' },
   { id: 'brief', label: 'Bases', icon: 'book' },
   { id: 'foundations', label: 'Foundations', icon: 'palette' },
-  { id: 'components', label: 'Components', icon: 'grid' },
-  { id: 'board', label: 'Board', icon: 'layers' },
-  { id: 'code', label: 'Export', icon: 'code' },
+  { id: 'components', label: 'Componentes', icon: 'grid' },
+  { id: 'board', label: 'Tablero', icon: 'layers' },
+  { id: 'code', label: 'Exportar', icon: 'code' },
 ];
 
 function readParams() {
@@ -53,7 +53,7 @@ export default function App() {
   const [brands, setBrands] = useState(() => {
     const list = loadBrands();
     const shared = location.hash.startsWith('#b=') ? decodeBrand(location.hash.slice(3)) : null;
-    if (shared) { shared.name = `${shared.name} (shared)`; return [...list, shared]; }
+    if (shared) { shared.name = `${shared.name} (compartida)`; return [...list, shared]; }
     return list;
   });
   const [activeId, setActiveId] = useState(() => {
@@ -115,7 +115,7 @@ export default function App() {
   };
   const duplicate = (id) => {
     const src = id === draft.id ? draft : brands.find((b) => b.id === id);
-    const b = { ...structuredClone(src), id: uid(), name: `${src.name} copy` };
+    const b = { ...structuredClone(src), id: uid(), name: `${src.name} copia` };
     setBrands((l) => [...l, b]);
   };
   const remove = (id) => {
@@ -130,18 +130,18 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar-app">
-        <button className="chrome-btn icon only-mobile" onClick={() => setNavOpen(!navOpen)} aria-label="Menu"><Icon name="menu" size={18} /></button>
+        <button className="chrome-btn icon only-mobile" onClick={() => setNavOpen(!navOpen)} aria-label="Menú"><Icon name="menu" size={18} /></button>
         <div className="brandmark"><span className="mark" /> Tokenforge <span className="beta">Beta</span></div>
         <span className="sep only-desktop">|</span>
         <span className="crumb only-desktop">{draft.name}</span>
         <div className="top-actions">
-          <button className="chrome-btn" onClick={() => setDraft(randomize(draft))} title="Roll a random brand"><Icon name="dice" size={16} /><span className="only-desktop">Random</span></button>
-          <button className="chrome-btn icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme" title="Light / dark"><Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} /></button>
+          <button className="chrome-btn" onClick={() => setDraft(randomize(draft))} title="Generar una marca aleatoria"><Icon name="dice" size={16} /><span className="only-desktop">Aleatoria</span></button>
+          <button className="chrome-btn icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Cambiar tema" title="Claro / oscuro"><Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} /></button>
           <button className="chrome-btn only-mobile" onClick={() => setInsOpen(!insOpen)}><Icon name="settings" size={16} /></button>
         </div>
       </header>
 
-      <nav className={`rail ${navOpen ? 'open' : ''}`} aria-label="Main">
+      <nav className={`rail ${navOpen ? 'open' : ''}`} aria-label="Principal">
         {NAV.map((n) => (
           <button key={n.id} className={view === n.id ? 'on' : ''} onClick={() => go(n.id)}>
             <Icon name={n.icon} size={18} /><span>{n.label}</span>

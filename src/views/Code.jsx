@@ -22,21 +22,21 @@ export default function Code({ sys, brand }) {
   const files = useMemo(() => EXPORTS.map((e) => ({ ...e, text: e.fn(sys) })), [sys]);
   const cur = files.find((f) => f.id === tab);
   const flash = (m) => { setCopied(m); setTimeout(() => setCopied(''), 1600); };
-  const copy = (t, m) => navigator.clipboard?.writeText(t).then(() => flash(m)).catch(() => flash('Copy failed'));
+  const copy = (t, m) => navigator.clipboard?.writeText(t).then(() => flash(m)).catch(() => flash('No se pudo copiar'));
   const shareUrl = `${location.origin}${location.pathname}#b=${encodeBrand(brand)}`;
 
   return (
     <div className="page">
       <header className="page-hd">
         <div>
-          <span className="eyebrow">Step 4 · Ship</span>
-          <h1 className="t-h2">Export</h1>
-          <p className="muted t-small" style={{ marginTop: 6, maxWidth: 620 }}>One payload, many targets. CSS for the web, W3C JSON for pipelines (Style Dictionary), Tokens Studio sets for Figma Variables, Tailwind, a BRIEF.md with your goals and principles, and an AGENTS.md so AI coding agents use your real tokens.</p>
+          <span className="eyebrow">Paso 5 · Entregar</span>
+          <h1 className="t-h2">Exportar</h1>
+          <p className="muted t-small" style={{ marginTop: 6, maxWidth: 620 }}>Un mismo origen, muchos destinos: CSS para la web, JSON W3C para pipelines (Style Dictionary), sets de Tokens Studio para las Variables de Figma, Tailwind, un BRIEF.md con tus objetivos y principios, y un AGENTS.md para que los agentes de IA usen tus tokens reales. Los archivos de código van en inglés, como es habitual.</p>
         </div>
         {!HOSTED && (
           <div className="row">
-            <button className="btn outline sm" onClick={() => copy(shareUrl, 'Share link copied')}><Icon name="link" size={14} />Copy share link</button>
-            <button className="btn primary sm" onClick={() => files.forEach((f, i) => setTimeout(() => download(f.file, f.text), i * 250))}><Icon name="download" size={14} />Download all</button>
+            <button className="btn outline sm" onClick={() => copy(shareUrl, 'Enlace copiado')}><Icon name="link" size={14} />Copiar enlace para compartir</button>
+            <button className="btn primary sm" onClick={() => files.forEach((f, i) => setTimeout(() => download(f.file, f.text), i * 250))}><Icon name="download" size={14} />Descargar todo</button>
           </div>
         )}
       </header>
@@ -50,18 +50,18 @@ export default function Code({ sys, brand }) {
         </div>
         <div className="code-main">
           <div className="code-bar">
-            <span className="mono t-caption">{cur.file} · {cur.text.split('\n').length} lines</span>
+            <span className="mono t-caption">{cur.file} · {cur.text.split('\n').length} líneas</span>
             <div className="row" style={{ gap: 6 }}>
               {copied && <span className="t-caption" style={{ color: 'var(--success-text)' }}>{copied}</span>}
-              <button className="btn ghost sm" onClick={() => copy(cur.text, `Copied — paste into ${cur.file}`)}><Icon name="copy" size={14} />Copy</button>
-              {!HOSTED && <button className="btn outline sm" onClick={() => download(cur.file, cur.text)}><Icon name="download" size={14} />Download</button>}
+              <button className="btn ghost sm" onClick={() => copy(cur.text, `Copiado: pégalo en ${cur.file}`)}><Icon name="copy" size={14} />Copiar</button>
+              {!HOSTED && <button className="btn outline sm" onClick={() => download(cur.file, cur.text)}><Icon name="download" size={14} />Descargar</button>}
             </div>
           </div>
           <pre className="code big">{cur.text}</pre>
         </div>
       </div>
       {tab === 'figma' && (
-        <div className="alert info" style={{ marginTop: 16 }}><Icon name="info" size={16} /><div><b>Into Figma</b>Install the Tokens Studio plugin → Tools → Load from file → pick figma-tokens.json → Styles &amp; Variables → Export to Figma. You get a Light and a Dark mode for every colour.</div></div>
+        <div className="alert info" style={{ marginTop: 16 }}><Icon name="info" size={16} /><div><b>Llevarlo a Figma</b>Instala el plugin Tokens Studio → Tools → Load from file → elige figma-tokens.json → Styles &amp; Variables → Export to Figma. Tendrás un modo claro y uno oscuro para cada color.</div></div>
       )}
     </div>
   );

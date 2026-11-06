@@ -220,7 +220,7 @@ ${Object.entries(t).map(([n, v]) => `- \`${n}\`: ${v.size}/${v.lineHeightPx}px, 
 - Shadow: \`--shadow-sm|md|lg\`. Motion: \`--duration-fast|base|slow\` with \`--ease-standard\`.
 
 ## Components in this system (${comps.length})
-${comps.map((c) => `- **${c.name}** — ${c.desc} Variants: ${c.variants.join(', ')}. States: ${c.states.join(', ')}.`).join('\n')}
+${comps.map((c) => `- **${c.nameEn}** — ${c.descEn} Variants: ${c.variants.join(', ')}. States: ${c.states.join(', ')}.`).join('\n')}
 
 ${principlesBlock(sys)}## Rules
 1. One primary button per view. Destructive actions use \`--critical-solid\`.
@@ -234,7 +234,7 @@ function principlesBlock(sys) {
   const b = sys.brand.brief;
   if (!b?.principles?.length) return '';
   const pr = b.principles.map((id) => QUESTIONS.principles.find((x) => x.id === id)).filter(Boolean);
-  return `## Principles (apply them when a rule below does not decide)\n${pr.map((x) => `- **${x.label}** — ${x.hint}`).join('\n')}\n- Accessibility target: WCAG 2.2 ${b.a11y}.\n\n`;
+  return `## Principles (apply them when a rule below does not decide)\n${pr.map((x) => `- **${x.en[0]}** — ${x.en[1]}`).join('\n')}\n- Accessibility target: WCAG 2.2 ${b.a11y}.\n\n`;
 }
 
 export function toReadme(sys) {
@@ -257,7 +257,7 @@ export const EXPORTS = [
   { id: 'json', label: 'W3C JSON', file: 'tokens.json', fn: toDTCG },
   { id: 'figma', label: 'Figma', file: 'figma-tokens.json', fn: toFigma },
   { id: 'tailwind', label: 'Tailwind', file: 'tailwind.config.js', fn: toTailwind },
-  { id: 'agents', label: 'Agent', file: 'AGENTS.md', fn: toAgents },
+  { id: 'agents', label: 'Agente IA', file: 'AGENTS.md', fn: toAgents },
   { id: 'brief', label: 'Brief', file: 'BRIEF.md', fn: toBrief },
   { id: 'readme', label: 'README', file: 'README.md', fn: toReadme },
 ];

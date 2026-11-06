@@ -28,78 +28,78 @@ export const EMPTY_BRIEF = {
   constraints: '',
 };
 
-const o = (id, label, hint) => ({ id, label, hint });
+const o = (id, label, hint, en) => ({ id, label, hint, en });
 
 export const QUESTIONS = {
   goals: [
-    o('consistency', 'Inconsistent look across screens or platforms', 'The same thing looks different in different places.'),
-    o('speed', 'Slow, manual updates', 'Changing a colour or a button means touching many files.'),
-    o('handoff', 'Friction between design and code', 'Specs get lost between Figma and the codebase.'),
-    o('onboarding', 'New people take long to get up to speed', 'No single place explains how things are built.'),
-    o('scale', 'More products, brands or teams coming', 'What works for one product will not hold for three.'),
-    o('a11y', 'Accessibility gaps', 'Contrast, focus and labels are fixed one by one.'),
-    o('ai', 'AI agents generate off-brand UI', 'Agents guess colours and spacing instead of using tokens.'),
+    o('consistency', 'Aspecto incoherente entre pantallas o plataformas', 'Lo mismo se ve distinto según dónde estés.'),
+    o('speed', 'Actualizaciones lentas y manuales', 'Cambiar un color o un botón obliga a tocar muchos archivos.'),
+    o('handoff', 'Fricción entre diseño y código', 'Las especificaciones se pierden entre Figma y el código.'),
+    o('onboarding', 'A la gente nueva le cuesta ponerse al día', 'No hay un sitio único que explique cómo se construye.'),
+    o('scale', 'Vienen más productos, marcas o equipos', 'Lo que funciona para un producto no aguantará tres.'),
+    o('a11y', 'Carencias de accesibilidad', 'Contraste, foco y etiquetas se arreglan uno a uno.'),
+    o('ai', 'Los agentes de IA generan interfaces fuera de marca', 'Se inventan colores y espaciados en lugar de usar tokens.'),
   ],
   success: [
-    o('adoption', 'Share of screens built with system components'),
-    o('time', 'Time to design and build a new screen'),
-    o('oneoffs', 'Fewer one-off colours, sizes and styles'),
-    o('a11y', 'Accessibility issues found in audits'),
-    o('handoff', 'Design-to-dev handoff time and rework'),
-    o('satisfaction', 'Team satisfaction with the system'),
+    o('adoption', 'Porcentaje de pantallas hechas con componentes del sistema'),
+    o('time', 'Tiempo para diseñar y construir una pantalla nueva'),
+    o('oneoffs', 'Menos colores, tamaños y estilos sueltos'),
+    o('a11y', 'Problemas de accesibilidad detectados en auditorías'),
+    o('handoff', 'Tiempo y retrabajo en el traspaso de diseño a desarrollo'),
+    o('satisfaction', 'Satisfacción del equipo con el sistema'),
   ],
-  team: [o('solo', 'Just me'), o('small', '2–10 people'), o('mid', '10–50 people'), o('large', '50+ people')],
-  products: [o('one', 'One product'), o('few', '2–3 products'), o('many', 'Many products or brands')],
+  team: [o('solo', 'Solo yo'), o('small', '2–10 personas'), o('mid', '10–50 personas'), o('large', 'Más de 50 personas')],
+  products: [o('one', 'Un producto'), o('few', '2–3 productos'), o('many', 'Muchos productos o marcas')],
   productType: [
-    o('saas', 'Web app / SaaS'), o('commerce', 'E-commerce'), o('dashboard', 'Dashboard / internal tool'),
-    o('mobile', 'Mobile app'), o('marketing', 'Marketing website'), o('content', 'Content / editorial'),
+    o('saas', 'App web / SaaS'), o('commerce', 'E-commerce'), o('dashboard', 'Dashboard / herramienta interna'),
+    o('mobile', 'App móvil'), o('marketing', 'Web de marketing'), o('content', 'Contenido / editorial'),
   ],
-  platforms: [o('web', 'Web'), o('ios', 'iOS'), o('android', 'Android'), o('desktop', 'Desktop app'), o('email', 'Email')],
+  platforms: [o('web', 'Web'), o('ios', 'iOS'), o('android', 'Android'), o('desktop', 'App de escritorio'), o('email', 'Email')],
   approach: [
-    o('scratch', 'Build from scratch', 'Fully tailored. More time up front.'),
-    o('audit', 'Start from what we already have', 'Audit the current product, consolidate and standardise.'),
-    o('adopt', 'Adopt an existing system and adapt it', 'Faster start; needs customisation to fit.'),
+    o('scratch', 'Crear desde cero', 'A tu medida. Requiere más tiempo al principio.'),
+    o('audit', 'Partir de lo que ya tenemos', 'Auditar el producto actual, consolidar y estandarizar.'),
+    o('adopt', 'Adoptar un sistema existente y adaptarlo', 'Arranque más rápido; necesita personalización.'),
   ],
   assets: [
-    o('guidelines', 'Brand guidelines'), o('palette', 'Colour palette'), o('fonts', 'Brand fonts'), o('logo', 'Logo'),
-    o('voice', 'Voice and tone guide'), o('figma', 'Figma library'), o('code', 'Coded components'), o('icons', 'Icon set'),
+    o('guidelines', 'Guía de marca'), o('palette', 'Paleta de colores'), o('fonts', 'Tipografías de marca'), o('logo', 'Logotipo'),
+    o('voice', 'Guía de voz y tono'), o('figma', 'Librería de Figma'), o('code', 'Componentes en código'), o('icons', 'Set de iconos'),
   ],
   stakeholders: [
-    o('design', 'Design'), o('engineering', 'Engineering'), o('product', 'Product'), o('marketing', 'Marketing / brand'),
-    o('support', 'Customer support'), o('leadership', 'Leadership'), o('content', 'Content / UX writing'),
+    o('design', 'Diseño'), o('engineering', 'Desarrollo'), o('product', 'Producto'), o('marketing', 'Marketing / marca'),
+    o('support', 'Atención al cliente'), o('leadership', 'Dirección'), o('content', 'Contenido / UX writing'),
   ],
   stack: [
     o('react', 'React'), o('vue', 'Vue'), o('angular', 'Angular'), o('svelte', 'Svelte'), o('webc', 'Web components'),
-    o('tailwind', 'Tailwind'), o('swiftui', 'SwiftUI'), o('compose', 'Jetpack Compose'), o('none', 'Not decided'),
+    o('tailwind', 'Tailwind'), o('swiftui', 'SwiftUI'), o('compose', 'Jetpack Compose'), o('none', 'Sin decidir'),
   ],
   principles: [
-    o('accessible', 'Accessible', 'Usable by everyone, whatever their abilities.'),
-    o('clear', 'Clear', 'Say one thing at a time; no guessing what a control does.'),
-    o('predictable', 'Predictable', 'Same pattern, same behaviour, everywhere.'),
-    o('simple', 'Simple', 'Remove before adding; the fewest options that work.'),
-    o('efficient', 'Efficient', 'Fewer steps for frequent tasks; dense when it helps.'),
-    o('trustworthy', 'Trustworthy', 'Calm, honest feedback; no surprises with data or money.'),
-    o('expressive', 'Expressive', 'Personality in colour, shape and motion.'),
-    o('inclusive', 'Inclusive', 'Language, imagery and defaults that respect everyone.'),
-    o('craft', 'Crafted', 'Details matter: alignment, rhythm, states.'),
-    o('flexible', 'Flexible', 'Works across products, brands and platforms.'),
+    o('accessible', 'Accesible', 'Que lo pueda usar cualquier persona, sean cuales sean sus capacidades.', ['Accessible', 'Usable by everyone, whatever their abilities.']),
+    o('clear', 'Claro', 'Una cosa cada vez; nunca hay que adivinar qué hace un control.', ['Clear', 'Say one thing at a time; no guessing what a control does.']),
+    o('predictable', 'Predecible', 'Mismo patrón, mismo comportamiento, en todas partes.', ['Predictable', 'Same pattern, same behaviour, everywhere.']),
+    o('simple', 'Simple', 'Quitar antes que añadir; las mínimas opciones que funcionan.', ['Simple', 'Remove before adding; the fewest options that work.']),
+    o('efficient', 'Eficiente', 'Menos pasos en las tareas frecuentes; denso cuando ayuda.', ['Efficient', 'Fewer steps for frequent tasks; dense when it helps.']),
+    o('trustworthy', 'Fiable', 'Feedback sereno y honesto; sin sorpresas con los datos o el dinero.', ['Trustworthy', 'Calm, honest feedback; no surprises with data or money.']),
+    o('expressive', 'Expresivo', 'Personalidad en el color, la forma y el movimiento.', ['Expressive', 'Personality in colour, shape and motion.']),
+    o('inclusive', 'Inclusivo', 'Lenguaje, imágenes y valores por defecto que respetan a todo el mundo.', ['Inclusive', 'Language, imagery and defaults that respect everyone.']),
+    o('craft', 'Cuidado', 'Los detalles importan: alineación, ritmo y estados.', ['Crafted', 'Details matter: alignment, rhythm, states.']),
+    o('flexible', 'Flexible', 'Funciona en varios productos, marcas y plataformas.', ['Flexible', 'Works across products, brands and platforms.']),
   ],
 };
 
 export const PERSONALITY = [
-  { id: 'tone', left: 'Serious', right: 'Playful' },
-  { id: 'energy', left: 'Calm', right: 'Energetic' },
-  { id: 'density', left: 'Compact', right: 'Spacious' },
-  { id: 'shape', left: 'Sharp', right: 'Rounded' },
+  { id: 'tone', left: 'Serio', right: 'Lúdico' },
+  { id: 'energy', left: 'Calmado', right: 'Enérgico' },
+  { id: 'density', left: 'Compacto', right: 'Espacioso' },
+  { id: 'shape', left: 'Anguloso', right: 'Redondeado' },
 ];
 
 export const WIZARD_STEPS = [
-  { id: 'why', title: 'Why a design system?', intro: 'Agree on the reasons first. Everything else follows from them.' },
-  { id: 'scope', title: 'Who and what is it for?', intro: 'A solo designer and a 50-person org need very different systems.' },
-  { id: 'start', title: 'Where do you start?', intro: 'Inventory what exists and choose an approach.' },
-  { id: 'people', title: 'Who is involved?', intro: 'A design system is a team effort. Name the people and the stack.' },
-  { id: 'principles', title: 'Guiding principles', intro: 'Pick up to three. They are the north star for every decision.' },
-  { id: 'personality', title: 'Personality and standards', intro: 'These sliders set the first version of your foundations.' },
+  { id: 'why', title: '¿Por qué un sistema de diseño?', intro: 'Poneos de acuerdo primero en los motivos. Todo lo demás sale de ahí.' },
+  { id: 'scope', title: '¿Para quién y para qué?', intro: 'Una diseñadora sola y una empresa de 50 personas necesitan sistemas muy distintos.' },
+  { id: 'start', title: '¿Por dónde empiezas?', intro: 'Haz inventario de lo que existe y elige un enfoque.' },
+  { id: 'people', title: '¿Quién participa?', intro: 'Un sistema de diseño es un trabajo de equipo. Nombra a las personas y la tecnología.' },
+  { id: 'principles', title: 'Principios rectores', intro: 'Elige hasta tres. Son la estrella polar de cada decisión.' },
+  { id: 'personality', title: 'Personalidad y estándares', intro: 'Estos deslizadores definen la primera versión de tus foundations.' },
 ];
 
 const pick = (v, steps) => steps[Math.min(steps.length - 1, Math.floor((v / 101) * steps.length))];
@@ -158,63 +158,64 @@ export function recommend(brief, brand) {
 
 /** A short scale label used in the summary and docs. */
 export function scaleLabel(brief) {
-  const t = { solo: 'a solo designer', small: 'a small team', mid: 'a mid-size team', large: 'a large organisation' }[brief.team] ?? 'a team';
-  const pr = { one: 'one product', few: 'a few products', many: 'many products or brands' }[brief.products] ?? 'its products';
-  return `${t} working on ${pr}`;
+  const t = { solo: 'una sola persona', small: 'un equipo pequeño', mid: 'un equipo mediano', large: 'una organización grande' }[brief.team] ?? 'un equipo';
+  const pr = { one: 'un producto', few: 'varios productos', many: 'muchos productos o marcas' }[brief.products] ?? 'sus productos';
+  return `${t} que trabaja en ${pr}`;
 }
 
 export function recommendedScope(brief) {
   if (brief.team === 'solo' || (brief.team === 'small' && brief.products === 'one')) {
-    return { level: 'Lean', text: 'Start lean: tokens, a core set of components and a few templates. Grow it as the team and products grow.' };
+    return { level: 'Ligero', text: 'Empieza ligero: tokens, un set básico de componentes y algunas plantillas. Hazlo crecer al ritmo del equipo y los productos.' };
   }
   if (brief.team === 'large' || brief.products === 'many') {
-    return { level: 'Full', text: 'Plan a full system: multi-brand tokens, governance, contribution model, versioning and documentation site.' };
+    return { level: 'Completo', text: 'Planifica un sistema completo: tokens multimarca, gobierno, modelo de contribución, versionado y web de documentación.' };
   }
-  return { level: 'Standard', text: 'A standard system: complete foundations, a documented component library and a release process.' };
+  return { level: 'Estándar', text: 'Un sistema estándar: foundations completas, librería de componentes documentada y un proceso de publicación.' };
 }
 
 const label = (list, id) => QUESTIONS[list].find((x) => x.id === id)?.label ?? id;
 
-/** BRIEF.md — the shared agreement the guide recommends writing down first. */
+/** BRIEF.md — the shared agreement written down first (in Spanish, for the team). */
 export function toBrief(sys) {
   const b = sys.brand.brief ?? EMPTY_BRIEF;
   const name = sys.brand.name;
   const scope = recommendedScope(b);
-  const list = (key, ids) => (ids.length ? ids.map((id) => `- ${label(key, id)}`).join('\n') : '- _Not answered yet_');
+  const list = (key, ids) => (ids.length ? ids.map((id) => `- ${label(key, id)}`).join('\n') : '- _Sin responder todavía_');
   const pr = b.principles.map((id) => QUESTIONS.principles.find((x) => x.id === id)).filter(Boolean);
-  return `# ${name} — design system brief
+  const dark = { yes: 'desde el primer día', later: 'más adelante', no: 'no se necesita' }[b.darkMode];
+  return `# ${name} — brief del sistema de diseño
 
-## Why we are building it
+## Por qué lo construimos
 ${list('goals', b.goals)}
 ${b.why ? `\n${b.why}\n` : ''}
-## How we will know it works
+## Cómo sabremos que funciona
 ${list('success', b.success)}
 
-## Scope
-Built for ${scaleLabel(b)}.
-- Product types: ${b.productType.map((x) => label('productType', x)).join(', ') || '—'}
-- Platforms: ${b.platforms.map((x) => label('platforms', x)).join(', ') || '—'}
-- Recommended scope: **${scope.level}**. ${scope.text}
+## Alcance
+Pensado para ${scaleLabel(b)}.
+- Tipo de producto: ${b.productType.map((x) => label('productType', x)).join(', ') || '—'}
+- Plataformas: ${b.platforms.map((x) => label('platforms', x)).join(', ') || '—'}
+- Alcance recomendado: **${scope.level}**. ${scope.text}
 
-## Starting point
-- Approach: ${b.approach ? label('approach', b.approach) : '—'}${b.approach === 'adopt' && b.framework ? ` (${SYSTEMS[b.framework]?.name})` : ''}
-- Existing assets: ${b.assets.map((x) => label('assets', x)).join(', ') || 'none listed'}
+## Punto de partida
+- Enfoque: ${b.approach ? label('approach', b.approach) : '—'}${b.approach === 'adopt' && b.framework ? ` (${SYSTEMS[b.framework]?.name})` : ''}
+- Recursos existentes: ${b.assets.map((x) => label('assets', x)).join(', ') || 'ninguno'}
 
-## People
-- Involved: ${b.stakeholders.map((x) => label('stakeholders', x)).join(', ') || '—'}
-- Tech stack: ${b.stack.map((x) => label('stack', x)).join(', ') || '—'}
+## Personas
+- Participan: ${b.stakeholders.map((x) => label('stakeholders', x)).join(', ') || '—'}
+- Tecnología: ${b.stack.map((x) => label('stack', x)).join(', ') || '—'}
 
-## Principles
-${pr.length ? pr.map((x) => `### ${x.label}\n${x.hint}`).join('\n\n') : '_Pick up to three principles._'}
+## Principios
+${pr.length ? pr.map((x) => `### ${x.label}\n${x.hint}`).join('\n\n') : '_Elige hasta tres principios._'}
 
-## Standards
-- Accessibility target: WCAG 2.2 ${b.a11y}
-- Dark mode: ${b.darkMode === 'yes' ? 'from day one' : b.darkMode === 'later' ? 'planned' : 'not needed'}
-${b.constraints ? `- Constraints: ${b.constraints}\n` : ''}
-## Roadmap
-1. **Bases** — this brief, a visual inventory of the current product, champions in each discipline.
-2. **Foundations** — accessibility, colour (aim for roughly 60% neutrals, 30% primary, 10% accent), typography around a 16px base, elevation, iconography, spacing and grids, primitive → semantic tokens.
-3. **Components** — ${sys.brand.components?.length ?? 0} components chosen; build simple parts first, then compose them. Name by purpose, not by look.
-4. **Library and rollout** — publish tokens and components, document usage, gather feedback, iterate.
+## Estándares
+- Accesibilidad: WCAG 2.2 ${b.a11y}
+- Modo oscuro: ${dark}
+${b.constraints ? `- Restricciones: ${b.constraints}\n` : ''}
+## Hoja de ruta
+1. **Bases** — este brief, un inventario visual del producto actual y personas que lo defiendan en cada disciplina.
+2. **Foundations** — accesibilidad, color (aprox. 60 % neutros, 30 % primario, 10 % acento), tipografía sobre una base de 16 px, elevación, iconografía, espaciado y cuadrículas, tokens primitivos → semánticos.
+3. **Componentes** — ${sys.brand.components?.length ?? 0} componentes elegidos; primero las piezas simples y luego las compuestas. Nómbralos por su función, no por su aspecto.
+4. **Librería y despliegue** — publica tokens y componentes, documenta su uso, recoge feedback e itera.
 `;
 }

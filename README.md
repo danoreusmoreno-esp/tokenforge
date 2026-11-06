@@ -2,6 +2,8 @@
 
 Build a design system from scratch — foundations, components and exports — in the browser.
 
+The interface is in Spanish. Code exports (`tokens.css`, JSON, Tailwind, `AGENTS.md`) stay in English; `BRIEF.md` is written in Spanish for the team.
+
 ## What it does
 
 **0. Bases** — a six-step questionnaire before any pixel: why a design system, success measures, team and product scope, platforms, starting approach (scratch, audit or adopt), existing assets, people and stack, up to three principles, personality sliders, accessibility target and dark mode. Answers generate the first foundations and component set, a brief and a roadmap (`BRIEF.md`).

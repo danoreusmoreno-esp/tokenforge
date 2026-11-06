@@ -5,37 +5,37 @@
 
 export const SYSTEMS = {
   m3: { name: 'Material 3', org: 'Google', url: 'https://m3.material.io/components', featured: true,
-    note: 'Tonal colour roles, expressive shape and motion, strong mobile patterns.' },
+    note: 'Roles de color tonales, forma y movimiento expresivos, patrones móviles sólidos.' },
   hig: { name: 'Human Interface Guidelines', short: 'Apple HIG', org: 'Apple', url: 'https://developer.apple.com/design/human-interface-guidelines/components', featured: true,
-    note: 'Platform-native controls, clarity and deference, sheets and bars on iOS and macOS.' },
+    note: 'Controles nativos, claridad y deferencia, hojas y barras en iOS y macOS.' },
   polaris: { name: 'Polaris', org: 'Shopify', url: 'https://polaris.shopify.com/components', featured: true,
-    note: 'Merchant admin: resource lists, index tables, contextual save, calm feedback.' },
+    note: 'Administración para comercios: listas de recursos, tablas, guardado contextual y feedback sereno.' },
   carbon: { name: 'Carbon', org: 'IBM', url: 'https://carbondesignsystem.com/components/overview/components/', featured: true,
-    note: 'Enterprise density, data tables, square geometry, rigorous accessibility.' },
+    note: 'Densidad empresarial, tablas de datos, geometría cuadrada y accesibilidad rigurosa.' },
   fluent: { name: 'Fluent 2', org: 'Microsoft', url: 'https://fluent2.microsoft.design/components/web/react/', featured: true,
-    note: 'Productivity apps: message bars, toolbars, data grids, soft depth.' },
+    note: 'Apps de productividad: barras de mensajes, toolbars, data grids y profundidad suave.' },
   atlassian: { name: 'Atlassian Design System', short: 'Atlassian', org: 'Atlassian', url: 'https://atlassian.design/components', featured: true,
-    note: 'Collaboration tools: lozenges, flags, section messages, dynamic tables.' },
+    note: 'Herramientas de colaboración: lozenges, flags, mensajes de sección y tablas dinámicas.' },
   primer: { name: 'Primer', org: 'GitHub', url: 'https://primer.style/components', featured: true,
-    note: 'Developer tools: action lists, blankslates, timelines, dense navigation.' },
+    note: 'Herramientas para desarrolladores: listas de acciones, blankslates, timelines y navegación densa.' },
   spectrum: { name: 'Spectrum', org: 'Adobe', url: 'https://spectrum.adobe.com/', featured: true,
-    note: 'Creative apps: action groups, pickers, trays and illustrated messages.' },
+    note: 'Apps creativas: grupos de acciones, pickers, trays y mensajes ilustrados.' },
   radix: { name: 'Radix / shadcn', short: 'shadcn', org: 'WorkOS / shadcn', url: 'https://ui.shadcn.com/docs/components', featured: true,
-    note: 'Headless, accessible primitives; the default kit for React and AI-built apps.' },
+    note: 'Primitivas accesibles sin estilo; el kit por defecto en React y en apps hechas con IA.' },
 };
 
 export const FEATURED = Object.keys(SYSTEMS);
 export const systemLabel = (k) => SYSTEMS[k].short ?? SYSTEMS[k].name;
 
 export const CATEGORIES = [
-  { id: 'actions', name: 'Actions' },
-  { id: 'inputs', name: 'Inputs & forms' },
-  { id: 'selection', name: 'Selection' },
-  { id: 'navigation', name: 'Navigation' },
-  { id: 'feedback', name: 'Feedback & status' },
-  { id: 'overlays', name: 'Overlays' },
-  { id: 'data', name: 'Data display' },
-  { id: 'layout', name: 'Layout & structure' },
+  { id: 'actions', name: 'Acciones' },
+  { id: 'inputs', name: 'Entradas y formularios' },
+  { id: 'selection', name: 'Selección' },
+  { id: 'navigation', name: 'Navegación' },
+  { id: 'feedback', name: 'Feedback y estado' },
+  { id: 'overlays', name: 'Capas superpuestas' },
+  { id: 'data', name: 'Mostrar datos' },
+  { id: 'layout', name: 'Estructura' },
 ];
 
 // Names in each system. First five: Material 3, Apple HIG, Polaris, Carbon, Fluent 2;
@@ -241,6 +241,67 @@ const RAW = [
     desc: 'Shows a keyboard shortcut.', variants: ['default'], sizes: ['sm'], states: ['default'], tokens: {} },
 ];
 
+
+// Spanish name and description shown in the UI. English stays in nameEn/descEn for AGENTS.md.
+const ES = {
+  button: ['Botón', 'Lanza una acción. Una principal por vista; secundarias y terciarias para el resto.'],
+  'icon-button': ['Botón de icono', 'Botón cuadrado solo con icono. Siempre necesita una etiqueta accesible.'],
+  'button-group': ['Grupo de botones', 'Acciones relacionadas unidas en un solo control, como una barra de formato.'],
+  link: ['Enlace', 'Lleva a otra página o ancla. Subrayado dentro del texto.'],
+  fab: ['Botón flotante', 'La acción más importante de una pantalla, flotando sobre el contenido.'],
+  toolbar: ['Barra de herramientas', 'Comandos frecuentes para la vista o la selección actual.'],
+  'text-field': ['Campo de texto', 'Entrada de una línea con etiqueta, ayuda y mensaje de error.'],
+  textarea: ['Área de texto', 'Entrada de varias líneas que crece con el contenido.'],
+  select: ['Selector', 'Elige una opción de una lista corta.'],
+  combobox: ['Combobox', 'Selector con búsqueda que filtra mientras escribes.'],
+  search: ['Buscador', 'Campo de texto con icono de búsqueda y botón para borrar.'],
+  'number-input': ['Campo numérico', 'Campo de números con botones para sumar y restar.'],
+  'tag-input': ['Campo de tokens', 'Texto libre que se convierte en tokens eliminables, como destinatarios o etiquetas.'],
+  otp: ['Código de un solo uso', 'Casillas separadas para códigos de verificación.'],
+  'date-picker': ['Selector de fecha', 'Calendario para elegir una fecha o un rango.'],
+  'file-upload': ['Subida de archivos', 'Zona para soltar archivos con lista y progreso.'],
+  slider: ['Deslizador', 'Elige un valor o un rango a lo largo de una barra.'],
+  checkbox: ['Casilla de verificación', 'Activa una o varias opciones independientes.'],
+  radio: ['Grupo de radio', 'Elige exactamente una opción de un conjunto visible.'],
+  switch: ['Interruptor', 'Activa o desactiva un ajuste al instante.'],
+  segmented: ['Control segmentado', 'Cambia entre unas pocas vistas excluyentes.'],
+  chip: ['Chip / Etiqueta', 'Elemento compacto para filtros, opciones o metadatos.'],
+  rating: ['Valoración', 'Muestra o recoge una puntuación en una escala corta, normalmente cinco estrellas.'],
+  tabs: ['Pestañas', 'Organiza contenido relacionado en vistas del mismo nivel.'],
+  breadcrumb: ['Migas de pan', 'Indica dónde está una página dentro de la jerarquía.'],
+  pagination: ['Paginación', 'Avanza entre las páginas de una lista larga.'],
+  'page-control': ['Indicador de página', 'Puntos que marcan la página actual en un conjunto deslizable.'],
+  sidebar: ['Navegación lateral', 'Navegación principal de la app en una lista vertical.'],
+  'nav-rail': ['Riel de navegación', 'Navegación vertical compacta con iconos y etiquetas cortas para tablet y escritorio.'],
+  'nav-bar': ['Navegación inferior', 'De tres a cinco destinos principales en la parte baja de la pantalla del móvil.'],
+  topbar: ['Barra superior', 'Cabecera con título, buscador y cuenta.'],
+  stepper: ['Pasos', 'Progreso a través de un flujo de varios pasos.'],
+  menu: ['Menú', 'Lista de acciones que aparece bajo demanda.'],
+  alert: ['Alerta / Banner', 'Mensaje en línea sobre el estado de una página o sección.'],
+  toast: ['Toast', 'Confirmación breve de una acción que desaparece sola.'],
+  'save-bar': ['Barra de guardado', 'Aparece cuando un formulario tiene cambios sin guardar, con Descartar y Guardar siempre a mano.'],
+  badge: ['Badge', 'Etiqueta corta de estado o contador.'],
+  progress: ['Barra de progreso', 'Progreso determinado o indeterminado.'],
+  spinner: ['Indicador de carga', 'Carga indeterminada para esperas cortas.'],
+  skeleton: ['Esqueleto', 'Formas provisionales mientras carga el contenido.'],
+  'empty-state': ['Estado vacío', 'Qué mostrar y qué hacer cuando todavía no hay datos.'],
+  dialog: ['Diálogo / Modal', 'Tarea o confirmación que bloquea la página hasta resolverse.'],
+  drawer: ['Panel lateral / Hoja', 'Panel que entra desde un borde de la pantalla.'],
+  'action-sheet': ['Hoja de acciones', 'Opciones sobre la acción actual que suben desde abajo en el móvil.'],
+  popover: ['Popover', 'Contenido rico y no modal anclado a un disparador.'],
+  tooltip: ['Tooltip', 'Pista corta al pasar el ratón o al enfocar.'],
+  card: ['Tarjeta', 'Contenedor que agrupa contenido y acciones sobre un mismo tema.'],
+  table: ['Tabla de datos', 'Filas y columnas con orden y selección.'],
+  list: ['Lista', 'Elementos verticales con contenido al inicio y al final.'],
+  avatar: ['Avatar', 'Imagen, iniciales o icono de una persona o entidad; también apilados.'],
+  stat: ['Dato / KPI', 'Cifra destacada con su tendencia.'],
+  accordion: ['Acordeón', 'Secciones apiladas que se abren y se cierran.'],
+  timeline: ['Línea de tiempo', 'Eventos en orden cronológico con marcadores.'],
+  code: ['Bloque de código', 'Fragmento monoespaciado con acción de copiar.'],
+  divider: ['Separador', 'Separa grupos de contenido.'],
+  kbd: ['Tecla', 'Muestra un atajo de teclado.'],
+};
+
 // Atlassian, Primer, Spectrum, shadcn — null where there is no direct equivalent.
 const MORE = {
   button: ['Button', 'Button', 'Button', 'Button'],
@@ -306,7 +367,8 @@ export const COMPONENTS = RAW.map(({ others, ...c }) => {
   const [atlassian, primer, spectrum, radix] = MORE[c.id] ?? [null, null, null, null];
   const names = { ...c.names, atlassian, primer, spectrum, radix };
   const refs = FEATURED.filter((k) => names[k]);
-  return { ...c, names, featuredIn: refs, refs };
+  const [nameEs, descEs] = ES[c.id] ?? [c.name, c.desc];
+  return { ...c, name: nameEs, desc: descEs, nameEn: c.name, descEn: c.desc, names, featuredIn: refs, refs };
 });
 
 export const CORE_IDS = COMPONENTS.filter((c) => c.core).map((c) => c.id);
