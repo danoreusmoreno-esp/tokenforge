@@ -69,14 +69,14 @@ function Catalogue({ brand, setComponents, open }) {
           <button className="btn ghost sm" onClick={() => setComponents([])}>Quitar todos</button>
         </div>
       </header>
-      <div className="tabs pill" style={{ marginBottom: 16, flexWrap: 'wrap' }}>
+      <div className="seg-tabs" role="group" aria-label="Categorías">
         <button className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')}>Todos</button>
         {CATEGORIES.map((c) => <button key={c.id} className={filter === c.id ? 'on' : ''} onClick={() => setFilter(c.id)}>{c.name}</button>)}
       </div>
       <div className="sys-filter" role="group" aria-label="Filtrar por sistema de diseño">
-        <span className="t-caption faint">Presente en</span>
+        <span className="filter-label">Presente en</span>
         <button className={sys === 'all' ? 'on' : ''} onClick={() => setSys('all')}>Cualquiera</button>
-        {FEATURED.map((k) => <button key={k} className={sys === k ? 'on' : ''} onClick={() => setSys(k)}>{systemLabel(k)} <span className="faint">{COMPONENTS.filter((c) => c.refs.includes(k)).length}</span></button>)}
+        {FEATURED.map((k) => <button key={k} className={sys === k ? 'on' : ''} onClick={() => setSys(k)}>{systemLabel(k)}<span className="count">{COMPONENTS.filter((c) => c.refs.includes(k)).length}</span></button>)}
       </div>
       {cats.filter((cat) => COMPONENTS.some((c) => c.cat === cat.id && visible(c))).map((cat) => (
         <section key={cat.id} className="fd-sec">

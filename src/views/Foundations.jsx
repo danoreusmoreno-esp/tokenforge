@@ -173,7 +173,7 @@ export default function Foundations({ sys, appearance, tab, setTab }) {
     <div className="page">
       <header className="page-hd">
         <div><h1 className="t-h2">Foundations</h1></div>
-        <div className="tabs">{FOUNDATION_TABS.map((t) => <button key={t.id} className={t.id === T.id ? 'on' : ''} onClick={() => setTab(t.id)}>{t.label}</button>)}</div>
+        <div className="seg-tabs" role="group" aria-label="Secciones">{FOUNDATION_TABS.map((t) => <button key={t.id} className={t.id === T.id ? 'on' : ''} onClick={() => setTab(t.id)}>{t.label}</button>)}</div>
       </header>
       <T.C sys={sys} appearance={appearance} />
     </div>

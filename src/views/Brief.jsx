@@ -158,8 +158,9 @@ function Wizard({ brand, onFinish, onSkip }) {
       <ol className="wsteps" aria-label="Progreso">
         {WIZARD_STEPS.map((s, k) => (
           <li key={s.id} className={k === i ? 'cur' : k < i ? 'done' : ''}>
-            <button onClick={() => go(k)} aria-current={k === i ? 'step' : undefined}>
-              <span className="n">{k < i ? <Icon name="check" size={12} stroke={3} /> : k + 1}</span><span className="t">{s.title}</span>
+            <button onClick={() => go(k)} aria-current={k === i ? 'step' : undefined} aria-label={`Paso ${k + 1} de ${WIZARD_STEPS.length}: ${s.title}${k < i ? ' (completado)' : ''}`} title={s.title}>
+              <span className="n">{k < i ? <Icon name="check" size={14} stroke={2.6} /> : k + 1}</span>
+              {k === i && <span className="t"><b>{s.title}</b><span>Paso {k + 1} de {WIZARD_STEPS.length}</span></span>}
             </button>
           </li>
         ))}
