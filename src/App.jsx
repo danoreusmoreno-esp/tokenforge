@@ -129,62 +129,64 @@ export default function App() {
   const common = { sys, brand: draft, appearance: theme };
 
   const current = NAV.find((n) => n.id === view) ?? NAV[0];
+  // Highlights in the tool come from the brand being built: a pale step of its accent.
+  const tint = sys.appearances.light.ramps.accent;
+  const shellVars = { '--c-tint': tint[3], '--c-tint-strong': tint[5], '--c-tint-ink': tint[11] };
 
   return (
     <BrandVars.Provider value={vars}>
-    <div className="app">
-      <aside className={`sidebar ${navOpen ? 'open' : ''}`} aria-label="Principal">
-        <div className="product">
-          <svg className="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1.5" /><rect x="3" y="10" width="13" height="4" rx="1.5" /><rect x="3" y="16" width="8" height="4" rx="1.5" /></svg>
-          <span>Tokenforge</span>
-        </div>
-        <button className="switcher" onClick={() => go('home')} title="Cambiar de marca">
-          <span className="sw-dots">{['accent', 'neutral', 'success', 'critical'].map((f) => <i key={f} style={{ background: draft.colors[f] }} />)}</span>
-          <span className="sw-name">{draft.name}</span>
-          <Icon name="chevDown" size={14} />
+    <div className="app" style={shellVars}>
+      <aside className={`rail ${navOpen ? 'open' : ''}`} aria-label="Principal">
+        <button className="rail-mark" onClick={() => go('home')} aria-label="Tokenforge, inicio" data-tip="Tokenforge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="2" /><rect x="3" y="10" width="13" height="4" rx="2" /><rect x="3" y="16" width="8" height="4" rx="2" /></svg>
         </button>
-        <nav className="nav-list">
+        <nav className="rail-nav">
           {NAV.map((n) => (
-            <button key={n.id} className={view === n.id ? 'on' : ''} aria-current={view === n.id ? 'page' : undefined} onClick={() => go(n.id)}>
-              <Icon name={n.icon} size={16} stroke={1.6} /><span>{n.label}</span>
-              {n.id === 'components' && <span className="count">{draft.components?.length ?? 0}</span>}
+            <button key={n.id} className={view === n.id ? 'on' : ''} aria-current={view === n.id ? 'page' : undefined} aria-label={n.label} data-tip={n.label} onClick={() => go(n.id)}>
+              <Icon name={n.icon} size={20} stroke={1.6} />
+              <span className="rail-label">{n.label}</span>
             </button>
           ))}
         </nav>
-        <div className="side-foot">
-          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}><Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} stroke={1.6} /><span>{theme === 'dark' ? 'Tema claro' : 'Tema oscuro'}</span></button>
-          <a href="https://github.com/danoreusmoreno-esp/tokenforge" target="_blank" rel="noreferrer"><Icon name="github" size={15} /><span>Código fuente</span></a>
+        <div className="rail-foot">
+          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label={theme === 'dark' ? 'Tema claro' : 'Tema oscuro'} data-tip={theme === 'dark' ? 'Tema claro' : 'Tema oscuro'}><Icon name={theme === 'dark' ? 'sun' : 'moon'} size={20} stroke={1.6} /><span className="rail-label">{theme === 'dark' ? 'Tema claro' : 'Tema oscuro'}</span></button>
+          <a href="https://github.com/danoreusmoreno-esp/tokenforge" target="_blank" rel="noreferrer" aria-label="Código fuente" data-tip="Código fuente"><Icon name="github" size={18} /><span className="rail-label">Código fuente</span></a>
         </div>
       </aside>
       {navOpen && <div className="scrim-app" onClick={() => setNavOpen(false)} />}
 
-      <header className="topbar-app">
-        <button className="tb-btn icon only-mobile" onClick={() => setNavOpen(!navOpen)} aria-label="Menú"><Icon name="menu" size={18} /></button>
-        <div className="crumbs-app"><span className="only-desktop">{draft.name}</span><Icon name="chevRight" size={12} className="only-desktop" /><b>{current.label}</b></div>
-        <div className="top-actions">
-          <button className="tb-btn" onClick={() => setDraft(randomize(draft))} title="Generar una marca aleatoria"><Icon name="dice" size={16} stroke={1.6} /><span className="only-desktop">Aleatoria</span></button>
-          <button className="tb-btn only-mobile icon" onClick={() => setInsOpen(!insOpen)} aria-label="Ajustes de marca"><Icon name="settings" size={16} /></button>
-          {view !== 'code' && <button className="tb-btn primary" onClick={() => go('code')}><Icon name="download" size={15} stroke={1.8} /><span>Exportar</span></button>}
-        </div>
-      </header>
+      <div className="workspace">
+        <header className="topbar-app">
+          <button className="pill icon only-mobile" onClick={() => setNavOpen(!navOpen)} aria-label="Menú"><Icon name="menu" size={18} /></button>
+          <button className="brand-pill" onClick={() => go('home')} title="Tus marcas">
+            <span className="sw-dots">{['accent', 'neutral', 'success', 'critical'].map((f) => <i key={f} style={{ background: draft.colors[f] }} />)}</span>
+            <span className="sw-name">{draft.name}</span>
+            <span className="crumb-sep only-desktop">/</span>
+            <span className="crumb-cur only-desktop">{current.label}</span>
+          </button>
+          <div className="top-actions">
+            <button className="pill" onClick={() => setDraft(randomize(draft))} title="Generar una marca aleatoria"><Icon name="dice" size={16} stroke={1.6} /><span className="only-desktop">Aleatoria</span></button>
+            <button className="pill only-tablet icon" onClick={() => setInsOpen(!insOpen)} aria-label="Ajustes de marca"><Icon name="settings" size={16} /></button>
+            {view !== 'code' && <button className="pill dark" onClick={() => go('code')}><Icon name="download" size={16} stroke={1.8} /><span>Exportar</span></button>}
+          </div>
+        </header>
 
-      <div className="sheet">
-      <main className="main ds" data-theme={theme}>
-        {view === 'home' && <Home {...common} brands={brands} activeId={draft.id} go={go} onNew={createNew} onSelect={switchTo} onDelete={remove} onDuplicate={duplicate} onStarter={(s) => { setDraft(applyStarter(draft, s)); setView('board'); }} />}
-        {view === 'brief' && <Brief {...common} setBrand={setDraft} go={go} />}
-        {view === 'foundations' && <Foundations {...common} tab={tab} setTab={setTab} />}
-        {view === 'components' && (
-          <Components {...common} detail={detail} setDetail={setDetail}
-            setComponents={(list) => setDraft({ ...draft, components: list })}
-            setComponentToken={(id, k, val) => setDraft({ ...draft, componentTokens: { ...draft.componentTokens, [id]: { ...(draft.componentTokens?.[id] ?? {}), [k]: val } } })} />
-        )}
-        {view === 'board' && <Board {...common} onOpen={(id) => { setDetail(id); setView('components'); }} />}
-        {view === 'code' && <Code {...common} />}
-      </main>
+        <main className="main ds" data-theme={theme}>
+          {view === 'home' && <Home {...common} brands={brands} activeId={draft.id} go={go} onNew={createNew} onSelect={switchTo} onDelete={remove} onDuplicate={duplicate} onStarter={(s) => { setDraft(applyStarter(draft, s)); setView('board'); }} />}
+          {view === 'brief' && <Brief {...common} setBrand={setDraft} go={go} />}
+          {view === 'foundations' && <Foundations {...common} tab={tab} setTab={setTab} />}
+          {view === 'components' && (
+            <Components {...common} detail={detail} setDetail={setDetail}
+              setComponents={(list) => setDraft({ ...draft, components: list })}
+              setComponentToken={(id, k, val) => setDraft({ ...draft, componentTokens: { ...draft.componentTokens, [id]: { ...(draft.componentTokens?.[id] ?? {}), [k]: val } } })} />
+          )}
+          {view === 'board' && <Board {...common} onOpen={(id) => { setDetail(id); setView('components'); }} />}
+          {view === 'code' && <Code {...common} />}
+        </main>
+      </div>
 
       <div className={`ins-wrap ${insOpen ? 'open' : ''}`}>
         <Inspector brand={draft} update={setDraft} sys={sys} dirty={dirty} onSave={save} onRandom={() => setDraft(randomize(draft))} />
-      </div>
       </div>
     </div>
     </BrandVars.Provider>
