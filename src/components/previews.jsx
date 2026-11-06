@@ -94,6 +94,68 @@ function Chart() {
   );
 }
 
+
+function Rating({ v }) {
+  const [val, setVal] = useState(4);
+  const [hover, setHover] = useState(0);
+  const shown = hover || val;
+  return (
+    <div className="rating" role={v === 'display' ? 'img' : 'radiogroup'} aria-label={`Rating ${val} of 5`} onMouseLeave={() => setHover(0)}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <button key={i} className={i <= shown ? 'on' : ''} aria-label={`${i} star${i > 1 ? 's' : ''}`} disabled={v === 'display'}
+          onMouseEnter={() => v !== 'display' && setHover(i)} onClick={() => setVal(i)}>
+          <Icon name="star" size={20} />
+        </button>
+      ))}
+      <span className="t-small muted">{val}.0</span>
+    </div>
+  );
+}
+
+function TokenField({ st }) {
+  const [tokens, setTokens] = useState(['Maya Díaz', 'design@acme.com']);
+  const [txt, setTxt] = useState('');
+  return (
+    <div className={`input tokens ${st === 'focus' ? 'focus' : ''}`} style={{ maxWidth: 340 }}>
+      {tokens.map((t) => <span key={t} className="chip static">{t}<button aria-label={`Remove ${t}`} onClick={() => setTokens(tokens.filter((x) => x !== t))}><Icon name="x" size={11} /></button></span>)}
+      <input value={txt} placeholder="Add people…" aria-label="Add token" onChange={(e) => setTxt(e.target.value)}
+        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ',') && txt.trim()) { e.preventDefault(); setTokens([...tokens, txt.trim()]); setTxt(''); } }} />
+    </div>
+  );
+}
+
+function NavBar() {
+  const [i, setI] = useState(0);
+  const items = [['home', 'Home'], ['search', 'Search'], ['bell', 'Inbox', 3], ['user', 'Profile']];
+  return (
+    <nav className="navbar" aria-label="Bottom navigation">
+      {items.map(([ic, t, b], k) => (
+        <button key={t} className={k === i ? 'on' : ''} onClick={() => setI(k)}>
+          <span className="pill"><Icon name={ic} size={20} />{b && <span className="badge solid sm dot-badge">{b}</span>}</span>{t}
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+function Rail() {
+  const [i, setI] = useState(1);
+  const items = [['home', 'Home'], ['palette', 'Tokens'], ['grid', 'Library'], ['settings', 'Settings']];
+  return (
+    <nav className="rail-c" aria-label="Navigation rail">
+      <button className="btn fab icon" aria-label="Create" style={{ '--fab-size': '48px', marginBottom: 8 }}><Icon name="edit" size={18} /></button>
+      {items.map(([ic, t], k) => (
+        <button key={t} className={k === i ? 'on' : ''} onClick={() => setI(k)}><span className="pill"><Icon name={ic} size={20} /></span>{t}</button>
+      ))}
+    </nav>
+  );
+}
+
+function PageControl() {
+  const [i, setI] = useState(1);
+  return <div className="pagectl" role="tablist" aria-label="Pages">{[0, 1, 2, 3, 4].map((k) => <button key={k} role="tab" aria-selected={k === i} aria-label={`Page ${k + 1}`} className={k === i ? 'on' : ''} onClick={() => setI(k)} />)}</div>;
+}
+
 /** Renderers keyed by catalogue id. Each receives { v, s, st }. */
 export const PREVIEWS = {
   button: ({ v, s, st }) => (v ? <Btn v={v} s={s} st={st} /> : (
@@ -261,6 +323,37 @@ export const PREVIEWS = {
   divider: ({ v }) => v === 'vertical'
     ? <div className="row" style={{ height: 24 }}><span className="t-small">Edit</span><span className="vdiv" /><span className="t-small">Share</span><span className="vdiv" /><span className="t-small">Export</span></div>
     : <div className="col" style={{ width: '100%' }}><span className="t-small">Above</span><hr className="div" /><span className="t-small">Below</span></div>,
+  toolbar: ({ v }) => (
+    <div className={`toolbar ${v === 'floating' ? 'floating' : ''}`} role="toolbar" aria-label="Formatting">
+      {['edit', 'copy', 'link'].map((n, i) => <button key={n} className={`btn ghost icon sm ${i === 0 ? 'on' : ''}`} aria-label={n}><Icon name={n} size={16} /></button>)}
+      <span className="vdiv" />
+      {['download', 'trash'].map((n) => <button key={n} className="btn ghost icon sm" aria-label={n}><Icon name={n} size={16} /></button>)}
+      <span className="vdiv" />
+      <button className="btn primary sm">Publish</button>
+    </div>
+  ),
+  'tag-input': ({ st }) => <TokenField st={st} />,
+  rating: ({ v }) => <Rating v={v} />,
+  'page-control': () => <PageControl />,
+  'nav-rail': () => <Rail />,
+  'nav-bar': () => <NavBar />,
+  'save-bar': ({ st }) => (
+    <div className="savebar" role="region" aria-label="Unsaved changes">
+      <span className="row" style={{ gap: 8 }}><Icon name="alert" size={16} />Unsaved changes</span>
+      <div className="row" style={{ gap: 8 }}><button className="btn outline sm on-dark">Discard</button><button className="btn primary sm">{st === 'saving' ? <><Spinner size={12} />Saving</> : 'Save'}</button></div>
+    </div>
+  ),
+  'action-sheet': () => (
+    <div className="scrim" style={{ width: '100%', alignItems: 'end', padding: 12 }}>
+      <div className="col" style={{ width: '100%', maxWidth: 320, gap: 8 }}>
+        <div className="asheet">
+          <div className="asheet-title">Share “Acme tokens”</div>
+          <button>Copy link</button><button>Export as JSON</button><button className="danger">Delete brand</button>
+        </div>
+        <div className="asheet"><button style={{ fontWeight: 600 }}>Cancel</button></div>
+      </div>
+    </div>
+  ),
   kbd: () => <div className="row t-small">Search <kbd>⌘</kbd><kbd>K</kbd> · Publish <kbd>⌘</kbd><kbd>⏎</kbd></div>,
 };
 

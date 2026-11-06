@@ -36,6 +36,8 @@ export function saveActive(id) {
   try { localStorage.setItem(ACTIVE, id); } catch { /* ignore */ }
 }
 
+const SANS = FONTS.filter((f) => f.category === 'sans-serif');
+const TEXT_FONTS = FONTS.filter((f) => f.category !== 'monospace');
 const pick = (o) => { const k = Object.keys(o); return k[Math.floor(Math.random() * k.length)]; };
 const NAMES = ['Nova', 'Atlas', 'Ember', 'Fjord', 'Lumen', 'Orbit', 'Quill', 'Sable', 'Tide', 'Verde', 'Zinc', 'Harbor', 'Kite', 'Mesa'];
 
@@ -46,8 +48,8 @@ export function randomize(brand) {
     ...brand,
     name: brand.name,
     colors: { ...brand.colors, accent, neutral: tintedNeutral(accent, Math.random() * 0.02) },
-    font: FONTS[Math.floor(Math.random() * 8)].name,
-    headingFont: FONTS[Math.floor(Math.random() * (FONTS.length - 1))].name,
+    font: SANS[Math.floor(Math.random() * SANS.length)].name,
+    headingFont: TEXT_FONTS[Math.floor(Math.random() * TEXT_FONTS.length)].name,
     density: pick(DENSITIES),
     radius: { boxes: radiusKey === 'pill' ? 'large' : radiusKey, fields: pick(RADIUS_PRESETS), selectors: pick(RADIUS_PRESETS) },
     shadow: pick(SHADOW_PRESETS),
@@ -60,14 +62,17 @@ export function randomName() {
   return NAMES[Math.floor(Math.random() * NAMES.length)];
 }
 
-/** Starting points inspired by the general character of well-known systems (values are our own). */
+/** Starting points that echo the character of the reference systems. Values are our own approximations. */
 export const STARTERS = [
-  { id: 'saas', name: 'Product SaaS', note: 'Clean, neutral, compact — app-first', brand: { colors: { accent: '#4f46e5', neutral: '#64748b' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'rounded', fields: 'soft', selectors: 'subtle' }, shadow: 'subtle', spacing: 'quiet', motion: 'snappy' } },
-  { id: 'enterprise', name: 'Enterprise', note: 'Square corners, dense data, strong contrast', brand: { colors: { accent: '#0f62fe', neutral: '#6f6f6f' }, font: 'IBM Plex Sans', headingFont: 'IBM Plex Sans', density: 'compact', radius: { boxes: 'none', fields: 'none', selectors: 'none' }, shadow: 'none', spacing: 'quiet', motion: 'standard' } },
-  { id: 'expressive', name: 'Expressive', note: 'Rounded, tonal, friendly motion', brand: { colors: { accent: '#6750a4', neutral: '#79747e' }, font: 'DM Sans', headingFont: 'DM Sans', density: 'comfortable', radius: { boxes: 'large', fields: 'pill', selectors: 'pill' }, shadow: 'medium', spacing: 'roomy', motion: 'expressive' } },
-  { id: 'commerce', name: 'Commerce', note: 'Warm, approachable, merchant-style admin', brand: { colors: { accent: '#008060', neutral: '#6d7175' }, font: 'Plus Jakarta Sans', headingFont: 'Plus Jakarta Sans', density: 'default', radius: { boxes: 'rounded', fields: 'soft', selectors: 'soft' }, shadow: 'medium', spacing: 'quiet', motion: 'standard' } },
-  { id: 'editorial', name: 'Editorial', note: 'Serif headings, generous rhythm', brand: { colors: { accent: '#b4441e', neutral: '#6b655e' }, font: 'Source Serif 4', headingFont: 'Fraunces', density: 'spacious', radius: { boxes: 'subtle', fields: 'subtle', selectors: 'subtle' }, shadow: 'none', spacing: 'roomy', motion: 'standard' } },
-  { id: 'dev', name: 'Developer tool', note: 'Mono accents, crisp borders', brand: { colors: { accent: '#1f883d', neutral: '#656d76' }, font: 'Inter', headingFont: 'Space Grotesk', monoFont: 'JetBrains Mono', density: 'compact', radius: { boxes: 'soft', fields: 'soft', selectors: 'subtle' }, shadow: 'subtle', spacing: 'tight', motion: 'snappy' } },
+  { id: 'material', name: 'Material-style', system: 'm3', note: 'Tonal, rounded, expressive motion', brand: { colors: { accent: '#6750a4', neutral: '#79747e' }, font: 'Roboto Flex', headingFont: 'Roboto Flex', density: 'default', radius: { boxes: 'large', fields: 'pill', selectors: 'soft' }, shadow: 'subtle', spacing: 'quiet', motion: 'expressive' } },
+  { id: 'apple', name: 'Apple-style', system: 'hig', note: 'System blue, grouped surfaces, soft corners', brand: { colors: { accent: '#007aff', neutral: '#8e8e93' }, font: 'Inter', headingFont: 'Inter', density: 'comfortable', radius: { boxes: 'large', fields: 'rounded', selectors: 'pill' }, shadow: 'subtle', spacing: 'roomy', motion: 'standard' } },
+  { id: 'polaris', name: 'Polaris-style', system: 'polaris', note: 'Merchant admin, calm green, compact cards', brand: { colors: { accent: '#008060', neutral: '#6d7175' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'rounded', fields: 'soft', selectors: 'subtle' }, shadow: 'medium', spacing: 'quiet', motion: 'snappy' } },
+  { id: 'carbon', name: 'Carbon-style', system: 'carbon', note: 'Square corners, dense data, strong contrast', brand: { colors: { accent: '#0f62fe', neutral: '#6f6f6f' }, font: 'IBM Plex Sans', headingFont: 'IBM Plex Sans', monoFont: 'IBM Plex Mono', density: 'compact', radius: { boxes: 'none', fields: 'none', selectors: 'none' }, shadow: 'none', spacing: 'quiet', motion: 'standard' } },
+  { id: 'fluent', name: 'Fluent-style', system: 'fluent', note: 'Productivity blue, soft depth, small radius', brand: { colors: { accent: '#0f6cbd', neutral: '#707070' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'soft', fields: 'subtle', selectors: 'subtle' }, shadow: 'medium', spacing: 'quiet', motion: 'standard' } },
+  { id: 'atlassian', name: 'Atlassian-style', system: 'atlassian', note: 'Collaboration blue, lozenges, light depth', brand: { colors: { accent: '#0c66e4', neutral: '#626f86' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'subtle', fields: 'subtle', selectors: 'subtle' }, shadow: 'subtle', spacing: 'quiet', motion: 'snappy' } },
+  { id: 'primer', name: 'Primer-style', system: 'primer', note: 'Developer tool, crisp borders, green action', brand: { colors: { accent: '#1f883d', neutral: '#656d76' }, font: 'Inter', headingFont: 'Inter', monoFont: 'JetBrains Mono', density: 'compact', radius: { boxes: 'soft', fields: 'soft', selectors: 'subtle' }, shadow: 'subtle', spacing: 'tight', motion: 'snappy' } },
+  { id: 'spectrum', name: 'Spectrum-style', system: 'spectrum', note: 'Creative tools, rounded, generous targets', brand: { colors: { accent: '#3b63fb', neutral: '#6d6d6d' }, font: 'Source Sans 3', headingFont: 'Source Sans 3', density: 'default', radius: { boxes: 'rounded', fields: 'soft', selectors: 'soft' }, shadow: 'subtle', spacing: 'quiet', motion: 'standard' } },
+  { id: 'shadcn', name: 'shadcn-style', system: 'radix', note: 'Neutral black, thin borders, minimal', brand: { colors: { accent: '#18181b', neutral: '#71717a' }, font: 'Geist', headingFont: 'Geist', monoFont: 'Geist Mono', density: 'snug', radius: { boxes: 'rounded', fields: 'soft', selectors: 'soft' }, shadow: 'subtle', spacing: 'quiet', motion: 'snappy' } },
 ];
 
 export function applyStarter(brand, starter) {

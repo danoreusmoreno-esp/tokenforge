@@ -249,3 +249,50 @@
 .ds .cal .rng { background: var(--accent-subtle); border-radius: 0; }
 .ds .drop { border: 1.5px dashed var(--border-strong); border-radius: var(--radius-boxes); padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--bg-subtle); font-size: var(--text-small-size); }
 .ds .drop.drag { border-color: var(--accent-solid); background: var(--accent-subtle); }
+
+/* Toolbar */
+.ds .toolbar { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--border-subtle); border-radius: var(--radius-boxes); background: var(--bg-surface); height: var(--toolbar-height, 44px); }
+.ds .toolbar.floating { box-shadow: var(--shadow-lg); border-radius: 999px; padding: 4px 8px; }
+.ds .toolbar .vdiv { height: 20px; align-self: center; }
+.ds .toolbar .btn.on { background: var(--accent-subtle); color: var(--accent-text); }
+/* Token field */
+.ds .input.tokens { height: auto; min-height: var(--text-field-height-md, 40px); flex-wrap: wrap; padding: 5px 8px; gap: 6px; }
+.ds .input.tokens .chip { height: 26px; padding: 0 4px 0 8px; }
+.ds .input.tokens .chip button { all: unset; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; }
+.ds .input.tokens .chip button:hover { background: var(--bg-hover); }
+.ds .input.tokens input { min-width: 90px; }
+/* Rating */
+.ds .rating { display: inline-flex; align-items: center; gap: 2px; }
+.ds .rating button { all: unset; cursor: pointer; color: var(--border-strong); display: grid; line-height: 0; border-radius: 4px; }
+.ds .rating button svg { width: var(--rating-size, 20px); height: var(--rating-size, 20px); }
+.ds .rating button.on { color: var(--warning-solid); }
+.ds .rating button.on svg { fill: currentColor; }
+.ds .rating button:disabled { cursor: default; }
+.ds .rating .t-small { margin-left: 6px; }
+/* Page control */
+.ds .pagectl { display: inline-flex; gap: 8px; padding: 8px 12px; border-radius: 99px; background: var(--bg-muted); }
+.ds .pagectl button { all: unset; width: var(--page-control-dot-size, 8px); height: var(--page-control-dot-size, 8px); border-radius: 99px; background: var(--border-strong); cursor: pointer; transition: width var(--t), background var(--t); }
+.ds .pagectl button.on { background: var(--text-primary); width: calc(var(--page-control-dot-size, 8px) * 2.5); }
+/* Bottom navigation + rail */
+.ds .navbar { display: flex; width: 100%; max-width: 360px; height: var(--nav-bar-height, 64px); background: var(--bg-subtle); border-top: 1px solid var(--border-subtle); border-radius: var(--radius-boxes); }
+.ds .navbar button, .ds .rail-c > button:not(.btn) { all: unset; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; font-weight: 500; color: var(--text-secondary); cursor: pointer; }
+.ds .navbar .pill, .ds .rail-c .pill { position: relative; display: grid; place-items: center; width: 52px; height: 28px; border-radius: 99px; transition: background var(--t); }
+.ds .navbar button.on, .ds .rail-c > button.on { color: var(--text-primary); font-weight: 650; }
+.ds .navbar button.on .pill, .ds .rail-c > button.on .pill { background: var(--accent-subtle); color: var(--accent-text); }
+.ds .dot-badge { position: absolute; top: -2px; right: 6px; height: 16px; min-width: 16px; padding: 0 4px; justify-content: center; font-size: 10px; }
+.ds .rail-c { display: flex; flex-direction: column; align-items: center; gap: 10px; width: var(--nav-rail-width, 80px); padding: 12px 0; background: var(--bg-subtle); border-radius: var(--radius-boxes); }
+.ds .rail-c > button:not(.btn) { flex: none; width: 100%; }
+/* Contextual save bar */
+.ds .savebar { width: 100%; max-width: 520px; height: var(--save-bar-height, 56px); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px 0 16px;
+  background: var(--color-neutral-12); color: var(--color-neutral-1); border-radius: var(--radius-boxes); font-size: var(--text-small-size); font-weight: 600; box-shadow: var(--shadow-md); }
+.ds .savebar .btn.on-dark { background: transparent; color: var(--color-neutral-1); border-color: color-mix(in srgb, var(--color-neutral-1) 35%, transparent); }
+/* Action sheet */
+.ds .asheet { background: var(--bg-surface); border-radius: calc(var(--radius-boxes) + 4px); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
+.ds .asheet-title { padding: 12px; text-align: center; font-size: var(--text-caption-size); color: var(--text-tertiary); border-bottom: 1px solid var(--border-subtle); }
+.ds .asheet button { all: unset; text-align: center; padding: 14px; color: var(--accent-text); font-size: var(--text-body-size); cursor: pointer; border-bottom: 1px solid var(--border-subtle); }
+.ds .asheet button:last-child { border-bottom: 0; }
+.ds .asheet button:hover { background: var(--bg-hover); }
+.ds .asheet button.danger { color: var(--critical-text); }
+.ds .savebar { height: auto; min-height: var(--save-bar-height, 56px); padding-block: 8px; flex-wrap: nowrap; }
+.ds .savebar .row { flex-wrap: nowrap; }
+.ds .savebar > .row:first-child { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }

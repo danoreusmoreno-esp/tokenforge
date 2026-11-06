@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { STARTERS } from '../store.js';
 import { Icon } from '../components/Icons.jsx';
-import { COMPONENTS } from '../engine/catalog.js';
+import { COMPONENTS, SYSTEMS, FEATURED, systemLabel } from '../engine/catalog.js';
 import { tokenCount } from '../engine/tokens.js';
 
 export default function Home({ sys, brands, activeId, go, onStarter, onNew, onSelect, onDelete, onDuplicate }) {
@@ -44,13 +44,27 @@ export default function Home({ sys, brands, activeId, go, onStarter, onNew, onSe
       </section>
 
       <section className="fd-sec">
+        <h2 className="t-h3">Reference systems</h2>
+        <p className="muted t-small">The component catalogue maps to these {FEATURED.length} systems. Each component page shows the name every system gives it.</p>
+        <div className="ref-grid">
+          {FEATURED.map((k) => (
+            <a key={k} className="card ref-card interactive" href={SYSTEMS[k].url} target="_blank" rel="noreferrer">
+              <div className="row"><b className="t-small">{SYSTEMS[k].name}</b><span className="badge accent sm">{COMPONENTS.filter((c) => c.refs.includes(k)).length}</span></div>
+              <span className="t-caption faint">{SYSTEMS[k].org}</span>
+              <span className="t-small muted">{SYSTEMS[k].note}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section className="fd-sec">
         <h2 className="t-h3">Start from a direction</h2>
-        <p className="muted t-small">Starting points that echo the character of well-known systems. Applies to the current brand; tweak anything afterwards.</p>
+        <p className="muted t-small">Starting points that echo the character of each reference system, with our own values. Applies to the current brand; tweak anything afterwards.</p>
         <div className="starter-grid">
           {STARTERS.map((s) => (
             <button key={s.id} className="card starter interactive" onClick={() => onStarter(s)}>
               <span className="starter-sw" style={{ background: s.brand.colors.accent, borderRadius: { none: 0, subtle: 4, soft: 8, rounded: 12, large: 18, pill: 999 }[s.brand.radius.fields] }} />
-              <div><b className="t-small" style={{ fontFamily: `'${s.brand.headingFont}'` }}>{s.name}</b><div className="help">{s.note}</div></div>
+              <div><b className="t-small">{s.name}</b><div className="help">{s.note}</div><div className="t-caption faint">Inspired by {systemLabel(s.system)}</div></div>
             </button>
           ))}
         </div>

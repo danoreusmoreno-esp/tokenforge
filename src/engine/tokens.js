@@ -11,10 +11,15 @@ export const FONTS = [
   { name: 'Outfit', category: 'sans-serif' },
   { name: 'Sora', category: 'sans-serif' },
   { name: 'Plus Jakarta Sans', category: 'sans-serif' },
+  { name: 'Roboto Flex', category: 'sans-serif' },
+  { name: 'Geist', category: 'sans-serif' },
+  { name: 'Source Sans 3', category: 'sans-serif' },
   { name: 'Fraunces', category: 'serif' },
   { name: 'Playfair Display', category: 'serif' },
   { name: 'Source Serif 4', category: 'serif' },
   { name: 'JetBrains Mono', category: 'monospace' },
+  { name: 'IBM Plex Mono', category: 'monospace' },
+  { name: 'Geist Mono', category: 'monospace' },
 ];
 
 export const DENSITIES = {

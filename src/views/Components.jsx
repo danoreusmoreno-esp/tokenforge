@@ -1,18 +1,39 @@
 import { useState } from 'react';
-import { COMPONENTS, CATEGORIES, SYSTEMS, CORE_IDS } from '../engine/catalog.js';
+import { COMPONENTS, CATEGORIES, SYSTEMS, FEATURED, CORE_IDS, systemLabel } from '../engine/catalog.js';
 import { componentTokens } from '../engine/exporters.js';
 import { Preview } from '../components/previews.jsx';
 import { Icon } from '../components/Icons.jsx';
 
-function Refs({ refs }) {
-  return <div className="refs">{refs.map((r) => <span key={r} className="ref">{SYSTEMS[r]}</span>)}</div>;
+const TOTAL = FEATURED.length;
+
+function Coverage({ refs }) {
+  return (
+    <span className="coverage" title={refs.map(systemLabel).join(', ')} aria-label={`In ${refs.length} of ${TOTAL} systems`}>
+      {FEATURED.map((k) => <i key={k} className={refs.includes(k) ? 'on' : ''} />)}
+    </span>
+  );
+}
+
+function NamesTable({ c }) {
+  return (
+    <div className="names">
+      {FEATURED.map((k) => (
+        <a key={k} className={`name-row ${c.names[k] ? '' : 'none'}`} href={SYSTEMS[k].url} target="_blank" rel="noreferrer">
+          <span className="sys"><b>{systemLabel(k)}</b><span className="t-caption faint">{SYSTEMS[k].org}</span></span>
+          <span className="mono t-caption">{c.names[k] ?? 'No direct equivalent'}</span>
+        </a>
+      ))}
+    </div>
+  );
 }
 
 function Catalogue({ brand, setComponents, open }) {
   const [filter, setFilter] = useState('all');
+  const [sys, setSys] = useState('all');
   const enabled = new Set(brand.components);
   const toggle = (id) => setComponents(enabled.has(id) ? brand.components.filter((x) => x !== id) : [...brand.components, id]);
   const cats = CATEGORIES.filter((c) => filter === 'all' || c.id === filter);
+  const visible = (c) => sys === 'all' || c.refs.includes(sys);
   return (
     <div className="page">
       <header className="page-hd">
@@ -20,7 +41,7 @@ function Catalogue({ brand, setComponents, open }) {
           <span className="eyebrow">Step 2 · Components</span>
           <h1 className="t-h2">Component library</h1>
           <p className="muted t-small" style={{ maxWidth: 640, marginTop: 6 }}>
-            {COMPONENTS.length} components drawn from the shared inventory of Material 3, Carbon, Polaris, Atlassian, Primer, Fluent 2, Spectrum and Radix. Pick the ones your system needs; each is painted with your tokens and ships with its own component tokens.
+            {COMPONENTS.length} components drawn from {TOTAL} reference design systems. Each one shows what Material 3, Apple HIG, Polaris, Carbon, Fluent 2 and the rest call it. Pick the ones your system needs; each is painted with your tokens and ships with its own component tokens.
           </p>
         </div>
         <div className="row">
@@ -34,17 +55,22 @@ function Catalogue({ brand, setComponents, open }) {
         <button className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')}>All</button>
         {CATEGORIES.map((c) => <button key={c.id} className={filter === c.id ? 'on' : ''} onClick={() => setFilter(c.id)}>{c.name}</button>)}
       </div>
-      {cats.map((cat) => (
+      <div className="sys-filter" role="group" aria-label="Filter by design system">
+        <span className="t-caption faint">Seen in</span>
+        <button className={sys === 'all' ? 'on' : ''} onClick={() => setSys('all')}>Any system</button>
+        {FEATURED.map((k) => <button key={k} className={sys === k ? 'on' : ''} onClick={() => setSys(k)}>{systemLabel(k)} <span className="faint">{COMPONENTS.filter((c) => c.refs.includes(k)).length}</span></button>)}
+      </div>
+      {cats.filter((cat) => COMPONENTS.some((c) => c.cat === cat.id && visible(c))).map((cat) => (
         <section key={cat.id} className="fd-sec">
           <h2 className="t-h4">{cat.name}</h2>
           <div className="cat-grid">
-            {COMPONENTS.filter((c) => c.cat === cat.id).map((c) => (
+            {COMPONENTS.filter((c) => c.cat === cat.id && visible(c)).map((c) => (
               <div key={c.id} className={`cat-card ${enabled.has(c.id) ? 'in' : ''}`}>
                 <div className="cat-prev" onClick={() => open(c.id)}><div className="cat-prev-inner"><Preview id={c.id} /></div></div>
                 <div className="cat-meta">
                   <div style={{ minWidth: 0 }}>
                     <button className="cat-name" onClick={() => open(c.id)}>{c.name}</button>
-                    <div className="t-caption faint">{c.refs.length}/8 reference systems{c.core ? ' · core' : ''}</div>
+                    <div className="t-caption faint row" style={{ gap: 6 }}><Coverage refs={c.refs} />{sys !== 'all' && c.names[sys] ? <span className="mono">{c.names[sys]}</span> : <span>{c.refs.length}/{TOTAL}{c.core ? ' · core' : ''}</span>}</div>
                   </div>
                   <label className="check" title={enabled.has(c.id) ? 'Remove from system' : 'Add to system'}>
                     <span className={`switch ${enabled.has(c.id) ? 'on' : ''}`} role="switch" aria-checked={enabled.has(c.id)} aria-label={`Include ${c.name}`} tabIndex={0}
@@ -76,7 +102,7 @@ function Detail({ id, sys, brand, setComponents, setComponentToken, back }) {
           <span className="eyebrow">{CATEGORIES.find((k) => k.id === c.cat).name}</span>
           <h1 className="t-h2">{c.name}</h1>
           <p className="muted" style={{ marginTop: 6, maxWidth: 620 }}>{c.desc}</p>
-          <div style={{ marginTop: 10 }}><span className="t-caption faint">Also in: </span><Refs refs={c.refs} /></div>
+          <div style={{ marginTop: 10 }} className="row"><Coverage refs={c.refs} /><span className="t-caption faint">In {c.refs.length} of {TOTAL} reference systems</span></div>
         </div>
         <button className={`btn ${enabled ? 'outline' : 'primary'}`} onClick={() => setComponents(enabled ? brand.components.filter((x) => x !== id) : [...brand.components, id])}>
           <Icon name={enabled ? 'check' : 'plus'} size={14} />{enabled ? 'In your system' : 'Add to system'}
@@ -114,6 +140,12 @@ function Detail({ id, sys, brand, setComponents, setComponentToken, back }) {
           </div>
         </section>
       )}
+
+      <section className="fd-sec">
+        <h2 className="t-h4">In the reference systems</h2>
+        <p className="muted t-small" style={{ marginBottom: 10 }}>What each system calls it. Open a row to read that system’s guidance.</p>
+        <NamesTable c={c} />
+      </section>
 
       <section className="fd-sec two-col">
         <div>

@@ -189,3 +189,23 @@ button { font-family: inherit; }
   .code-tabs { flex-direction: row; overflow-x: auto; }
   .home .hero h1 { font-size: calc(var(--text-display-size) * .7); line-height: 1.1; }
 }
+
+.sys-filter { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: -4px 0 8px; }
+.sys-filter button { all: unset; font-size: 12px; padding: 5px 10px; border-radius: 99px; border: 1px solid var(--border-subtle); color: var(--text-secondary); cursor: pointer; }
+.sys-filter button:hover { border-color: var(--border-default); }
+.sys-filter button.on { background: var(--text-primary); color: var(--bg-canvas); border-color: var(--text-primary); }
+.sys-filter button.on .faint { color: inherit; opacity: .6; }
+.sys-filter button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.coverage { display: inline-flex; gap: 2px; }
+.coverage i { width: 5px; height: 10px; border-radius: 2px; background: var(--border-subtle); }
+.coverage i.on { background: var(--accent-solid); }
+.names { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px; }
+.ds a.name-row { all: unset; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border-subtle); border-radius: var(--radius-fields); background: var(--bg-surface); cursor: pointer; min-width: 0; }
+.ds a.name-row:hover { border-color: var(--border-default); }
+.ds a.name-row:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.ds a.name-row .sys { display: flex; flex-direction: column; font-size: var(--text-small-size); flex: none; }
+.ds a.name-row .mono { text-align: right; color: var(--text-primary); }
+.ds a.name-row.none .mono { color: var(--text-disabled); font-family: var(--font-body); }
+.ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.ds a.ref-card { text-decoration: none; color: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 6px; }
+.ref-card .row { justify-content: space-between; }
