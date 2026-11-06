@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon, Spinner } from './Icons.jsx';
+import { Live } from './Live.jsx';
 
 const BADGE_ES = { neutral: 'Neutro', accent: 'Acento', success: 'Éxito', warning: 'Aviso', critical: 'Crítico', info: 'Info' };
 const statusIcon = { info: 'info', success: 'check2', warning: 'alert', critical: 'alert' };
@@ -360,5 +361,5 @@ export const PREVIEWS = {
 
 export function Preview({ id, ...props }) {
   const R = PREVIEWS[id];
-  return R ? <R {...props} /> : <span className="faint">Sin vista previa</span>;
+  return <Live className="preview">{R ? <R {...props} /> : <span className="faint">Sin vista previa</span>}</Live>;
 }

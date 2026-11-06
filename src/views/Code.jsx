@@ -29,7 +29,6 @@ export default function Code({ sys, brand }) {
     <div className="page">
       <header className="page-hd">
         <div>
-          <span className="eyebrow">Paso 5 · Entregar</span>
           <h1 className="t-h2">Exportar</h1>
           <p className="muted t-small" style={{ marginTop: 6, maxWidth: 620 }}>Un mismo origen, muchos destinos: CSS para la web, JSON W3C para pipelines (Style Dictionary), sets de Tokens Studio para las Variables de Figma, Tailwind, un BRIEF.md con tus objetivos y principios, y un AGENTS.md para que los agentes de IA usen tus tokens reales. Los archivos de código van en inglés, como es habitual.</p>
         </div>

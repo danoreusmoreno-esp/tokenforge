@@ -1,5 +1,6 @@
 import { Preview } from '../components/previews.jsx';
 import { COMPONENTS } from '../engine/catalog.js';
+import { Live } from '../components/Live.jsx';
 
 /** A wall of live components plus foundation specimens, all painted with the brand. */
 export default function Board({ sys, appearance, onOpen }) {
@@ -7,7 +8,7 @@ export default function Board({ sys, appearance, onOpen }) {
   const enabled = new Set(sys.brand.components ?? []);
   const cards = COMPONENTS.filter((c) => enabled.has(c.id));
   return (
-    <div className="board">
+    <Live className="board">
       <div className="card bcard span2">
         <div className="ramp">{ramp.accent.map((h, i) => <span key={i} style={{ background: h }} title={`accent-${i + 1} ${h}`} />)}</div>
         <div className="ramp small">{ramp.neutral.map((h, i) => <span key={i} style={{ background: h }} title={`neutral-${i + 1} ${h}`} />)}</div>
@@ -29,6 +30,6 @@ export default function Board({ sys, appearance, onOpen }) {
           <div className="bcard-body"><Preview id={c.id} /></div>
         </div>
       ))}
-    </div>
+    </Live>
   );
 }

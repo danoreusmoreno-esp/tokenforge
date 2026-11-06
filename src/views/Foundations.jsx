@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FAMILIES } from '../engine/tokens.js';
 import { wcag, apca } from '../engine/color.js';
+import { Live } from '../components/Live.jsx';
 
 const VP = { desktop: 'Escritorio', tablet: 'Tablet', mobile: 'Móvil' };
 const AUDIT_ES = {
@@ -62,7 +63,7 @@ function Typography({ sys }) {
         <div className="seg">{['desktop', 'tablet', 'mobile'].map((v) => <button key={v} className={v === vp ? 'on' : ''} onClick={() => setVp(v)}>{VP[v]}</button>)}</div>
       </div>
       <p className="muted t-small">Los títulos se reducen en pantallas pequeñas; el texto mantiene su tamaño.</p>
-      <div className="type-list">
+      <Live className="type-list stage-well">
         {Object.entries(scale).reverse().map(([name, t]) => (
           <div key={name} className="type-row">
             <div className="type-meta"><b className="mono t-caption">{name}</b><span className="mono t-caption faint">{t.size}/{t.lineHeightPx} · {t.weight}</span></div>
@@ -71,7 +72,7 @@ function Typography({ sys }) {
             </div>
           </div>
         ))}
-      </div>
+      </Live>
     </section>
   );
 }
@@ -105,28 +106,28 @@ function Shape({ sys, appearance }) {
     <>
       <section className="fd-sec">
         <h2 className="t-h3">Radio en tres ejes</h2>
-        <div className="row" style={{ gap: 24, alignItems: 'flex-end' }}>
+        <Live className="row stage-well" style={{ gap: 24, alignItems: 'flex-end' }}>
           {Object.entries(sys.radius).map(([k, r]) => (
             <div key={k} className="col" style={{ alignItems: 'center', gap: 8 }}>
               <div style={{ width: 96, height: k === 'boxes' ? 72 : k === 'fields' ? 40 : 28, borderRadius: Math.min(r, 48), border: '2px solid var(--accent-solid)', background: 'var(--accent-subtle)' }} />
               <span className="mono t-caption">radius-{k} · {r}px</span>
             </div>
           ))}
-        </div>
+        </Live>
       </section>
       <section className="fd-sec">
         <h2 className="t-h3">Elevación</h2>
-        <div className="row" style={{ gap: 24 }}>
+        <Live className="row stage-well" style={{ gap: 24 }}>
           {Object.entries(sh).map(([k, v]) => <div key={k} className="card" style={{ boxShadow: v, width: 140, height: 80, display: 'grid', placeItems: 'center', border: 0 }}><span className="mono t-caption">shadow-{k}</span></div>)}
-        </div>
+        </Live>
       </section>
       <section className="fd-sec">
         <h2 className="t-h3">Movimiento</h2>
-        <div className="row" style={{ gap: 24 }}>
+        <Live className="row stage-well" style={{ gap: 24 }}>
           {['fast', 'base', 'slow'].map((k) => (
             <div key={k} className="motion-demo"><span className="mono t-caption">duration-{k} · {sys.motion[k]}ms</span><div className="motion-track"><i style={{ animationDuration: `${Math.max(sys.motion[k], 1) * 6}ms`, animationTimingFunction: sys.motion.ease }} /></div></div>
           ))}
-        </div>
+        </Live>
         <p className="mono t-caption faint" style={{ marginTop: 8 }}>ease-standard: {sys.motion.ease}</p>
       </section>
     </>
@@ -171,7 +172,7 @@ export default function Foundations({ sys, appearance, tab, setTab }) {
   return (
     <div className="page">
       <header className="page-hd">
-        <div><span className="eyebrow">Paso 2 · Foundations</span><h1 className="t-h2">Foundations</h1></div>
+        <div><h1 className="t-h2">Foundations</h1></div>
         <div className="tabs">{FOUNDATION_TABS.map((t) => <button key={t.id} className={t.id === T.id ? 'on' : ''} onClick={() => setTab(t.id)}>{t.label}</button>)}</div>
       </header>
       <T.C sys={sys} appearance={appearance} />

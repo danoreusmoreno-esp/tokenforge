@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { QUESTIONS, PERSONALITY, WIZARD_STEPS, EMPTY_BRIEF, recommend, recommendedScope, scaleLabel } from '../engine/brief.js';
 import { SYSTEMS, FEATURED, systemLabel } from '../engine/catalog.js';
 import { Icon } from '../components/Icons.jsx';
+import { Live } from '../components/Live.jsx';
 
 function Choices({ options, value, onChange, multi = true, max }) {
   const sel = multi ? value : [value];
@@ -149,8 +150,7 @@ function Wizard({ brand, onFinish, onSkip }) {
     <div className="page wizard">
       <header className="page-hd" style={{ alignItems: 'flex-start' }}>
         <div>
-          <span className="eyebrow">Paso 1 · Bases</span>
-          <h1 className="t-h2">Sienta las bases</h1>
+                    <h1 className="t-h2">Sienta las bases</h1>
           <p className="muted" style={{ maxWidth: 620, marginTop: 6 }}>Antes de colores y componentes, acordad por qué creáis un sistema de diseño, para quién y qué debe conseguir. Seis preguntas cortas; unos cinco minutos.</p>
         </div>
         <button className="btn ghost sm" onClick={onSkip}>Saltar por ahora</button>
@@ -198,8 +198,7 @@ function Summary({ sys, brand, onEdit, go }) {
     <div className="page">
       <header className="page-hd">
         <div>
-          <span className="eyebrow">Paso 1 · Bases</span>
-          <h1 className="t-h2">Brief de {brand.name}</h1>
+                    <h1 className="t-h2">Brief de {brand.name}</h1>
           <p className="muted" style={{ marginTop: 6, maxWidth: 640 }}>Un sistema de diseño para {scaleLabel(b)}. Tus respuestas han generado la primera versión de las foundations y la lista de componentes.</p>
         </div>
         <button className="btn outline sm" onClick={onEdit}><Icon name="edit" size={14} />Editar respuestas</button>
@@ -208,22 +207,22 @@ function Summary({ sys, brand, onEdit, go }) {
       <section className="fd-sec">
         <div className="brief-grid">
           <div className="card">
-            <span className="eyebrow">Por qué</span>
+            <h3 className="card-t">Por qué</h3>
             <ul className="blist">{b.goals.length ? b.goals.map((g) => <li key={g}>{lbl('goals', g)}</li>) : <li className="faint">Sin objetivos elegidos</li>}</ul>
             {b.why && <p className="t-small muted quote">“{b.why}”</p>}
           </div>
           <div className="card">
-            <span className="eyebrow">Métricas de éxito</span>
+            <h3 className="card-t">Métricas de éxito</h3>
             <ul className="blist">{b.success.length ? b.success.map((g) => <li key={g}>{lbl('success', g)}</li>) : <li className="faint">Ninguna todavía</li>}</ul>
           </div>
           <div className="card">
-            <span className="eyebrow">Alcance</span>
+            <h3 className="card-t">Alcance</h3>
             <div className="row" style={{ marginBottom: 8 }}><span className="badge accent">{scope.level}</span></div>
             <p className="t-small muted">{scope.text}</p>
             <p className="t-small" style={{ marginTop: 8 }}>{[...b.productType.map((x) => lbl('productType', x)), ...b.platforms.map((x) => lbl('platforms', x))].join(' · ') || '—'}</p>
           </div>
           <div className="card">
-            <span className="eyebrow">Punto de partida</span>
+            <h3 className="card-t">Punto de partida</h3>
             <p className="t-small"><b>{b.approach ? lbl('approach', b.approach) : 'Sin elegir'}</b>{b.approach === 'adopt' && b.framework ? ` — ${systemLabel(b.framework)}` : ''}</p>
             <p className="t-small muted" style={{ marginTop: 6 }}>Recursos: {b.assets.map((x) => lbl('assets', x)).join(', ') || 'ninguno'}</p>
             <p className="t-small muted" style={{ marginTop: 6 }}>Personas: {b.stakeholders.map((x) => lbl('stakeholders', x)).join(', ') || '—'}</p>
@@ -234,11 +233,11 @@ function Summary({ sys, brand, onEdit, go }) {
 
       <section className="fd-sec">
         <h2 className="t-h3">Principios</h2>
-        <div className="princ-grid">
+        <Live className="princ-grid">
           {pr.length ? pr.map((x, k) => (
             <div key={x.id} className={`princ p${k}`}><span className="t-caption">Principio {k + 1}</span><b className="t-h3">{x.label}</b><p className="t-small">{x.hint}</p></div>
           )) : <p className="t-small faint">No has elegido principios. <button className="link" onClick={onEdit} style={{ background: 'none', border: 0, padding: 0, font: 'inherit' }}>Añádelos</button>.</p>}
-        </div>
+        </Live>
       </section>
 
       <section className="fd-sec">

@@ -4,6 +4,7 @@ import { cssVars } from './engine/exporters.js';
 import { loadBrands, saveBrands, loadActive, saveActive, newBrand, randomize, randomName, applyStarter, decodeBrand, uid } from './store.js';
 import Inspector from './components/Inspector.jsx';
 import { Icon } from './components/Icons.jsx';
+import { BrandVars } from './components/Live.jsx';
 import Home from './views/Home.jsx';
 import Brief from './views/Brief.jsx';
 import Board from './views/Board.jsx';
@@ -127,29 +128,48 @@ export default function App() {
 
   const common = { sys, brand: draft, appearance: theme };
 
+  const current = NAV.find((n) => n.id === view) ?? NAV[0];
+
   return (
+    <BrandVars.Provider value={vars}>
     <div className="app">
+      <aside className={`sidebar ${navOpen ? 'open' : ''}`} aria-label="Principal">
+        <div className="product">
+          <svg className="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1.5" /><rect x="3" y="10" width="13" height="4" rx="1.5" /><rect x="3" y="16" width="8" height="4" rx="1.5" /></svg>
+          <span>Tokenforge</span>
+        </div>
+        <button className="switcher" onClick={() => go('home')} title="Cambiar de marca">
+          <span className="sw-dots">{['accent', 'neutral', 'success', 'critical'].map((f) => <i key={f} style={{ background: draft.colors[f] }} />)}</span>
+          <span className="sw-name">{draft.name}</span>
+          <Icon name="chevDown" size={14} />
+        </button>
+        <nav className="nav-list">
+          {NAV.map((n) => (
+            <button key={n.id} className={view === n.id ? 'on' : ''} aria-current={view === n.id ? 'page' : undefined} onClick={() => go(n.id)}>
+              <Icon name={n.icon} size={16} stroke={1.6} /><span>{n.label}</span>
+              {n.id === 'components' && <span className="count">{draft.components?.length ?? 0}</span>}
+            </button>
+          ))}
+        </nav>
+        <div className="side-foot">
+          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}><Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} stroke={1.6} /><span>{theme === 'dark' ? 'Tema claro' : 'Tema oscuro'}</span></button>
+          <a href="https://github.com/danoreusmoreno-esp/tokenforge" target="_blank" rel="noreferrer"><Icon name="github" size={15} /><span>Código fuente</span></a>
+        </div>
+      </aside>
+      {navOpen && <div className="scrim-app" onClick={() => setNavOpen(false)} />}
+
       <header className="topbar-app">
-        <button className="chrome-btn icon only-mobile" onClick={() => setNavOpen(!navOpen)} aria-label="Menú"><Icon name="menu" size={18} /></button>
-        <div className="brandmark"><span className="mark" /> Tokenforge <span className="beta">Beta</span></div>
-        <span className="sep only-desktop">|</span>
-        <span className="crumb only-desktop">{draft.name}</span>
+        <button className="tb-btn icon only-mobile" onClick={() => setNavOpen(!navOpen)} aria-label="Menú"><Icon name="menu" size={18} /></button>
+        <div className="crumbs-app"><span className="only-desktop">{draft.name}</span><Icon name="chevRight" size={12} className="only-desktop" /><b>{current.label}</b></div>
         <div className="top-actions">
-          <button className="chrome-btn" onClick={() => setDraft(randomize(draft))} title="Generar una marca aleatoria"><Icon name="dice" size={16} /><span className="only-desktop">Aleatoria</span></button>
-          <button className="chrome-btn icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Cambiar tema" title="Claro / oscuro"><Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} /></button>
-          <button className="chrome-btn only-mobile" onClick={() => setInsOpen(!insOpen)}><Icon name="settings" size={16} /></button>
+          <button className="tb-btn" onClick={() => setDraft(randomize(draft))} title="Generar una marca aleatoria"><Icon name="dice" size={16} stroke={1.6} /><span className="only-desktop">Aleatoria</span></button>
+          <button className="tb-btn only-mobile icon" onClick={() => setInsOpen(!insOpen)} aria-label="Ajustes de marca"><Icon name="settings" size={16} /></button>
+          {view !== 'code' && <button className="tb-btn primary" onClick={() => go('code')}><Icon name="download" size={15} stroke={1.8} /><span>Exportar</span></button>}
         </div>
       </header>
 
-      <nav className={`rail ${navOpen ? 'open' : ''}`} aria-label="Principal">
-        {NAV.map((n) => (
-          <button key={n.id} className={view === n.id ? 'on' : ''} onClick={() => go(n.id)}>
-            <Icon name={n.icon} size={18} /><span>{n.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      <main className="main ds" data-theme={theme} style={vars}>
+      <div className="sheet">
+      <main className="main ds" data-theme={theme}>
         {view === 'home' && <Home {...common} brands={brands} activeId={draft.id} go={go} onNew={createNew} onSelect={switchTo} onDelete={remove} onDuplicate={duplicate} onStarter={(s) => { setDraft(applyStarter(draft, s)); setView('board'); }} />}
         {view === 'brief' && <Brief {...common} setBrand={setDraft} go={go} />}
         {view === 'foundations' && <Foundations {...common} tab={tab} setTab={setTab} />}
@@ -165,6 +185,8 @@ export default function App() {
       <div className={`ins-wrap ${insOpen ? 'open' : ''}`}>
         <Inspector brand={draft} update={setDraft} sys={sys} dirty={dirty} onSave={save} onRandom={() => setDraft(randomize(draft))} />
       </div>
+      </div>
     </div>
+    </BrandVars.Provider>
   );
 }

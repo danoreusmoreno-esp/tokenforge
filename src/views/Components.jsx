@@ -57,7 +57,6 @@ function Catalogue({ brand, setComponents, open }) {
     <div className="page">
       <header className="page-hd">
         <div>
-          <span className="eyebrow">Paso 3 · Componentes</span>
           <h1 className="t-h2">Librería de componentes</h1>
           <p className="muted t-small" style={{ maxWidth: 640, marginTop: 6 }}>
             {COMPONENTS.length} componentes basados en {TOTAL} sistemas de diseño de referencia. Cada uno indica cómo lo llaman Material 3, Apple HIG, Polaris, Carbon, Fluent 2 y el resto. Elige los que necesita tu sistema: todos se pintan con tus tokens y traen sus propios tokens de componente.
@@ -112,13 +111,12 @@ function Detail({ id, sys, brand, setComponents, setComponentToken, back }) {
   const [st, setSt] = useState(c.states[0]);
   const enabled = brand.components.includes(id);
   const tokens = componentTokens(sys, id);
-  const snippet = `/* ${c.name} — uses your tokens */\n.${id} {\n${Object.entries(tokens).map(([k, val]) => `  --${id}-${k}: ${val};`).join('\n')}${Object.keys(tokens).length ? '\n' : ''}  font-family: var(--font-body);\n  border-radius: var(--radius-${['card', 'dialog', 'drawer', 'popover', 'alert', 'toast', 'table'].includes(id) ? 'boxes' : ['checkbox', 'radio', 'chip', 'tabs', 'segmented', 'badge'].includes(id) ? 'selectors' : 'fields'});\n  transition: all var(--duration-base) var(--ease-standard);\n}`;
+  const snippet = `/* ${c.name} — uses your tokens */\n.${id} {\n${Object.entries(tokens).map(([k, val]) => `  --${id}-${k}: ${val};`).join('\n')}${Object.keys(tokens).length ? '\n' : ''}  font-family: var(--font-body);\n  border-radius: var(--radius-${['card', 'dialog', 'drawer', 'popover', 'alert', 'toast', 'table'].includes(id) ? 'boxes' : ['checkbox', 'radio', 'chip', 'tabs', 'segmented', 'badge'].includes(id) ? 'selectors' : 'fields'});\n  transition: background-color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);\n}`;
   return (
     <div className="page">
       <button className="btn ghost sm" onClick={back} style={{ marginBottom: 12 }}><Icon name="chevLeft" size={14} />Todos los componentes</button>
       <header className="page-hd">
         <div>
-          <span className="eyebrow">{CATEGORIES.find((k) => k.id === c.cat).name}</span>
           <h1 className="t-h2">{c.name}</h1>
           <p className="muted" style={{ marginTop: 6, maxWidth: 620 }}>{c.desc}</p>
           <div style={{ marginTop: 10 }} className="row"><Coverage refs={c.refs} /><span className="t-caption faint">En {c.refs.length} de {TOTAL} sistemas de referencia</span></div>
@@ -144,7 +142,7 @@ function Detail({ id, sys, brand, setComponents, setComponentToken, back }) {
         <h2 className="t-h4">Variantes</h2>
         <div className="variant-grid">
           {c.variants.map((x) => (
-            <div key={x} className="variant"><span className="t-caption faint mono">{tv(x)}</span><div className="variant-stage"><Preview id={id} v={x} s={s} st={c.states[0]} /></div></div>
+            <div key={x} className="variant"><span className="t-caption faint">{tv(x)}</span><div className="variant-stage"><Preview id={id} v={x} s={s} st={c.states[0]} /></div></div>
           ))}
         </div>
       </section>
@@ -154,7 +152,7 @@ function Detail({ id, sys, brand, setComponents, setComponentToken, back }) {
           <h2 className="t-h4">Estados</h2>
           <div className="variant-grid">
             {c.states.map((x) => (
-              <div key={x} className="variant"><span className="t-caption faint mono">{tv(x)}</span><div className="variant-stage"><Preview id={id} v={v} s={s} st={x} /></div></div>
+              <div key={x} className="variant"><span className="t-caption faint">{tv(x)}</span><div className="variant-stage"><Preview id={id} v={v} s={s} st={x} /></div></div>
             ))}
           </div>
         </section>
