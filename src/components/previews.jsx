@@ -250,15 +250,15 @@ export const PREVIEWS = {
     </div>
   ),
   combobox: ({ v }) => (
-    <div className="col" style={{ width: '100%', maxWidth: 280, gap: 6 }}>
-      <div className="input focus">{v === 'multi' && <span className="chip static" style={{ height: 22 }}>React</span>}<input defaultValue="Re" aria-label="Buscar framework" /></div>
+    <div className="col" style={{ width: '100%', maxWidth: 280, gap: 8 }}>
+      <div className="input focus">{v === 'multi' && <span className="chip static" style={{ height: 24 }}>React</span>}<input defaultValue="Re" aria-label="Buscar framework" /></div>
       <div className="menu"><div className="hover"><b>Re</b>act</div><div><b>Re</b>mix</div><div>P<b>re</b>act</div></div>
     </div>
   ),
   search: ({ v }) => <div className={`input with-icon ${v === 'filled' ? 'filled' : ''}`} style={{ maxWidth: 300 }}><Icon name="search" size={16} /><input placeholder="Buscar tokens…" aria-label="Buscar" /><kbd>⌘K</kbd></div>,
   'number-input': () => <div className="num"><input className="input" defaultValue="16" aria-label="Cantidad" /><button className="btn outline icon" aria-label="Restar"><Icon name="minus" size={14} /></button><button className="btn outline icon" aria-label="Sumar"><Icon name="plus" size={14} /></button></div>,
   otp: ({ st }) => <div className="col" style={{ gap: 8 }}><div className="otp">{['8', '2', '4', st === 'default' ? '' : '9', '', ''].map((d, i) => <span key={i} className={i === 3 && st === 'default' ? 'on' : ''} style={st === 'error' ? { borderColor: 'var(--critical-solid)' } : undefined}>{d}</span>)}</div><span className="help">¿No te ha llegado el código? <a className="link">Reenviar</a></span></div>,
-  'date-picker': ({ v }) => <div className="card" style={{ padding: 12, width: 'fit-content' }}><div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}><b className="t-small">Noviembre 2026</b><div className="row" style={{ gap: 2 }}><button className="btn ghost icon sm" aria-label="Anterior"><Icon name="chevLeft" size={14} /></button><button className="btn ghost icon sm" aria-label="Siguiente"><Icon name="chevRight" size={14} /></button></div></div><Cal v={v} /></div>,
+  'date-picker': ({ v }) => <div className="card" style={{ padding: 12, width: 'fit-content' }}><div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}><b className="t-small">Noviembre 2026</b><div className="row" style={{ gap: 4 }}><button className="btn ghost icon sm" aria-label="Anterior"><Icon name="chevLeft" size={14} /></button><button className="btn ghost icon sm" aria-label="Siguiente"><Icon name="chevRight" size={14} /></button></div></div><Cal v={v} /></div>,
   'file-upload': ({ st = 'idle' }) => (
     <div className="col" style={{ width: '100%', maxWidth: 340 }}>
       <div className={`drop ${st === 'dragging' ? 'drag' : ''}`}><Icon name="upload" size={20} /><b>Suelta archivos o <a className="link">explora</a></b><span className="help">PDF, PNG hasta 10 MB</span></div>
@@ -274,10 +274,10 @@ export const PREVIEWS = {
 
   checkbox: ({ st }) => st && st !== 'default'
     ? <Check on={st === 'checked'} ind={st === 'indeterminate'} dis={st === 'disabled'} label="Comentarios en mis archivos" />
-    : <div className="col" style={{ gap: 10 }}><Check on label="Comentarios en mis archivos" /><Check label="Nuevos miembros del equipo" /><Check ind label="Resumen semanal" /><Check dis label="Opción deshabilitada" /></div>,
+    : <div className="col" style={{ gap: 12 }}><Check on label="Comentarios en mis archivos" /><Check label="Nuevos miembros del equipo" /><Check ind label="Resumen semanal" /><Check dis label="Opción deshabilitada" /></div>,
   radio: ({ v }) => v === 'card'
     ? <div className="col" style={{ maxWidth: 320 }}>{[['Básico', 'Para particulares', true], ['Equipo', 'Hasta 20 puestos', false]].map(([t, d, on]) => <div key={t} className={`radio-card ${on ? 'on' : ''}`}><span className={`box radio ${on ? 'on' : ''}`} /><div><b className="t-small">{t}</b><div className="help">{d}</div></div></div>)}</div>
-    : <div className="col" style={{ gap: 10 }}><Check radio on label="Claro" /><Check radio label="Oscuro" /><Check radio label="Sistema" /></div>,
+    : <div className="col" style={{ gap: 12 }}><Check radio on label="Claro" /><Check radio label="Oscuro" /><Check radio label="Sistema" /></div>,
   switch: () => <div className="col" style={{ gap: 12 }}>{[['Notificaciones', true], ['Publicación automática', false]].map(([l, on]) => <label key={l} className="check"><Toggle initial={on} />{l}</label>)}</div>,
   segmented: () => <Seg />,
   chip: ({ v }) => <Chips v={v} />,
@@ -317,7 +317,7 @@ export const PREVIEWS = {
     : <div className="row">{['neutral', 'accent', 'success', 'warning', 'critical', 'info'].map((k) => <span key={k} className={`badge ${k}`}>{BADGE_ES[k]}</span>)}<span className="badge solid">12</span></div>,
   progress: ({ v, st }) => v === 'circular'
     ? <svg className="ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="var(--bg-active)" strokeWidth="5" /><circle cx="22" cy="22" r="18" fill="none" stroke={st === 'error' ? 'var(--critical-solid)' : 'var(--accent-solid)'} strokeWidth="5" strokeLinecap="round" strokeDasharray="113" strokeDashoffset="40" transform="rotate(-90 22 22)" /></svg>
-    : <div className="col" style={{ width: '100%', maxWidth: 320, gap: 6 }}><div className="row t-small" style={{ justifyContent: 'space-between' }}><span>Subiendo…</span><span className="faint">64 %</span></div><div className={`progress ${st === 'error' ? 'err' : ''}`}><div style={{ width: '64%' }} /></div></div>,
+    : <div className="col" style={{ width: '100%', maxWidth: 320, gap: 8 }}><div className="row t-small" style={{ justifyContent: 'space-between' }}><span>Subiendo…</span><span className="faint">64 %</span></div><div className={`progress ${st === 'error' ? 'err' : ''}`}><div style={{ width: '64%' }} /></div></div>,
   spinner: ({ s }) => <div className="row"><Spinner size={s === 'sm' ? 14 : s === 'lg' ? 32 : 22} /><span className="t-small muted">Cargando tokens…</span></div>,
   skeleton: () => <div className="row" style={{ alignItems: 'flex-start', flexWrap: 'nowrap', width: '100%', maxWidth: 320 }}><div className="skel" style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none' }} /><div className="col" style={{ flex: 1, gap: 8 }}><div className="skel" style={{ height: 12, width: '70%' }} /><div className="skel" style={{ height: 12 }} /><div className="skel" style={{ height: 12, width: '40%' }} /></div></div>,
   'empty-state': () => <div className="empty"><div className="art"><Icon name="layers" size={22} /></div><b>Aún no hay componentes</b><p className="t-small muted">Añade tu primer componente para empezar tu librería.</p><button className="btn primary sm"><Icon name="plus" size={14} />Añadir componente</button></div>,
@@ -326,18 +326,18 @@ export const PREVIEWS = {
     <div className="scrim" style={{ width: '100%' }}>
       <div className="dialog" role="dialog" aria-label="Cambios sin guardar">
         <h3 className="t-h4">{v === 'destructive' ? '¿Eliminar esta marca?' : 'Cambios sin guardar'}</h3>
-        <p className="t-small muted" style={{ marginTop: 6 }}>{v === 'destructive' ? 'Se borrarán todos los tokens y no se puede deshacer.' : '¿Quieres guardar o descartar los cambios?'}</p>
+        <p className="t-small muted" style={{ marginTop: 8 }}>{v === 'destructive' ? 'Se borrarán todos los tokens y no se puede deshacer.' : '¿Quieres guardar o descartar los cambios?'}</p>
         <div className="actions"><button className="btn outline">Cancelar</button>{v === 'destructive' ? <button className="btn destructive">Eliminar</button> : <button className="btn primary">Guardar cambios</button>}</div>
       </div>
     </div>
   ),
   drawer: () => <div className="scrim" style={{ height: 220, padding: 0, display: 'flex', width: '100%' }}><div className="drawer"><div className="row" style={{ justifyContent: 'space-between' }}><b>Filtros</b><Icon name="x" size={16} /></div><Check on label="Publicados" /><Check label="Borradores" /><div style={{ marginTop: 'auto' }} className="row"><button className="btn primary sm block">Aplicar</button></div></div></div>,
-  popover: () => <div className="popover"><b className="t-small">Compartir marca</b><p className="help" style={{ margin: '4px 0 10px' }}>Cualquiera con el enlace puede verla.</p><div className="input" style={{ height: 32 }}><input defaultValue="forge.app/b/acme" aria-label="Enlace" /><Icon name="copy" size={14} /></div></div>,
+  popover: () => <div className="popover"><b className="t-small">Compartir marca</b><p className="help" style={{ margin: '4px 0 12px' }}>Cualquiera con el enlace puede verla.</p><div className="input" style={{ height: 32 }}><input defaultValue="forge.app/b/acme" aria-label="Enlace" /><Icon name="copy" size={14} /></div></div>,
   tooltip: () => <div style={{ paddingTop: 4 }}><span className="tooltip">Copiar nombre del token</span></div>,
 
   card: ({ v = 'outline', st }) => (
     <div className={`card ${v} ${st === 'interactive' ? 'interactive' : ''}`} style={{ maxWidth: 300 }}>
-      <div className="row" style={{ marginBottom: 10 }}><span className="avatar">AC</span><div><b className="t-small">Acme Design</b><div className="help">@acme</div></div></div>
+      <div className="row" style={{ marginBottom: 12 }}><span className="avatar">AC</span><div><b className="t-small">Acme Design</b><div className="help">@acme</div></div></div>
       <p className="t-small muted">Un único origen: el mismo JSON que leen Figma, el CSS y tu agente.</p>
       <div className="row" style={{ marginTop: 12 }}><span className="t-small"><b>4</b> <span className="faint">Siguiendo</span></span><span className="t-small"><b>12.4K</b> <span className="faint">Seguidores</span></span></div>
     </div>
@@ -347,7 +347,7 @@ export const PREVIEWS = {
       <thead><tr><th>Token</th><th>Valor</th><th>Estado</th></tr></thead>
       <tbody>
         {[['accent-solid', 'var', 'Publicado', 'success'], ['text-primary', 'var', 'Borrador', 'neutral'], ['border-strong', 'var', 'En revisión', 'warning'], ['focus-ring', 'var', 'Publicado', 'success']].map(([t, , s, k], i) => (
-          <tr key={t} className={i === 1 ? 'sel' : ''}><td className="mono t-caption">{t}</td><td><span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 4, background: `var(--${t})`, verticalAlign: 'middle', border: '1px solid var(--border-subtle)' }} /></td><td><span className={`badge ${k}`}>{s}</span></td></tr>
+          <tr key={t} className={i === 1 ? 'sel' : ''}><td className="mono t-caption">{t}</td><td><span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: 4, background: `var(--${t})`, verticalAlign: 'middle', border: '1px solid var(--border-subtle)' }} /></td><td><span className={`badge ${k}`}>{s}</span></td></tr>
         ))}
       </tbody>
     </table>

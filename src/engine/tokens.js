@@ -46,11 +46,14 @@ export const SHADOW_PRESETS = {
   strong: { y: 10, blur: 30, alpha: 0.2 },
 };
 
+// Spacing is always on a 4px base. Presets change density (how far apart things sit), never the unit.
+export const BASE_UNIT = 4;
 export const SPACING_PRESETS = {
-  tight: 3,
-  quiet: 4,
-  roomy: 5,
+  tight: 0.75,
+  quiet: 1,
+  roomy: 1.25,
 };
+const r4 = (n) => Math.max(BASE_UNIT, Math.round(n / BASE_UNIT) * BASE_UNIT);
 
 export const MOTION_PRESETS = {
   none: { fast: 0, base: 0, slow: 0, ease: 'linear' },
@@ -109,8 +112,8 @@ function typeScale(density, viewport = 'desktop') {
     const size = Math.round(s);
     out[name] = {
       size,
-      lineHeight: Math.round(size * lh / 2) * 2 / size,
-      lineHeightPx: Math.round(size * lh / 2) * 2,
+      lineHeight: Math.round(size * lh / 4) * 4 / size,
+      lineHeightPx: Math.round(size * lh / 4) * 4,
       weight,
       tracking,
     };
@@ -118,24 +121,25 @@ function typeScale(density, viewport = 'desktop') {
   return out;
 }
 
-function spacingScale(preset) {
-  const unit = SPACING_PRESETS[preset] ?? 4;
+function spacingScale() {
+  const unit = BASE_UNIT;
   const steps = { '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '8': 8, '10': 10, '12': 12, '16': 16, '20': 20, '24': 24 };
   const out = {};
   for (const [k, v] of Object.entries(steps)) out[k] = v * unit;
   return { unit, scale: out };
 }
 
-function layoutSpacing(unit) {
+/** Layout spacing per viewport, scaled by the density preset and snapped to the 4px base. */
+function layoutSpacing(unit, density = 1) {
   const out = {};
   for (const vp of VIEWPORTS) {
-    const s = VIEWPORT_SCALE[vp];
+    const s = VIEWPORT_SCALE[vp] * density;
     out[vp] = {
-      'component-gap': Math.round(unit * 2 * Math.max(s, 0.85)),
-      'component-padding': Math.round(unit * 4 * Math.max(s, 0.8)),
-      'section-gap': Math.round(unit * 6 * s),
-      'layout-gutter': Math.round(unit * 6 * s),
-      'layout-margin': Math.round(unit * 16 * s),
+      'component-gap': r4(unit * 2 * Math.max(s, 0.85)),
+      'component-padding': r4(unit * 4 * Math.max(s, 0.8)),
+      'section-gap': r4(unit * 6 * s),
+      'layout-gutter': r4(unit * 6 * s),
+      'layout-margin': r4(unit * 16 * s),
     };
   }
   return out;
@@ -212,10 +216,10 @@ export function computeSystem(brand) {
       shadow: shadowTokens(brand.shadow, appearance),
     };
   }
-  const sp = spacingScale(brand.spacing);
+  const sp = spacingScale();
   out.spacing = sp.scale;
   out.spacingUnit = sp.unit;
-  out.layout = layoutSpacing(sp.unit);
+  out.layout = layoutSpacing(sp.unit, SPACING_PRESETS[brand.spacing] ?? 1);
   out.type = {};
   for (const vp of VIEWPORTS) out.type[vp] = typeScale(brand.density, vp);
   out.radius = {

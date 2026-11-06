@@ -60,7 +60,7 @@ function Catalogue({ brand, setComponents, open, go }) {
       <header className="page-hd">
         <div>
           <h1 className="t-h2">Librería de componentes</h1>
-          <p className="muted t-small" style={{ maxWidth: 640, marginTop: 6 }}>
+          <p className="muted t-small" style={{ maxWidth: 640, marginTop: 8 }}>
             {COMPONENTS.length} componentes basados en {TOTAL} sistemas de diseño de referencia. Cada uno indica cómo lo llaman Material 3, Apple HIG, Polaris, Carbon, Fluent 2 y el resto. Elige los que necesita tu sistema: todos se pintan con tus tokens y traen sus propios tokens de componente.
           </p>
         </div>
@@ -90,7 +90,7 @@ function Catalogue({ brand, setComponents, open, go }) {
                 <div className="cat-meta">
                   <div style={{ minWidth: 0 }}>
                     <button className="cat-name" onClick={() => open(c.id)}>{c.name}</button>
-                    <div className="t-caption faint row" style={{ gap: 6 }}><Coverage refs={c.refs} />{sys !== 'all' && c.names[sys] ? <span className="mono">{c.names[sys]}</span> : <span>{c.refs.length}/{TOTAL}{c.core ? ' · básico' : ''}</span>}</div>
+                    <div className="t-caption faint row" style={{ gap: 8 }}><Coverage refs={c.refs} />{sys !== 'all' && c.names[sys] ? <span className="mono">{c.names[sys]}</span> : <span>{c.refs.length}/{TOTAL}{c.core ? ' · básico' : ''}</span>}</div>
                   </div>
                   <label className="check" title={enabled.has(c.id) ? 'Quitar del sistema' : 'Añadir al sistema'}>
                     <span className={`switch ${enabled.has(c.id) ? 'on' : ''}`} role="switch" aria-checked={enabled.has(c.id)} aria-label={`Incluir ${c.name}`} tabIndex={0}
@@ -172,8 +172,8 @@ function Detail({ id, sys, brand, setComponents, setComponentToken, setComponent
       <header className="page-hd">
         <div>
           <h1 className="t-h2">{c.name}</h1>
-          <p className="muted" style={{ marginTop: 6, maxWidth: 620 }}>{c.desc}</p>
-          <div style={{ marginTop: 10 }} className="row"><Coverage refs={c.refs} /><span className="t-caption faint">En {c.refs.length} de {TOTAL} sistemas de referencia</span></div>
+          <p className="muted" style={{ marginTop: 8, maxWidth: 620 }}>{c.desc}</p>
+          <div style={{ marginTop: 12 }} className="row"><Coverage refs={c.refs} /><span className="t-caption faint">En {c.refs.length} de {TOTAL} sistemas de referencia</span></div>
         </div>
         <button className={`btn ${enabled ? 'outline' : 'primary'}`} onClick={() => setComponents(enabled ? brand.components.filter((x) => x !== id) : [...brand.components, id])}>
           <Icon name={enabled ? 'check' : 'plus'} size={14} />{enabled ? 'En tu sistema' : 'Añadir al sistema'}
@@ -221,14 +221,14 @@ function Detail({ id, sys, brand, setComponents, setComponentToken, setComponent
 
       <section className="fd-sec">
         <h2 className="t-h4">En los sistemas de referencia</h2>
-        <p className="muted t-small" style={{ marginBottom: 10 }}>Cómo lo llama cada sistema. Abre una fila para leer su documentación.</p>
+        <p className="muted t-small" style={{ marginBottom: 12 }}>Cómo lo llama cada sistema. Abre una fila para leer su documentación.</p>
         <NamesTable c={c} />
       </section>
 
       <section className="fd-sec two-col">
         <div>
           <h2 className="t-h4">Tokens de componente</h2>
-          <p className="muted t-small" style={{ marginBottom: 10 }}>Se ajustan por componente. Todo lo demás se hereda de las foundations.</p>
+          <p className="muted t-small" style={{ marginBottom: 12 }}>Se ajustan por componente. Todo lo demás se hereda de las foundations.</p>
           {Object.keys(c.tokens).length === 0 && <p className="t-small faint">Este componente solo usa tokens de las foundations.</p>}
           {Object.entries(c.tokens).map(([k, def]) => {
             const cur = brand.componentTokens?.[id]?.[k] ?? def;

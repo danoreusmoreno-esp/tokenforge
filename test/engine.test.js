@@ -109,3 +109,15 @@ test('springs compile to a linear() easing that ends at 1 and overshoots when bo
   assert.equal(motionFor({ ...brand, componentMotion: { button: { tap: 'bounce' } } }, 'button').tap, 'bounce');
   assert.match(toMotionJS(computeSystem(brand)), /visualDuration/);
 });
+
+test('spacing, layout and line heights sit on a 4px base for every preset', () => {
+  for (const spacing of ['tight', 'quiet', 'roomy']) {
+    for (const density of ['compact', 'default', 'spacious']) {
+      const sys = computeSystem({ ...brand, spacing, density });
+      assert.equal(sys.spacingUnit, 4);
+      for (const v of Object.values(sys.spacing)) assert.equal(v % 4, 0, `space ${v}`);
+      for (const vp of Object.values(sys.layout)) for (const [k, v] of Object.entries(vp)) assert.equal(v % 4, 0, `${spacing} ${k} ${v}`);
+      for (const vp of Object.values(sys.type)) for (const [k, t] of Object.entries(vp)) assert.equal(t.lineHeightPx % 4, 0, `${density} ${k} lh ${t.lineHeightPx}`);
+    }
+  }
+});

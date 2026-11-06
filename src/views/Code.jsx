@@ -54,7 +54,7 @@ export default function Code({ sys, brand, go }) {
       <header className="page-hd">
         <div>
           <h1 className="t-h2">Exportar</h1>
-          <p className="muted t-small" style={{ marginTop: 6, maxWidth: 620 }}>Un mismo origen, muchos destinos: CSS para la web, JSON W3C para pipelines (Style Dictionary), sets de Tokens Studio para las Variables de Figma, Tailwind, un BRIEF.md con tus objetivos y principios, y un AGENTS.md para que los agentes de IA usen tus tokens reales. Los archivos de código van en inglés, como es habitual.</p>
+          <p className="muted t-small" style={{ marginTop: 8, maxWidth: 620 }}>Un mismo origen, muchos destinos: CSS para la web, JSON W3C para pipelines (Style Dictionary), sets de Tokens Studio para las Variables de Figma, Tailwind, un BRIEF.md con tus objetivos y principios, y un AGENTS.md para que los agentes de IA usen tus tokens reales. Los archivos de código van en inglés, como es habitual.</p>
         </div>
         {!HOSTED && (
           <div className="row">
@@ -79,7 +79,7 @@ export default function Code({ sys, brand, go }) {
         <div className="code-main">
           <div className="code-bar">
             <span className="mono t-caption">{cur.file} · {cur.text.split('\n').length} líneas</span>
-            <div className="row" style={{ gap: 6 }}>
+            <div className="row" style={{ gap: 8 }}>
               {copied && <span className="t-caption" style={{ color: 'var(--success-text)' }}>{copied}</span>}
               <button className="btn ghost sm" onClick={() => copy(cur.text, `Copiado: pégalo en ${cur.file}`)}><Icon name="copy" size={14} />Copiar</button>
               {!HOSTED && <button className="btn outline sm" onClick={() => download(cur.file, cur.text)}><Icon name="download" size={14} />Descargar</button>}

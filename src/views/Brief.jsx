@@ -164,7 +164,7 @@ function Wizard({ brand, onFinish, onSkip }) {
       <header className="page-hd" style={{ alignItems: 'flex-start' }}>
         <div>
                     <h1 className="t-h2">Sienta las bases</h1>
-          <p className="muted" style={{ maxWidth: 680, marginTop: 6 }}>Tokenforge crea tu sistema de diseño en cinco pasos. Empiezas aquí: seis preguntas, unos cinco minutos, que generan colores, tipografía, espaciado y una lista de componentes a tu medida. Todo se guarda solo y lo puedes cambiar después.</p>
+          <p className="muted" style={{ maxWidth: 680, marginTop: 8 }}>Tokenforge crea tu sistema de diseño en cinco pasos. Empiezas aquí: seis preguntas, unos cinco minutos, que generan colores, tipografía, espaciado y una lista de componentes a tu medida. Todo se guarda solo y lo puedes cambiar después.</p>
           <ol className="orient" aria-label="Los cinco pasos">
             {['Bases', 'Foundations', 'Componentes', 'Tablero', 'Exportar'].map((t, k) => <li key={t} className={k === 0 ? 'on' : ''}><span>{k + 1}</span>{t}{k === 0 && <em>Ahora</em>}</li>)}
           </ol>
@@ -233,7 +233,7 @@ function Summary({ sys, brand, onEdit, go }) {
       <header className="page-hd">
         <div>
                     <h1 className="t-h2">Brief de {brand.name}</h1>
-          <p className="muted" style={{ marginTop: 6, maxWidth: 640 }}>Un sistema de diseño para {scaleLabel(b)}. Tus respuestas han generado la primera versión de las foundations y la lista de componentes.</p>
+          <p className="muted" style={{ marginTop: 8, maxWidth: 640 }}>Un sistema de diseño para {scaleLabel(b)}. Tus respuestas han generado la primera versión de las foundations y la lista de componentes.</p>
         </div>
         <button className="btn outline sm" onClick={onEdit}><Icon name="edit" size={14} />Editar respuestas</button>
       </header>
@@ -258,9 +258,9 @@ function Summary({ sys, brand, onEdit, go }) {
           <div className="card">
             <h3 className="card-t">Punto de partida</h3>
             <p className="t-small"><b>{b.approach ? lbl('approach', b.approach) : 'Sin elegir'}</b>{b.approach === 'adopt' && b.framework ? ` — ${systemLabel(b.framework)}` : ''}</p>
-            <p className="t-small muted" style={{ marginTop: 6 }}>Recursos: {b.assets.map((x) => lbl('assets', x)).join(', ') || 'ninguno'}</p>
-            <p className="t-small muted" style={{ marginTop: 6 }}>Personas: {b.stakeholders.map((x) => lbl('stakeholders', x)).join(', ') || '—'}</p>
-            <p className="t-small muted" style={{ marginTop: 6 }}>Tecnología: {b.stack.map((x) => lbl('stack', x)).join(', ') || '—'}</p>
+            <p className="t-small muted" style={{ marginTop: 8 }}>Recursos: {b.assets.map((x) => lbl('assets', x)).join(', ') || 'ninguno'}</p>
+            <p className="t-small muted" style={{ marginTop: 8 }}>Personas: {b.stakeholders.map((x) => lbl('stakeholders', x)).join(', ') || '—'}</p>
+            <p className="t-small muted" style={{ marginTop: 8 }}>Tecnología: {b.stack.map((x) => lbl('stack', x)).join(', ') || '—'}</p>
           </div>
         </div>
       </section>
@@ -277,7 +277,7 @@ function Summary({ sys, brand, onEdit, go }) {
       <section className="fd-sec">
         <h2 className="t-h3">Foundations propuestas</h2>
         <div className="found-row">
-          <div><span className="t-caption faint">Acento</span><b className="row" style={{ gap: 6 }}><i className="dot" style={{ background: brand.colors.accent }} />{brand.colors.accent}</b></div>
+          <div><span className="t-caption faint">Acento</span><b className="row" style={{ gap: 8 }}><i className="dot" style={{ background: brand.colors.accent }} />{brand.colors.accent}</b></div>
           <div><span className="t-caption faint">Tipografía</span><b>{sys.fonts.heading} / {sys.fonts.body}</b></div>
           <div><span className="t-caption faint">Densidad</span><b>{ES_VAL[brand.density]} · texto a {sys.type.desktop.body.size}px</b></div>
           <div><span className="t-caption faint">Radio</span><b>{sys.radius.boxes}/{sys.radius.fields}/{sys.radius.selectors}px</b></div>

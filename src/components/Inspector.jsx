@@ -266,8 +266,9 @@ export default function Inspector({ brand, update, sys, onRandom, dirty, storage
         <Choice options={Object.keys(SHADOW_PRESETS)} value={brand.shadow} onChange={(v) => set({ shadow: v })} />
       </Section>
 
-      <Section title="Espaciado" value={`${es(brand.spacing)} · ${SPACING_PRESETS[brand.spacing]}px`}>
-        <Choice options={Object.keys(SPACING_PRESETS)} value={brand.spacing} onChange={(v) => set({ spacing: v })} format={(o) => `${es(o)} ${SPACING_PRESETS[o]}px`} />
+      <Section title="Espaciado" value={`${es(brand.spacing)} · base 4 px`}>
+        <Choice options={Object.keys(SPACING_PRESETS)} value={brand.spacing} onChange={(v) => set({ spacing: v })} format={(o) => `${es(o)} ×${String(SPACING_PRESETS[o]).replace('.', ',')}`} />
+        <p className="ins-hint">La unidad es siempre 4 px. La densidad cambia la separación entre bloques y el relleno de los componentes.</p>
       </Section>
 
       <Section title="Movimiento" value={es(brand.motion)}>
