@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FAMILIES } from '../engine/tokens.js';
 import { wcag, apca } from '../engine/color.js';
 import { Live } from '../components/Live.jsx';
+import NextStep from '../components/NextStep.jsx';
 import { SPRINGS, spring } from '../engine/motion.js';
 
 /** The system spring drawn as position over time, so the bounce is visible. */
@@ -193,7 +194,7 @@ export const FOUNDATION_TABS = [
   { id: 'contrast', label: 'Contraste', C: Contrast },
 ];
 
-export default function Foundations({ sys, appearance, tab, setTab }) {
+export default function Foundations({ sys, appearance, tab, setTab, go }) {
   const T = FOUNDATION_TABS.find((t) => t.id === tab) ?? FOUNDATION_TABS[0];
   return (
     <div className="page">
@@ -202,6 +203,7 @@ export default function Foundations({ sys, appearance, tab, setTab }) {
         <div className="seg-tabs" role="group" aria-label="Secciones">{FOUNDATION_TABS.map((t) => <button key={t.id} className={t.id === T.id ? 'on' : ''} onClick={() => setTab(t.id)}>{t.label}</button>)}</div>
       </header>
       <T.C sys={sys} appearance={appearance} />
+      <NextStep to="components" go={go} />
     </div>
   );
 }

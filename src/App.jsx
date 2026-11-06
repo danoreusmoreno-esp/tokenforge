@@ -118,10 +118,32 @@ export default function App() {
   const saved = brands.find((b) => b.id === draft.id);
   const dirty = !saved || JSON.stringify({ ...saved, updatedAt: 0 }) !== JSON.stringify({ ...draft, updatedAt: 0 });
 
-  const save = () => {
-    const b = { ...draft, updatedAt: Date.now() };
-    setDraft(b);
-    setBrands((list) => (list.some((x) => x.id === b.id) ? list.map((x) => (x.id === b.id ? b : x)) : [...list, b]));
+  // Autosave: every change lands in the brand list (and so in browser storage) a moment later.
+  useEffect(() => {
+    if (!dirty) return undefined;
+    const t = setTimeout(() => {
+      const b = { ...draft, updatedAt: Date.now() };
+      setBrands((list) => (list.some((x) => x.id === b.id) ? list.map((x) => (x.id === b.id ? b : x)) : [...list, b]));
+    }, 350);
+    return () => clearTimeout(t);
+  }, [draft, dirty]);
+
+  // Anything that replaces or deletes work can be undone for a few seconds.
+  const [toast, setToast] = useState(null);
+  useEffect(() => {
+    if (!toast) return undefined;
+    const t = setTimeout(() => setToast(null), 8000);
+    return () => clearTimeout(t);
+  }, [toast]);
+  const undoable = (msg, nextDraft) => {
+    setToast({ msg, draft, brands, id: Date.now() });
+    setDraft(nextDraft);
+  };
+  const undo = () => {
+    if (!toast) return;
+    setBrands(toast.brands);
+    setDraft(toast.draft);
+    setToast(null);
   };
   // Switching brands keeps work: the current draft is saved first.
   const commit = (list) => (dirty ? list.map((x) => (x.id === draft.id ? { ...draft, updatedAt: Date.now() } : x)) : list);
@@ -141,13 +163,15 @@ export default function App() {
     setBrands((l) => [...l, b]);
   };
   const remove = (id) => {
+    const gone = brands.find((b) => b.id === id);
+    setToast({ msg: `Marca «${gone?.name}» eliminada`, draft, brands, id: Date.now() });
     const rest = brands.filter((b) => b.id !== id);
     setBrands(rest);
     if (id === draft.id) setDraft(rest[0]);
   };
   const go = (v) => { setView(v); setNavOpen(false); if (v !== 'components') setDetail(null); };
 
-  const common = { sys, brand: draft, appearance: theme };
+  const common = { sys, brand: draft, appearance: theme, go };
 
   const current = NAV.find((n) => n.id === view) ?? NAV[0];
   // Highlights in the tool come from the brand being built: a pale step of its accent.
@@ -158,7 +182,7 @@ export default function App() {
   return (
     <BrandVars.Provider value={vars}>
     <MotionCfg.Provider value={motionCfg}>
-    <div className="app" style={shellVars}>
+    <div className={`app ${view === 'brief' && !draft.brief?.done ? 'no-ins' : ''}`} style={shellVars}>
       <aside className={`rail ${navOpen ? 'open' : ''}`} aria-label="Principal">
         <button className="rail-mark" onClick={() => go('home')} aria-label="Tokenforge, inicio" data-tip="Tokenforge">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="2" /><rect x="3" y="10" width="13" height="4" rx="2" /><rect x="3" y="16" width="8" height="4" rx="2" /></svg>
@@ -190,14 +214,14 @@ export default function App() {
             <span className="crumb-cur only-desktop">{current.label}</span>
           </button>
           <div className="top-actions">
-            <button className="pill" onClick={() => setDraft(randomize(draft))} title="Generar una marca aleatoria"><Icon name="dice" size={16} stroke={1.6} /><span className="only-desktop">Aleatoria</span></button>
+            <button className="pill" onClick={() => undoable('Marca aleatoria aplicada', randomize(draft))} title="Prueba color, tipografía y forma al azar. Puedes deshacerlo."><Icon name="dice" size={16} stroke={1.6} /><span className="only-desktop">Aleatoria</span></button>
             <button className="pill only-tablet icon" onClick={() => setInsOpen(!insOpen)} aria-label="Ajustes de marca"><Icon name="settings" size={16} /></button>
-            {view !== 'code' && <button className="pill dark" onClick={() => go('code')}><Icon name="download" size={16} stroke={1.8} /><span>Exportar</span></button>}
+            {view !== 'code' && view !== 'brief' && <button className="pill dark" onClick={() => go('code')}><Icon name="download" size={16} stroke={1.8} /><span>Exportar</span></button>}
           </div>
         </header>
 
         <main className="main ds" data-theme={theme}>
-          {view === 'home' && <Home {...common} setBrand={setDraft} brands={brands} activeId={draft.id} go={go} onNew={createNew} onSelect={switchTo} onDelete={remove} onDuplicate={duplicate} onStarter={(s) => { setDraft(applyStarter(draft, s)); setView('board'); }} />}
+          {view === 'home' && <Home {...common} setBrand={setDraft} brands={brands} activeId={draft.id} go={go} onNew={createNew} onSelect={switchTo} onDelete={remove} onDuplicate={duplicate} onStarter={(s) => { undoable(`${s.name} aplicado a ${draft.name}`, applyStarter(draft, s)); setView('board'); }} />}
           {view === 'brief' && <Brief {...common} setBrand={setDraft} go={go} />}
           {view === 'foundations' && <Foundations {...common} tab={tab} setTab={setTab} />}
           {view === 'components' && (
@@ -212,8 +236,15 @@ export default function App() {
       </div>
 
       <div className={`ins-wrap ${insOpen ? 'open' : ''}`}>
-        <Inspector brand={draft} update={setDraft} sys={sys} dirty={dirty} storageError={storageError} onSave={save} onRandom={() => setDraft(randomize(draft))} />
+        <Inspector brand={draft} update={setDraft} sys={sys} dirty={dirty} storageError={storageError} undoable={undoable} onRandom={() => undoable('Marca aleatoria aplicada', randomize(draft))} />
       </div>
+      {toast && (
+        <div className="toast-app" role="status" key={toast.id}>
+          <span>{toast.msg}</span>
+          <button onClick={undo}>Deshacer</button>
+          <button className="x" onClick={() => setToast(null)} aria-label="Cerrar aviso"><Icon name="x" size={14} /></button>
+        </div>
+      )}
     </div>
     </MotionCfg.Provider>
     </BrandVars.Provider>

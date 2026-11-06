@@ -164,7 +164,11 @@ function Wizard({ brand, onFinish, onSkip }) {
       <header className="page-hd" style={{ alignItems: 'flex-start' }}>
         <div>
                     <h1 className="t-h2">Sienta las bases</h1>
-          <p className="muted" style={{ maxWidth: 620, marginTop: 6 }}>Antes de colores y componentes, acordad por qué creáis un sistema de diseño, para quién y qué debe conseguir. Seis preguntas cortas; unos cinco minutos.</p>
+          <p className="muted" style={{ maxWidth: 680, marginTop: 6 }}>Tokenforge crea tu sistema de diseño en cinco pasos. Empiezas aquí: seis preguntas, unos cinco minutos, que generan colores, tipografía, espaciado y una lista de componentes a tu medida. Todo se guarda solo y lo puedes cambiar después.</p>
+          <ol className="orient" aria-label="Los cinco pasos">
+            {['Bases', 'Foundations', 'Componentes', 'Tablero', 'Exportar'].map((t, k) => <li key={t} className={k === 0 ? 'on' : ''}><span>{k + 1}</span>{t}{k === 0 && <em>Ahora</em>}</li>)}
+          </ol>
+          <p className="orient-out"><Icon name="download" size={14} />Al final te llevas: tokens.css, Tailwind, archivo para Figma, motion.js, BRIEF.md y una guía para agentes de IA.</p>
         </div>
       </header>
       <div className="wiz-layout">
@@ -191,7 +195,7 @@ function Wizard({ brand, onFinish, onSkip }) {
               );
             })}
           </ol>
-          <button className="wiz-skip" onClick={onSkip}>Saltar por ahora<Icon name="chevRight" size={14} /></button>
+          <button className="wiz-skip" onClick={onSkip} title="Pasarás a Foundations con valores por defecto; puedes volver a las preguntas cuando quieras.">Saltar y usar valores por defecto<Icon name="chevRight" size={14} /></button>
         </aside>
         <div className="card wcard">
           <h2 className="t-h3">{step.title}</h2>

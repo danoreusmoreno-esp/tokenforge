@@ -171,7 +171,7 @@ function FontUploads({ fonts, onChange }) {
   );
 }
 
-export default function Inspector({ brand, update, sys, onRandom, onSave, dirty, storageError }) {
+export default function Inspector({ brand, update, sys, onRandom, dirty, storageError, undoable }) {
   const set = (patch) => update({ ...brand, ...patch });
   const subs = brand.subbrands ?? [];
   const sub = subs.find((x) => x.id === brand.activeSub) ?? null;
@@ -187,7 +187,7 @@ export default function Inspector({ brand, update, sys, onRandom, onSave, dirty,
     const s = newSubbrand(brand, subs.length + 1);
     update({ ...brand, subbrands: [...subs, s], activeSub: s.id });
   };
-  const removeSub = (id) => update({ ...brand, subbrands: subs.filter((x) => x.id !== id), activeSub: brand.activeSub === id ? null : brand.activeSub });
+  const removeSub = (id) => undoable(`Submarca «${subs.find((x) => x.id === id)?.name}» eliminada`, { ...brand, subbrands: subs.filter((x) => x.id !== id), activeSub: brand.activeSub === id ? null : brand.activeSub });
   const fams = sub ? SUB_FIELDS : FAMILIES;
 
   return (
@@ -274,9 +274,11 @@ export default function Inspector({ brand, update, sys, onRandom, onSave, dirty,
         <Choice options={Object.keys(MOTION_PRESETS)} value={brand.motion} onChange={(v) => set({ motion: v })} />
       </Section>
 
-      <div className="ins-foot">
-        <span className={`ins-status ${dirty || storageError ? 'warn' : ''}`}><Icon name={dirty || storageError ? 'info' : 'check2'} size={14} />{storageError ? 'El navegador está lleno' : dirty ? 'Sin guardar' : 'Guardado'}</span>
-        <button className="chrome-btn primary" onClick={onSave} disabled={!dirty}>Guardar marca</button>
+      <div className="ins-foot" aria-live="polite">
+        <span className={`ins-status ${storageError ? 'warn' : ''}`}>
+          <Icon name={storageError ? 'info' : dirty ? 'upload' : 'check2'} size={14} />
+          {storageError ? 'El navegador está lleno: quita fuentes o logos pesados' : dirty ? 'Guardando…' : 'Guardado en este navegador'}
+        </span>
       </div>
     </aside>
   );

@@ -16,7 +16,31 @@ function download(name, text) {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
 
-export default function Code({ sys, brand }) {
+// What each file is for, in one line (so nobody has to know the formats beforehand).
+const WHY = {
+  css: 'Variables CSS con claro, oscuro, móvil, submarcas y movimiento. Lo necesita cualquier web.',
+  json: 'Formato estándar W3C para pipelines como Style Dictionary o para otras herramientas.',
+  figma: 'Para Figma: impórtalo con el plugin Tokens Studio y se crean las Variables con modos.',
+  tailwind: 'Configuración de Tailwind que apunta a tus variables CSS.',
+  motion: 'Presets de movimiento para la librería Motion en React.',
+  agents: 'Guía para agentes de IA (Claude Code, Cursor…) para que usen tus tokens y no inventen.',
+  brief: 'Objetivos, principios y hoja de ruta para compartir con el equipo.',
+  readme: 'Índice de los archivos y cómo usarlos.',
+};
+
+/** Files to start with, from the stack chosen in Bases. */
+function recommended(brand) {
+  const stack = new Set(brand.brief?.stack ?? []);
+  const ids = new Set(['css', 'figma', 'agents']);
+  if (stack.has('tailwind')) ids.add('tailwind');
+  if (stack.has('react')) ids.add('motion');
+  if (stack.has('swiftui') || stack.has('compose') || stack.has('angular') || stack.has('vue') || stack.has('svelte')) ids.add('json');
+  if (brand.brief?.done) ids.add('brief');
+  return ids;
+}
+
+export default function Code({ sys, brand, go }) {
+  const rec = recommended(brand);
   const [tab, setTab] = useState('css');
   const [copied, setCopied] = useState('');
   const files = useMemo(() => EXPORTS.map((e) => ({ ...e, text: e.fn(sys) })), [sys]);
@@ -39,11 +63,16 @@ export default function Code({ sys, brand }) {
           </div>
         )}
       </header>
+      <div className="rec-strip">
+        <b>{brand.brief?.stack?.length ? 'Recomendado para tu stack' : 'Para empezar'}</b>
+        <span className="muted">{[...rec].map((id) => files.find((f) => f.id === id)?.file).filter(Boolean).join(' · ')}</span>
+        {!brand.brief?.stack?.length && <button className="link-btn" onClick={() => go('brief')}>Indica tu tecnología en Bases para afinarlo</button>}
+      </div>
       <div className="code-wrap">
         <div className="code-tabs">
           {files.map((f) => (
             <button key={f.id} className={f.id === tab ? 'on' : ''} onClick={() => setTab(f.id)}>
-              <span>{f.label}</span><span className="mono t-caption faint">{f.file}</span>
+              <span className="ct-row">{f.label}{rec.has(f.id) && <em className="rec-badge">Recomendado</em>}</span><span className="mono t-caption faint">{f.file}</span>
             </button>
           ))}
         </div>
@@ -56,6 +85,7 @@ export default function Code({ sys, brand }) {
               {!HOSTED && <button className="btn outline sm" onClick={() => download(cur.file, cur.text)}><Icon name="download" size={14} />Descargar</button>}
             </div>
           </div>
+          <p className="why-file">{WHY[cur.id]}</p>
           <pre className="code big">{cur.text}</pre>
         </div>
       </div>
@@ -63,6 +93,10 @@ export default function Code({ sys, brand }) {
         <div className="alert info" style={{ marginTop: 16 }}><Icon name="info" size={16} /><div><b>Llevarlo a Figma</b>Instala el plugin Tokens Studio → Tools → Load from file → elige figma-tokens.json → Styles &amp; Variables → Export to Figma. Tendrás un modo claro y uno oscuro para cada color.</div></div>
       )}
       <AssetsCard sys={sys} />
+      <nav className="next-step done-step" aria-label="Final">
+        <div className="ns-txt"><span className="muted small">Último paso</span><b>Tu sistema está listo para entregar</b><span className="muted">Copia los archivos recomendados. Si cambias algo, vuelve aquí: los archivos se regeneran solos.</span></div>
+        <button className="pill" onClick={() => go('home')}>Volver al inicio</button>
+      </nav>
     </div>
   );
 }

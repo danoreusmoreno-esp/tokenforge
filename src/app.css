@@ -934,3 +934,45 @@ a.pill.sm { text-decoration: none; }
 .spring-line { stroke: var(--c-ink); }
 :root[data-theme="dark"] .spring-line { stroke: var(--c-ink); }
 @media (max-width: 1100px) { .wiz-layout .wcard > h2 { display: none; } }
+
+/* BECO: orientation, next step, undo, autosave, export guidance */
+.app.no-ins { grid-template-columns: 88px minmax(0, 1fr); }
+.app.no-ins .ins-wrap { display: none; }
+.orient { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0; padding: 0; }
+.orient li { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 6px; border-radius: 999px; background: var(--c-sheet); font-size: 13px; color: var(--c-text-2); }
+.orient li span { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--c-raised); font-weight: 500; font-variant-numeric: tabular-nums; }
+.orient li.on { background: var(--c-ink); color: var(--c-on-ink); }
+.orient li.on span { background: var(--c-tint); color: var(--c-tint-ink); }
+.orient li em { font-style: normal; font-size: 11px; opacity: .7; }
+.orient-out { display: flex; align-items: center; gap: 8px; margin-top: 12px !important; font-size: 13px; color: var(--c-text-2); }
+.next-step { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; background: var(--c-sheet); border-radius: var(--r-card); padding: 24px 28px; margin: 0 0 var(--gap); }
+.ns-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 320px; }
+.ns-txt b { font: 500 20px/26px var(--c-font); letter-spacing: -0.01em; }
+.next-step.done-step { background: var(--c-tint); }
+.next-step.done-step .muted, .next-step.done-step b { color: var(--c-tint-ink); }
+.board-page { padding-bottom: 32px; }
+.board-page .page-hd p { max-width: 70ch; }
+.board-page .board { border-radius: var(--r-card); margin-bottom: var(--gap); min-height: 0; }
+.toast-app { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 6px; padding: 8px 8px 8px 20px; border-radius: 999px; background: #17171a; color: #fff;
+  box-shadow: 0 16px 40px rgba(0,0,0,.24); font-size: 14px; animation: toast-in 320ms cubic-bezier(.23,1,.32,1) both; max-width: calc(100vw - 32px); }
+.toast-app span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 8px; }
+.toast-app button { all: unset; height: 36px; padding: 0 16px; border-radius: 999px; background: #fff; color: #17171a; font-weight: 500; cursor: pointer; }
+.toast-app button.x { width: 36px; padding: 0; display: grid; place-items: center; background: transparent; color: #a1a1aa; }
+.toast-app button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } }
+@media (prefers-reduced-motion: reduce) { .toast-app { animation: none; } }
+.rec-strip { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; background: var(--c-sheet); border-radius: 999px; padding: 12px 22px; margin: 0 0 16px; font-size: 14px; }
+.rec-strip b { font-weight: 500; }
+.link-btn { all: unset; color: var(--c-text); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 13px; }
+.link-btn:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+.ct-row { display: flex; align-items: center; gap: 8px; }
+.rec-badge { font-style: normal; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 999px; background: var(--c-tint); color: var(--c-tint-ink); }
+.code-tabs button.on .rec-badge { background: var(--c-on-ink); color: var(--c-ink); }
+.why-file { margin: 0; padding: 12px 16px; font-size: 13px; color: var(--c-text-2); border-bottom: 1px solid var(--c-rule); }
+/* Rail labels always visible on desktop: recognition over recall */
+@media (min-width: 861px) {
+  .rail-nav { gap: 6px; }
+  .rail-nav button { width: 72px; height: 60px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .rail-nav .rail-label { position: static; width: auto; height: auto; clip: auto; overflow: visible; font: 500 11px/1 var(--c-font); letter-spacing: 0; }
+  .rail-nav button[data-tip]::after { display: none; }
+}

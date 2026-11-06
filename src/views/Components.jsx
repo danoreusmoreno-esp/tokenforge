@@ -3,6 +3,7 @@ import { COMPONENTS, CATEGORIES, SYSTEMS, FEATURED, CORE_IDS, systemLabel } from
 import { componentTokens } from '../engine/exporters.js';
 import { Preview } from '../components/previews.jsx';
 import { Icon } from '../components/Icons.jsx';
+import NextStep from '../components/NextStep.jsx';
 import { ENTER, HOVER, TAP, EFFECTS, EFFECT_FOR, SPRINGS, motionFor, defaultMotion } from '../engine/motion.js';
 
 const TOTAL = FEATURED.length;
@@ -47,7 +48,7 @@ function NamesTable({ c }) {
   );
 }
 
-function Catalogue({ brand, setComponents, open }) {
+function Catalogue({ brand, setComponents, open, go }) {
   const [filter, setFilter] = useState('all');
   const [sys, setSys] = useState('all');
   const enabled = new Set(brand.components);
@@ -101,6 +102,7 @@ function Catalogue({ brand, setComponents, open }) {
           </div>
         </section>
       ))}
+      <NextStep to="board" go={go} done={`${brand.components.length} componentes en tu sistema`} />
     </div>
   );
 }

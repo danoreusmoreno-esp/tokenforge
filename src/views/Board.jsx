@@ -1,13 +1,21 @@
 import { Preview } from '../components/previews.jsx';
 import { COMPONENTS } from '../engine/catalog.js';
 import { Live } from '../components/Live.jsx';
+import NextStep from '../components/NextStep.jsx';
 
 /** A wall of live components plus foundation specimens, all painted with the brand. */
-export default function Board({ sys, appearance, onOpen }) {
+export default function Board({ sys, appearance, onOpen, go }) {
   const ramp = sys.appearances[appearance].ramps;
   const enabled = new Set(sys.brand.components ?? []);
   const cards = COMPONENTS.filter((c) => enabled.has(c.id));
   return (
+    <div className="page board-page">
+      <header className="page-hd">
+        <div>
+          <h1 className="t-h2">Tablero</h1>
+          <p>Todos los componentes de tu sistema juntos, con tus tokens. Cambia a modo oscuro en la barra lateral y revisa que todo se lee bien antes de exportar. Pulsa uno para editarlo.</p>
+        </div>
+      </header>
     <Live className="board">
       <div className="card bcard span2">
         <div className="ramp">{ramp.accent.map((h, i) => <span key={i} style={{ background: h }} title={`accent-${i + 1} ${h}`} />)}</div>
@@ -31,5 +39,7 @@ export default function Board({ sys, appearance, onOpen }) {
         </div>
       ))}
     </Live>
+      <NextStep to="code" go={go} done="¿Todo se ve bien?" />
+    </div>
   );
 }
