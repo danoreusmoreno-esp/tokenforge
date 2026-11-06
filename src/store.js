@@ -10,7 +10,7 @@ export function uid() {
 }
 
 export function newBrand(over = {}) {
-  return { ...structuredClone(DEFAULT_BRAND), id: uid(), components: [...CORE_IDS], componentTokens: {}, updatedAt: Date.now(), ...over };
+  return { ...structuredClone(DEFAULT_BRAND), id: uid(), components: [...CORE_IDS], componentTokens: {}, logo: null, subbrands: [], activeSub: null, customFonts: [], updatedAt: Date.now(), ...over };
 }
 
 export function loadBrands() {
@@ -23,11 +23,12 @@ export function loadBrands() {
 
 function migrate(b) {
   const base = newBrand();
-  return { ...base, ...b, colors: { ...base.colors, ...b.colors }, radius: { ...base.radius, ...b.radius }, components: b.components ?? base.components, componentTokens: b.componentTokens ?? {} };
+  return { ...base, ...b, colors: { ...base.colors, ...b.colors }, radius: { ...base.radius, ...b.radius }, components: b.components ?? base.components, componentTokens: b.componentTokens ?? {}, subbrands: b.subbrands ?? [], customFonts: b.customFonts ?? [], logo: b.logo ?? null, activeSub: b.activeSub ?? null };
 }
 
+/** Returns false when the browser refuses (usually quota: logos and fonts are stored inline). */
 export function saveBrands(list) {
-  try { localStorage.setItem(KEY, JSON.stringify(list)); } catch { /* ignore */ }
+  try { localStorage.setItem(KEY, JSON.stringify(list)); return true; } catch { return false; }
 }
 export function loadActive() {
   try { return localStorage.getItem(ACTIVE); } catch { return null; }

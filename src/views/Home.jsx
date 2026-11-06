@@ -3,7 +3,8 @@ import { STARTERS } from '../store.js';
 import { Icon } from '../components/Icons.jsx';
 import { Live } from '../components/Live.jsx';
 import { COMPONENTS, CATEGORIES, SYSTEMS, FEATURED, systemLabel } from '../engine/catalog.js';
-import { tokenCount } from '../engine/tokens.js';
+import { tokenCount, computeSystem } from '../engine/tokens.js';
+import { effectiveBrand, MAX_SUBBRANDS, newSubbrand } from '../engine/brands.js';
 
 const RADIUS = { none: 0, subtle: 4, soft: 8, rounded: 12, large: 18, pill: 999 };
 
@@ -16,7 +17,43 @@ function RampFan({ ramp }) {
   );
 }
 
-export default function Home({ sys, brand, brands, activeId, go, onStarter, onNew, onSelect, onDelete, onDuplicate }) {
+/** Master brand and sub-brands side by side: logo, accent ramp, fonts; click to edit one. */
+function Architecture({ brand, setBrand }) {
+  const subs = brand.subbrands ?? [];
+  const items = [{ id: null, name: brand.name, b: brand, master: true }, ...subs.map((s) => ({ id: s.id, name: s.name, b: effectiveBrand(brand, s.id) }))];
+  return (
+    <section className="tile arch-tile" aria-labelledby="h-arch">
+      <div className="tile-hd">
+        <h2 id="h-arch" className="tile-t">Marcas del sistema</h2>
+        <span className="muted small">{subs.length ? `Principal + ${subs.length} de ${MAX_SUBBRANDS} submarcas` : 'Añade hasta 4 submarcas que comparten estructura'}</span>
+      </div>
+      <ul className="arch">
+        {items.map(({ id, name, b, master }) => {
+          const ramp = computeSystem(b).appearances.light.ramps.accent;
+          const on = (brand.activeSub ?? null) === id;
+          return (
+            <li key={id ?? 'master'}>
+              <button className={on ? 'on' : ''} onClick={() => setBrand({ ...brand, activeSub: id })} aria-pressed={on}>
+                <span className="arch-logo">{b.logo ? <img src={b.logo} alt={`Logo de ${name}`} /> : <span style={{ fontFamily: `'${b.headingFont}'` }}>{name.slice(0, 1)}</span>}</span>
+                <span className="arch-ramp">{ramp.slice(2, 11).map((h, i) => <i key={i} style={{ background: h }} />)}</span>
+                <span className="arch-txt"><b>{name}</b><span className="muted small">{master ? 'Principal' : 'Submarca'} · {b.headingFont}</span></span>
+              </button>
+            </li>
+          );
+        })}
+        {subs.length < MAX_SUBBRANDS && (
+          <li>
+            <button className="arch-add" onClick={() => { const s = newSubbrand(brand, subs.length + 1); setBrand({ ...brand, subbrands: [...subs, s], activeSub: s.id }); }}>
+              <Icon name="plus" size={18} /><span>Añadir submarca</span>
+            </button>
+          </li>
+        )}
+      </ul>
+    </section>
+  );
+}
+
+export default function Home({ sys, brand, brands, activeId, go, onStarter, onNew, onSelect, onDelete, onDuplicate, setBrand }) {
   const [confirmId, setConfirmId] = useState(null);
   const passing = sys.audit.filter((r) => r.wcagPass).length;
   const passLight = sys.audit.filter((r) => r.appearance === 'light' && r.wcagPass).length;
@@ -72,6 +109,8 @@ export default function Home({ sys, brand, brands, activeId, go, onStarter, onNe
           </ol>
         </section>
 
+        <Architecture brand={brand} setBrand={setBrand} />
+
         <section className="tile metric" aria-labelledby="h-contrast">
           <div className="tile-hd"><h2 id="h-contrast" className="tile-label">Contraste</h2><button className="round" onClick={() => go('foundations')} aria-label="Ver la auditoría de contraste"><Icon name="chevRight" size={16} /></button></div>
           <p className="big tnum">{passing}<span>/{sys.audit.length}</span></p>
@@ -112,8 +151,8 @@ export default function Home({ sys, brand, brands, activeId, go, onStarter, onNe
           <ul className="brand-list">
             {brands.map((b) => (
               <li key={b.id} className={b.id === activeId ? 'on' : ''}>
-                <span className="brand-sw">{['accent', 'neutral', 'success', 'critical', 'warning', 'info'].map((f) => <i key={f} style={{ background: b.colors[f] }} />)}</span>
-                <div className="bl-txt"><b>{b.name}</b><span className="muted small">{b.font} · {b.components?.length ?? 0} componentes</span></div>
+                {b.logo ? <img className="brand-logo" src={b.logo} alt="" /> : <span className="brand-sw">{['accent', 'neutral', 'success', 'critical', 'warning', 'info'].map((f) => <i key={f} style={{ background: b.colors[f] }} />)}</span>}
+                <div className="bl-txt"><b>{b.name}</b><span className="muted small">{(b.subbrands?.length ?? 0) > 0 ? `${b.subbrands.length + 1} marcas · ` : ''}{b.components?.length ?? 0} componentes</span></div>
                 {b.id === activeId ? <span className="chip-on">Editando</span> : <button className="pill sm" onClick={() => onSelect(b.id)}>Abrir</button>}
                 <button className="round" aria-label={`Duplicar ${b.name}`} title="Duplicar" onClick={() => onDuplicate(b.id)}><Icon name="copy" size={15} /></button>
                 {brands.length > 1 && (confirmId === b.id

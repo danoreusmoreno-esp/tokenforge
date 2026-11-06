@@ -1,4 +1,5 @@
-import { FAMILIES } from './tokens.js';
+import { FAMILIES, computeSystem } from './tokens.js';
+import { effectiveBrand, slug } from './brands.js';
 import { COMPONENTS } from './catalog.js';
 import { QUESTIONS, toBrief } from './brief.js';
 
@@ -50,7 +51,7 @@ export function componentTokens(sys, id) {
 
 const block = (sel, vars) => `${sel} {\n${Object.entries(vars).map(([k, v]) => `  ${k}: ${v};`).join('\n')}\n}`;
 
-export function toCSS(sys) {
+function cssCore(sys) {
   const comps = sys.brand.components ?? [];
   const light = cssVars(sys, 'light', 'desktop', comps);
   const dark = cssVars(sys, 'dark', 'desktop');
@@ -78,7 +79,7 @@ export function toCSS(sys) {
 }
 
 /** W3C Design Tokens Community Group format, with light/dark as $extensions modes. */
-export function toDTCG(sys) {
+function dtcgCore(sys) {
   const L = sys.appearances.light;
   const D = sys.appearances.dark;
   const modes = (l, d) => ({ $extensions: { modes: { light: l, dark: d } } });
@@ -118,11 +119,11 @@ export function toDTCG(sys) {
     out.component[id] = {};
     for (const [k, v] of Object.entries(t)) out.component[id][k] = { $type: /px$/.test(v) ? 'dimension' : 'number', $value: v };
   }
-  return JSON.stringify(out, null, 2);
+  return out;
 }
 
 /** Tokens Studio for Figma (multi-file sets: global, light, dark). Import into Figma Variables. */
-export function toFigma(sys) {
+function figmaCore(sys) {
   const L = sys.appearances.light;
   const D = sys.appearances.dark;
   const set = (ap) => {
@@ -145,7 +146,7 @@ export function toFigma(sys) {
     const fam = name === 'display' || name.startsWith('h') ? '{fontFamilies.heading}' : '{fontFamilies.body}';
     global.typography[name] = { type: 'typography', value: { fontFamily: fam, fontSize: `{fontSize.${name}}`, lineHeight: `{lineHeight.${name}}`, fontWeight: `{fontWeight.${name}}` } };
   }
-  return JSON.stringify({
+  return {
     global,
     light: set(L),
     dark: set(D),
@@ -154,10 +155,12 @@ export function toFigma(sys) {
       { id: 'dark', name: 'Dark', selectedTokenSets: { global: 'source', dark: 'enabled' } },
     ],
     $metadata: { tokenSetOrder: ['global', 'light', 'dark'] },
-  }, null, 2);
+    _set: set,
+  };
 }
 
-export function toTailwind(sys) {
+export function toTailwind(sys0) {
+  const sys = family(sys0).m;
   const colors = {};
   for (const fam of FAMILIES) {
     colors[fam] = {};
@@ -186,7 +189,7 @@ export function toTailwind(sys) {
 }
 
 /** Agent context: tells AI coding agents which tokens exist and how to use them. */
-export function toAgents(sys) {
+function agentsCore(sys) {
   const r = sys.appearances.light.roles;
   const comps = (sys.brand.components ?? []).map((id) => COMPONENTS.find((c) => c.id === id)).filter(Boolean);
   const t = sys.type.desktop;
@@ -237,7 +240,7 @@ function principlesBlock(sys) {
   return `## Principles (apply them when a rule below does not decide)\n${pr.map((x) => `- **${x.en[0]}** — ${x.en[1]}`).join('\n')}\n- Accessibility target: WCAG 2.2 ${b.a11y}.\n\n`;
 }
 
-export function toReadme(sys) {
+function readmeCore(sys) {
   return `# ${sys.brand.name} tokens
 
 Files:
@@ -258,8 +261,116 @@ export const EXPORTS = [
   { id: 'figma', label: 'Figma', file: 'figma-tokens.json', fn: toFigma },
   { id: 'tailwind', label: 'Tailwind', file: 'tailwind.config.js', fn: toTailwind },
   { id: 'agents', label: 'Agente IA', file: 'AGENTS.md', fn: toAgents },
-  { id: 'brief', label: 'Brief', file: 'BRIEF.md', fn: toBrief },
+  { id: 'brief', label: 'Brief', file: 'BRIEF.md', fn: (sys) => toBrief(family(sys).m) },
   { id: 'readme', label: 'README', file: 'README.md', fn: toReadme },
 ];
 
 export { kebab };
+
+
+// ---------------------------------------------------------------------------
+// Brand architecture: the master brand at :root and each sub-brand as a theme.
+
+/** The master system plus one system per sub-brand, whatever brand is being previewed. */
+export function family(sys) {
+  const master = sys.brand.__master ?? sys.brand;
+  const m = sys.brand.__master || sys.brand.subName ? computeSystem(master) : sys;
+  const subs = (master.subbrands ?? []).map((sub) => ({ sub, slug: slug(sub.name), sys: computeSystem(effectiveBrand(master, sub.id)) }));
+  return { master, m, subs };
+}
+
+const BRAND_KEYS = (k, roles) => k.startsWith('--color-accent-') || k.startsWith('--color-neutral-') || roles.has(k.slice(2)) || k === '--font-body' || k === '--font-heading';
+
+function subCSS({ sub, slug: s, sys }) {
+  const roles = new Set(Object.keys(sys.appearances.light.roles));
+  const pick = (vars) => Object.fromEntries(Object.entries(vars).filter(([k]) => BRAND_KEYS(k, roles)));
+  const light = pick(cssVars(sys, 'light'));
+  const dark = Object.fromEntries(Object.entries(pick(cssVars(sys, 'dark'))).filter(([k]) => !k.startsWith('--font')));
+  return [
+    `/* Sub-brand: ${sub.name}. Put data-brand="${s}" on <html> or on any container. */`,
+    block(`[data-brand="${s}"]`, light),
+    block(`[data-theme="dark"] [data-brand="${s}"], [data-theme="dark"][data-brand="${s}"]`, dark),
+  ].join('\n');
+}
+
+function fontFaces(master) {
+  const fonts = master.customFonts ?? [];
+  if (!fonts.length) return '';
+  return `/* Brand fonts: copy the files into ./fonts/ next to this stylesheet. */\n` + fonts.map((f) =>
+    `@font-face {\n  font-family: '${f.name}';\n  src: url('./fonts/${f.file}') format('${f.format}');\n  font-display: swap;\n}`).join('\n');
+}
+
+export function toCSS(sys0) {
+  const { master, m, subs } = family(sys0);
+  return [fontFaces(master), cssCore(m), ...subs.map(subCSS)].filter(Boolean).join('\n\n');
+}
+
+export function toDTCG(sys0) {
+  const { m, subs } = family(sys0);
+  const out = dtcgCore(m);
+  if (subs.length) {
+    out.brand = {};
+    for (const { sub, slug: s, sys } of subs) {
+      const L = sys.appearances.light; const D = sys.appearances.dark;
+      const modes = (l, d) => ({ $extensions: { modes: { light: l, dark: d } } });
+      const b = { $description: `Sub-brand ${sub.name}: overrides accent, neutral, roles and fonts`, color: {}, role: {}, font: {} };
+      for (const fam of ['accent', 'neutral']) {
+        b.color[fam] = {};
+        L.ramps[fam].forEach((hex, i) => (b.color[fam][i + 1] = { $type: 'color', $value: hex, ...modes(hex, D.ramps[fam][i]) }));
+      }
+      for (const k of Object.keys(L.roles)) b.role[k] = { $type: 'color', $value: L.roles[k], ...modes(L.roles[k], D.roles[k]) };
+      b.font = { body: { $type: 'fontFamily', $value: sys.fonts.body }, heading: { $type: 'fontFamily', $value: sys.fonts.heading } };
+      out.brand[s] = b;
+    }
+  }
+  return JSON.stringify(out, null, 2);
+}
+
+export function toFigma(sys0) {
+  const { m, subs } = family(sys0);
+  const out = figmaCore(m);
+  const set = out._set; delete out._set;
+  for (const { sub, slug: s, sys } of subs) {
+    out[`light-${s}`] = set(sys.appearances.light);
+    out[`dark-${s}`] = set(sys.appearances.dark);
+    out.global.fontFamilies[`body-${s}`] = { value: sys.fonts.body, type: 'fontFamilies' };
+    out.global.fontFamilies[`heading-${s}`] = { value: sys.fonts.heading, type: 'fontFamilies' };
+    out.$themes.push(
+      { id: `light-${s}`, name: `${sub.name} · Light`, group: 'Brand', selectedTokenSets: { global: 'source', [`light-${s}`]: 'enabled' } },
+      { id: `dark-${s}`, name: `${sub.name} · Dark`, group: 'Brand', selectedTokenSets: { global: 'source', [`dark-${s}`]: 'enabled' } },
+    );
+    out.$metadata.tokenSetOrder.push(`light-${s}`, `dark-${s}`);
+  }
+  return JSON.stringify(out, null, 2);
+}
+
+export function toAgents(sys0) {
+  const { master, m, subs } = family(sys0);
+  let md = agentsCore(m);
+  const fonts = master.customFonts ?? [];
+  if (subs.length) {
+    md += `\n## Brands in this system\nOne design system, ${subs.length + 1} brands. Structure (spacing, radius, shadow, motion, status colours, components) is shared; each sub-brand overrides accent, neutral, the colour roles and fonts.\n\n| Brand | Activate with | Accent | Fonts |\n|---|---|---|---|\n| ${master.name} (master) | default (\`:root\`) | ${master.colors.accent} | ${m.fonts.heading} / ${m.fonts.body} |\n${subs.map(({ sub, slug: s, sys }) => `| ${sub.name} | \`data-brand="${s}"\` | ${sys.brand.colors.accent} | ${sys.fonts.heading} / ${sys.fonts.body} |`).join('\n')}\n\nNever mix two brands' roles in one surface. Set \`data-brand\` on the page root or on a container to switch everything inside it.\n`;
+  }
+  if (fonts.length) md += `\n## Brand fonts\nSelf-hosted via \`@font-face\` in tokens.css (files in \`./fonts/\`): ${fonts.map((f) => `${f.name} (${f.file})`).join(', ')}. Do not swap them for a Google font.\n`;
+  if (master.logo || subs.some((x) => x.sub.logo)) md += `\n## Logos\nUse the supplied logo files as they are: no recolouring, no effects, keep clear space of at least the cap height around them.\n`;
+  return md;
+}
+
+export function toReadme(sys0) {
+  const { master, m, subs } = family(sys0);
+  let md = readmeCore(m);
+  if (subs.length) md += `\nSub-brands: ${subs.map(({ sub, slug: s }) => `${sub.name} (\`data-brand="${s}"\`)`).join(', ')}.\n`;
+  if ((master.customFonts ?? []).length) md += `\nBrand fonts: put ${master.customFonts.map((f) => `\`${f.file}\``).join(', ')} in \`./fonts/\`.\n`;
+  return md;
+}
+
+/** Binary brand assets (logos and font files) for the Export view. */
+export function brandAssets(sys0) {
+  const { master, subs } = family(sys0);
+  const ext = (d) => ({ 'image/svg+xml': 'svg', 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }[d.slice(5, d.indexOf(';'))] ?? 'png');
+  const list = [];
+  if (master.logo) list.push({ kind: 'Logo', name: master.name, file: `logo-${slug(master.name)}.${ext(master.logo)}`, dataUrl: master.logo });
+  for (const { sub, slug: s } of subs) if (sub.logo) list.push({ kind: 'Logo', name: sub.name, file: `logo-${s}.${ext(sub.logo)}`, dataUrl: sub.logo });
+  for (const f of master.customFonts ?? []) list.push({ kind: 'Fuente', name: f.name, file: `fonts/${f.file}`, dataUrl: f.dataUrl });
+  return list;
+}

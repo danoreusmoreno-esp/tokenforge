@@ -5,6 +5,7 @@ import { loadBrands, saveBrands, loadActive, saveActive, newBrand, randomize, ra
 import Inspector from './components/Inspector.jsx';
 import { Icon } from './components/Icons.jsx';
 import { BrandVars } from './components/Live.jsx';
+import { effectiveBrand } from './engine/brands.js';
 import Home from './views/Home.jsx';
 import Brief from './views/Brief.jsx';
 import Board from './views/Board.jsx';
@@ -34,9 +35,24 @@ function getTheme() {
   return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
-function useGoogleFonts(fonts) {
-  const key = [...new Set(fonts)].join('|');
+/** Register the brand's uploaded font files so previews can use them. */
+function useCustomFonts(fonts) {
+  const key = fonts.map((f) => f.id).join('|');
   useEffect(() => {
+    if (!('FontFace' in window)) return;
+    for (const f of fonts) {
+      if ([...document.fonts].some((ff) => ff.family.replace(/"/g, '') === f.name && ff.tfId === f.id)) continue;
+      const face = new FontFace(f.name, `url(${f.dataUrl}) format('${f.format}')`, { display: 'swap' });
+      face.tfId = f.id;
+      face.load().then((ff) => document.fonts.add(ff)).catch(() => { /* broken file: the stack falls back */ });
+    }
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+}
+
+function useGoogleFonts(fonts) {
+  const key = [...new Set(fonts)].filter(Boolean).join('|');
+  useEffect(() => {
+    if (!key) return;
     const fams = key.split('|').map((f) => `family=${f.replace(/ /g, '+')}:wght@400;500;600;700`).join('&');
     let link = document.getElementById('tf-fonts');
     if (!link) {
@@ -75,7 +91,8 @@ export default function App() {
   useEffect(() => {
     if (location.hash.startsWith('#b=')) history.replaceState(null, '', location.pathname + location.search);
   }, []);
-  useEffect(() => { saveBrands(brands); }, [brands]);
+  const [storageError, setStorageError] = useState(false);
+  useEffect(() => { setStorageError(!saveBrands(brands)); }, [brands]);
   useEffect(() => { saveActive(draft.id); }, [draft.id]);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -90,9 +107,12 @@ export default function App() {
     document.querySelector('.main')?.scrollTo?.(0, 0);
   }, [view, tab, detail]);
 
-  const sys = useMemo(() => computeSystem(draft), [draft]);
+  // The system shown and previewed: the master brand, or the active sub-brand on top of it.
+  const sys = useMemo(() => computeSystem({ ...effectiveBrand(draft), __master: draft }), [draft]);
   const vars = useMemo(() => cssVars(sys, theme, 'desktop', draft.components), [sys, theme, draft.components]);
-  useGoogleFonts([sys.fonts.body, sys.fonts.heading, sys.fonts.mono]);
+  const customNames = new Set((draft.customFonts ?? []).map((f) => f.name));
+  useCustomFonts(draft.customFonts ?? []);
+  useGoogleFonts([sys.fonts.body, sys.fonts.heading, sys.fonts.mono].filter((f) => !customNames.has(f)));
 
   const saved = brands.find((b) => b.id === draft.id);
   const dirty = !saved || JSON.stringify({ ...saved, updatedAt: 0 }) !== JSON.stringify({ ...draft, updatedAt: 0 });
@@ -159,8 +179,10 @@ export default function App() {
         <header className="topbar-app">
           <button className="pill icon only-mobile" onClick={() => setNavOpen(!navOpen)} aria-label="Menú"><Icon name="menu" size={18} /></button>
           <button className="brand-pill" onClick={() => go('home')} title="Tus marcas">
-            <span className="sw-dots">{['accent', 'neutral', 'success', 'critical'].map((f) => <i key={f} style={{ background: draft.colors[f] }} />)}</span>
-            <span className="sw-name">{draft.name}</span>
+            {sys.brand.logo
+              ? <img className="pill-logo" src={sys.brand.logo} alt="" />
+              : <span className="sw-dots">{['accent', 'neutral', 'success', 'critical'].map((f) => <i key={f} style={{ background: sys.brand.colors[f] }} />)}</span>}
+            <span className="sw-name">{draft.name}{sys.brand.subName ? ` · ${sys.brand.subName}` : ''}</span>
             <span className="crumb-sep only-desktop">/</span>
             <span className="crumb-cur only-desktop">{current.label}</span>
           </button>
@@ -172,7 +194,7 @@ export default function App() {
         </header>
 
         <main className="main ds" data-theme={theme}>
-          {view === 'home' && <Home {...common} brands={brands} activeId={draft.id} go={go} onNew={createNew} onSelect={switchTo} onDelete={remove} onDuplicate={duplicate} onStarter={(s) => { setDraft(applyStarter(draft, s)); setView('board'); }} />}
+          {view === 'home' && <Home {...common} setBrand={setDraft} brands={brands} activeId={draft.id} go={go} onNew={createNew} onSelect={switchTo} onDelete={remove} onDuplicate={duplicate} onStarter={(s) => { setDraft(applyStarter(draft, s)); setView('board'); }} />}
           {view === 'brief' && <Brief {...common} setBrand={setDraft} go={go} />}
           {view === 'foundations' && <Foundations {...common} tab={tab} setTab={setTab} />}
           {view === 'components' && (
@@ -186,7 +208,7 @@ export default function App() {
       </div>
 
       <div className={`ins-wrap ${insOpen ? 'open' : ''}`}>
-        <Inspector brand={draft} update={setDraft} sys={sys} dirty={dirty} onSave={save} onRandom={() => setDraft(randomize(draft))} />
+        <Inspector brand={draft} update={setDraft} sys={sys} dirty={dirty} storageError={storageError} onSave={save} onRandom={() => setDraft(randomize(draft))} />
       </div>
     </div>
     </BrandVars.Provider>

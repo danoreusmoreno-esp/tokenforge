@@ -71,3 +71,26 @@ test('exports include BRIEF.md and principles reach AGENTS.md', () => {
   assert.ok(EXPORTS.some((e) => e.file === 'BRIEF.md'));
   assert.match(EXPORTS.find((e) => e.id === 'agents').fn(sys), /Predictable/);
 });
+
+import { effectiveBrand, newSubbrand, slug } from '../src/engine/brands.js';
+import { toCSS as css2, toFigma as fig2, toDTCG as dtcg2, toAgents as ag2 } from '../src/engine/exporters.js';
+
+test('sub-brands override identity and export as data-brand themes', () => {
+  const master = { ...brand, name: 'Grupo Sol', subbrands: [], customFonts: [{ id: 'f1', name: 'Sol Sans', file: 'SolSans.woff2', format: 'woff2', size: 1000, dataUrl: 'data:font/woff2;base64,AA==' }] };
+  const s1 = { ...newSubbrand(master, 1), name: 'Sol Playa', colors: { accent: '#0e7490', neutral: '' }, font: 'Sol Sans' };
+  master.subbrands = [s1];
+  const eff = effectiveBrand(master, s1.id);
+  assert.equal(eff.colors.accent, '#0e7490');
+  assert.equal(eff.colors.neutral, master.colors.neutral);
+  assert.equal(eff.font, 'Sol Sans');
+  assert.equal(eff.density, master.density);
+  const sys = computeSystem({ ...eff, __master: master });
+  const css = css2(sys);
+  assert.match(css, /@font-face \{\n  font-family: 'Sol Sans';/);
+  assert.match(css, new RegExp(`\\[data-brand="${slug('Sol Playa')}"\\]`));
+  assert.match(css, /:root \{[\s\S]*--color-accent-9: #7c5cff/);
+  const fig = JSON.parse(fig2(sys));
+  assert.ok(fig['light-sol-playa'] && fig.$themes.some((t) => t.id === 'dark-sol-playa'));
+  assert.ok(JSON.parse(dtcg2(sys)).brand['sol-playa'].role['accent-solid']);
+  assert.match(ag2(sys), /data-brand="sol-playa"/);
+});

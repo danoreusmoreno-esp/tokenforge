@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { EXPORTS } from '../engine/exporters.js';
+import { EXPORTS, brandAssets } from '../engine/exporters.js';
 import { Icon } from '../components/Icons.jsx';
 import { encodeBrand } from '../store.js';
 
@@ -62,6 +62,28 @@ export default function Code({ sys, brand }) {
       {tab === 'figma' && (
         <div className="alert info" style={{ marginTop: 16 }}><Icon name="info" size={16} /><div><b>Llevarlo a Figma</b>Instala el plugin Tokens Studio → Tools → Load from file → elige figma-tokens.json → Styles &amp; Variables → Export to Figma. Tendrás un modo claro y uno oscuro para cada color.</div></div>
       )}
+      <AssetsCard sys={sys} />
     </div>
+  );
+}
+
+function AssetsCard({ sys }) {
+  const assets = brandAssets(sys);
+  return (
+    <section className="fd-sec assets" aria-labelledby="h-assets">
+      <h2 id="h-assets">Recursos de marca</h2>
+      <p>{assets.length ? `Logos y fuentes propias del sistema. El CSS ya referencia las fuentes en ./fonts/.${HOSTED ? ' Para descargarlos, abre la versión web en danoreusmoreno-esp.github.io/tokenforge.' : ''}` : 'Aún no hay logos ni fuentes propias. Súbelos desde el inspector, en Marcas y Tipografía.'}</p>
+      {assets.length > 0 && (
+        <ul className="asset-list">
+          {assets.map((a) => (
+            <li key={a.file}>
+              <span className="asset-prev">{a.kind === 'Logo' ? <img src={a.dataUrl} alt={`Logo de ${a.name}`} /> : <span style={{ fontFamily: `'${a.name}'` }}>Aa</span>}</span>
+              <span className="asset-txt"><b>{a.name}</b><span className="muted small">{a.kind} · {a.file}</span></span>
+              {!HOSTED && <a className="pill sm" href={a.dataUrl} download={a.file.split('/').pop()}>Descargar</a>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
