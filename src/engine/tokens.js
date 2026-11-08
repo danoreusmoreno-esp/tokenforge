@@ -7,7 +7,35 @@ export const SEMANTIC_FAMILIES = ['success', 'warning', 'critical', 'info'];
 export const FAMILIES = [...BRAND_FAMILIES, 'neutral', ...SEMANTIC_FAMILIES];
 /** Families that derive from the primary when the user leaves them empty. */
 export const DERIVED = { secondary: deriveSecondary, tertiary: deriveTertiary };
-const ROLE_FAMILIES = [...BRAND_FAMILIES, ...SEMANTIC_FAMILIES];
+
+// Custom semantic colours: the team adds its own meanings (e.g. "premium", "beta", "pending").
+export const MAX_CUSTOM_SEMANTICS = 6;
+// Names a custom semantic cannot take: they would collide with existing families or role prefixes.
+const RESERVED = new Set([...FAMILIES, 'bg', 'border', 'text', 'focus', 'color', 'space', 'radius', 'shadow', 'font', 'duration', 'ease', 'layout', 'component', 'section', 'spring', 'brand', 'accent']);
+
+export function semanticKey(name = '') {
+  return name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'semantic';
+}
+
+/** A key that is valid, not reserved and not used by another custom semantic. */
+export function uniqueSemanticKey(name, taken = []) {
+  const base = semanticKey(name);
+  let key = RESERVED.has(base) ? `${base}-custom` : base;
+  for (let n = 2; taken.includes(key); n++) key = `${base}-${n}`;
+  return key;
+}
+
+export function customSemantics(brand) {
+  return (brand.customSemantics ?? []).filter((c) => c && c.key && c.color).slice(0, MAX_CUSTOM_SEMANTICS);
+}
+/** Every family of this brand: fixed families plus its custom semantics. */
+export function familiesOf(brand) {
+  return [...FAMILIES, ...customSemantics(brand).map((c) => c.key)];
+}
+/** Semantic families of this brand: the four standard ones plus custom ones. */
+export function semanticsOf(brand) {
+  return [...SEMANTIC_FAMILIES, ...customSemantics(brand).map((c) => c.key)];
+}
 
 const valid = (hex) => (hex ? normalizeHex(hex) : null);
 
@@ -21,15 +49,18 @@ export function resolveSeeds(brand, appearance = 'light') {
   const c = brand.colors ?? {};
   const primary = valid(c.primary) ?? DEFAULT_BRAND.colors.primary;
   const seeds = {}, auto = {};
-  for (const fam of FAMILIES) {
-    let hex = fam === 'primary' ? primary : valid(c[fam]);
+  const custom = Object.fromEntries(customSemantics(brand).map((x) => [x.key, x.color]));
+  const semantic = semanticsOf(brand);
+  for (const fam of familiesOf(brand)) {
+    let hex = fam === 'primary' ? primary : valid(custom[fam] ?? c[fam]);
     if (!hex && DERIVED[fam]) { hex = DERIVED[fam](primary); auto[fam] = true; }
     if (!hex) hex = DEFAULT_BRAND.colors[fam];
-    if (brand.harmonize && SEMANTIC_FAMILIES.includes(fam)) hex = harmonize(hex, primary);
+    if (!hex) hex = '#808080';
+    if (brand.harmonize && semantic.includes(fam)) hex = harmonize(hex, primary);
     seeds[fam] = hex;
   }
   if (appearance === 'dark') {
-    for (const fam of FAMILIES) {
+    for (const fam of familiesOf(brand)) {
       const d = valid(brand.darkColors?.[fam]);
       if (d) seeds[fam] = d; else auto[`dark:${fam}`] = true;
     }
@@ -198,7 +229,7 @@ function shadowTokens(preset, appearance) {
 }
 
 /** Semantic roles for one appearance, solved for contrast. */
-function roles(ramps, appearance) {
+function roles(ramps, appearance, families) {
   const n = ramps.neutral;
   const surface = appearance === 'light' ? '#ffffff' : n[1];
   const r = {
@@ -218,7 +249,7 @@ function roles(ramps, appearance) {
     'text-disabled': n[7],
     'focus-ring': ramps.primary[7],
   };
-  for (const fam of ROLE_FAMILIES) {
+  for (const fam of families.filter((f) => f !== 'neutral')) {
     const ramp = ramps[fam];
     const solved = solveSolid(ramp[8]);
     const hover = solveSolid(ramp[9]);
@@ -246,16 +277,17 @@ function pickReadable(ramp, surface) {
 
 /** Compute the whole system from a brand payload. Pure. */
 export function computeSystem(brand) {
-  const out = { brand, appearances: {} };
+  const families = familiesOf(brand);
+  const out = { brand, families, semantics: semanticsOf(brand), custom: customSemantics(brand), appearances: {} };
   for (const appearance of ['light', 'dark']) {
     const ramps = {};
     const { seeds, auto } = resolveSeeds(brand, appearance);
-    for (const fam of FAMILIES) ramps[fam] = buildRamp(seeds[fam], appearance);
+    for (const fam of families) ramps[fam] = buildRamp(seeds[fam], appearance);
     out.appearances[appearance] = {
       seeds,
       auto,
       ramps,
-      roles: roles(ramps, appearance),
+      roles: roles(ramps, appearance, families),
       shadow: shadowTokens(brand.shadow, appearance),
     };
   }
@@ -297,6 +329,10 @@ export function auditContrast(sys) {
       ['critical-text', 'critical-subtle', 'Critical badge'],
       ['info-text', 'info-subtle', 'Info badge'],
       ['border-strong', 'bg-surface', 'Field border (non-text, 3:1)'],
+      ...(sys.custom ?? []).flatMap((c) => [
+        [`${c.key}-text`, `${c.key}-subtle`, `${c.name} badge`],
+        [`${c.key}-on-solid`, `${c.key}-solid`, `${c.name} fill label`],
+      ]),
     ];
     for (const [fg, bg, label] of pairs) {
       const ratio = wcag(r[fg], r[bg]);
@@ -322,7 +358,7 @@ export function auditContrast(sys) {
 export function tokenCount(sys) {
   const ap = sys.appearances.light;
   return (
-    FAMILIES.length * 12 +
+    (sys.families ?? FAMILIES).length * 12 +
     Object.keys(ap.roles).length +
     Object.keys(sys.spacing).length +
     Object.keys(sys.type.desktop).length * 4 +

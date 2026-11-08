@@ -188,3 +188,34 @@ test('sub-brands can set their own dark seeds; master dark seeds do not leak', (
   const withDark = effectiveBrand({ ...master, subbrands: [{ ...master.subbrands[0], darkColors: { primary: '#67e8f9' } }] }, 's1');
   assert.equal(computeSystem(withDark).appearances.dark.ramps.primary[8], '#67e8f9');
 });
+
+import { uniqueSemanticKey, familiesOf, MAX_CUSTOM_SEMANTICS } from '../src/engine/tokens.js';
+
+test('custom semantics: own ramp, roles, dark seed, audit and exports', () => {
+  const customSemantics = [{ id: 'a', key: 'premium', name: 'Premium', color: '#b45309' }, { id: 'b', key: 'beta', name: 'Beta', color: '#0891b2' }];
+  const sys = computeSystem({ ...brand, customSemantics, darkColors: { beta: '#67e8f9' } });
+  assert.deepEqual(sys.semantics.slice(-2), ['premium', 'beta']);
+  for (const ap of ['light', 'dark']) for (const k of ['premium', 'beta']) {
+    assert.equal(sys.appearances[ap].ramps[k].length, 12);
+    for (const x of ['solid', 'on-solid', 'subtle', 'text', 'border']) assert.ok(sys.appearances[ap].roles[`${k}-${x}`], `${ap} ${k}-${x}`);
+  }
+  assert.equal(sys.appearances.dark.ramps.beta[8], '#67e8f9');
+  assert.equal(sys.audit.filter((r) => /Premium|Beta/.test(r.label)).length, 8);
+  assert.deepEqual(sys.audit.filter((r) => !r.wcagPass), []);
+  const out = Object.fromEntries(EXPORTS.map((e) => [e.id, e.fn(sys)]));
+  assert.match(out.css, /--color-premium-9: #b45309/);
+  assert.match(out.css, /--beta-subtle:/);
+  assert.ok(JSON.parse(out.json).color.premium);
+  assert.match(out.agents, /Custom semantic «Premium»/);
+  assert.equal(computeSystem({ ...brand, customSemantics: [...customSemantics], harmonize: true }).appearances.light.seeds.premium !== '#b45309', true, 'harmonize applies to custom semantics');
+});
+
+test('custom semantic keys never collide with families, roles or each other', () => {
+  assert.equal(uniqueSemanticKey('Premium'), 'premium');
+  assert.equal(uniqueSemanticKey('Éxito Pro!'), 'exito-pro');
+  assert.equal(uniqueSemanticKey('Info'), 'info-custom');
+  assert.equal(uniqueSemanticKey('Text'), 'text-custom');
+  assert.equal(uniqueSemanticKey('Beta', ['beta']), 'beta-2');
+  const many = Array.from({ length: 9 }, (_, i) => ({ id: String(i), key: `s${i}`, name: `S${i}`, color: '#0891b2' }));
+  assert.equal(familiesOf({ ...brand, customSemantics: many }).length, FAMILIES.length + MAX_CUSTOM_SEMANTICS);
+});

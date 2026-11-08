@@ -27,7 +27,7 @@ export default function Board({ sys, appearance, onOpen, go }) {
           ))}
         </div>
         <div className="row" style={{ marginTop: 12 }}>
-          {['success', 'warning', 'critical', 'info'].map((f) => <span key={f} className="row t-caption muted" style={{ gap: 8 }}><i style={{ width: 12, height: 12, borderRadius: 4, background: ramp[f][8], display: 'inline-block' }} />{{ success: 'éxito', warning: 'aviso', critical: 'crítico', info: 'info' }[f]}</span>)}
+          {(sys.semantics ?? ['success', 'warning', 'critical', 'info']).map((f) => <span key={f} className="row t-caption muted" style={{ gap: 8 }}><i style={{ width: 12, height: 12, borderRadius: 4, background: ramp[f][8], display: 'inline-block' }} />{{ success: 'éxito', warning: 'aviso', critical: 'crítico', info: 'info' }[f] ?? (sys.custom ?? []).find((c) => c.key === f)?.name ?? f}</span>)}
         </div>
       </div>
       <div className="card bcard span2 specimen">

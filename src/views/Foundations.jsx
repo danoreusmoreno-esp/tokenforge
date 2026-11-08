@@ -52,11 +52,22 @@ const FAM = {
   critical: ['Crítico', 'Errores y acciones destructivas.'],
   info: ['Info', 'Mensajes neutros y novedades.'],
 };
-const GROUPS = [['Marca', BRAND_FAMILIES], ['Neutro', ['neutral']], ['Semánticos', SEMANTIC_FAMILIES]];
-const ROLE_GROUPS = [
-  ['Superficies, bordes y texto', (k) => /^(bg|border|text|focus)-/.test(k)],
-  ...[...BRAND_FAMILIES, ...SEMANTIC_FAMILIES].map((f) => [FAM[f][0], (k) => k.startsWith(`${f}-`)]),
-];
+/** Families grouped for display; custom semantics join the semantic group with their own name. */
+function groupsOf(sys) {
+  return [['Marca', BRAND_FAMILIES], ['Neutro', ['neutral']], ['Semánticos', sys.semantics ?? SEMANTIC_FAMILIES]];
+}
+function famInfo(sys, f) {
+  if (FAM[f]) return FAM[f];
+  const c = (sys.custom ?? []).find((x) => x.key === f);
+  return [c?.name ?? f, 'Semántico propio: úsalo solo para este significado.'];
+}
+const ROLE_SUFFIXES = ['solid', 'solid-hover', 'on-solid', 'subtle', 'subtle-hover', 'border', 'text'];
+function roleGroupsOf(sys) {
+  return [
+    ['Superficies, bordes y texto', (k) => /^(bg|border|text|focus)-/.test(k)],
+    ...[...BRAND_FAMILIES, ...(sys.semantics ?? SEMANTIC_FAMILIES)].map((f) => [famInfo(sys, f)[0], (k) => ROLE_SUFFIXES.some((x) => k === `${f}-${x}`)]),
+  ];
+}
 
 function Sw({ hex, label }) {
   return (
@@ -68,6 +79,9 @@ function Sw({ hex, label }) {
 
 function Colors({ sys }) {
   const L = sys.appearances.light, D = sys.appearances.dark;
+  const GROUPS = groupsOf(sys);
+  const ROLE_GROUPS = roleGroupsOf(sys);
+  const FAMX = (f) => famInfo(sys, f);
   const roleKeys = Object.keys(L.roles);
   const auto = (ap, f) => (ap === D ? ap.auto[`dark:${f}`] : ap.auto[f]);
   return (
@@ -83,10 +97,10 @@ function Colors({ sys }) {
                 <article key={f} className="kc-card">
                   <div className="kc-swatches"><Sw hex={L.ramps[f][8]} label="Claro" /><Sw hex={D.ramps[f][8]} label="Oscuro" /></div>
                   <div className="kc-meta">
-                    <div className="row" style={{ gap: 8 }}><b>{FAM[f][0]}</b><code className="mono t-caption faint">{f}</code>
+                    <div className="row" style={{ gap: 8 }}><b>{FAMX(f)[0]}</b><code className="mono t-caption faint">{f}</code>
                       {(auto(L, f) || auto(D, f)) && <span className="kc-auto">{auto(L, f) ? 'auto del primario' : 'oscuro auto'}</span>}
                     </div>
-                    <p className="t-caption muted">{FAM[f][1]}</p>
+                    <p className="t-caption muted">{FAMX(f)[1]}</p>
                   </div>
                 </article>
               ))}
@@ -99,7 +113,7 @@ function Colors({ sys }) {
         <p className="muted t-small">Doce pasos por familia, en claro y en oscuro. En claro los pasos van de claro a oscuro; en oscuro, al revés, así que el mismo número cumple la misma función en los dos modos. Pulsa un color para copiar su variable.</p>
         <div className="ramp-table">
           <div className="ramp-row head"><span />{STEP_USE.map((u, i) => <span key={i} title={u}>{i + 1}</span>)}</div>
-          {GROUPS.map(([g, fams]) => fams.map((f) => [['light', L, FAM[f][0]], ['dark', D, 'oscuro']].map(([ap, A, label]) => (
+          {GROUPS.map(([g, fams]) => fams.map((f) => [['light', L, FAMX(f)[0]], ['dark', D, 'oscuro']].map(([ap, A, label]) => (
             <div key={f + ap} className={`ramp-row ${ap === 'dark' ? 'is-dark' : 'is-light'}`}>
               <span className="t-caption">{ap === 'dark' ? <span className="faint">☾ {label}</span> : label}</span>
               {A.ramps[f].map((h, i) => (
@@ -229,7 +243,7 @@ function Contrast({ sys }) {
         <tbody>
           {rows.map((r, i) => (
             <tr key={i}>
-              <td><b className="t-small">{AUDIT_ES[r.label] ?? r.label}</b><div className="mono t-caption faint">{r.fg} sobre {r.bg}</div></td>
+              <td><b className="t-small">{AUDIT_ES[r.label] ?? r.label.replace(/^(.*) badge$/, 'Badge $1').replace(/^(.*) fill label$/, 'Texto sobre $1')}</b><div className="mono t-caption faint">{r.fg} sobre {r.bg}</div></td>
               <td className="t-caption">{r.appearance === 'light' ? 'claro' : 'oscuro'}</td>
               <td><span className="sample" style={{ color: r.fgHex, background: r.bgHex }}>Aa</span></td>
               <td><span className={`badge ${r.wcagPass ? 'success' : 'critical'}`}>{r.ratio.toFixed(2)}:1 {r.wcagPass ? 'cumple' : 'falla'}</span></td>

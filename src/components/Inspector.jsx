@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BRAND_FAMILIES, SEMANTIC_FAMILIES, FONTS, DENSITIES, RADIUS_PRESETS, SHADOW_PRESETS, SPACING_PRESETS, MOTION_PRESETS } from '../engine/tokens.js';
+import { BRAND_FAMILIES, SEMANTIC_FAMILIES, MAX_CUSTOM_SEMANTICS, uniqueSemanticKey, FONTS, DENSITIES, RADIUS_PRESETS, SHADOW_PRESETS, SPACING_PRESETS, MOTION_PRESETS } from '../engine/tokens.js';
 import { normalizeHex, tintedNeutral, wcag } from '../engine/color.js';
 import { Icon } from './Icons.jsx';
 import { MAX_SUBBRANDS, SUB_FIELDS, newSubbrand, fontFormat, familyFromFile } from '../engine/brands.js';
@@ -16,26 +16,42 @@ const ES = {
 };
 const es = (k) => ES[k] ?? cap(k);
 
-function ColorRow({ fam, value, onChange, auto = false, onReset, resetLabel = 'Volver a automático' }) {
+function ColorRow({ fam, value, onChange, auto = false, onReset, resetLabel = 'Volver a automático', label, nameSlot, onRemove }) {
+  const name = label ?? es(fam);
   const [draft, setDraft] = useState(value);
   const [focus, setFocus] = useState(false);
   const shown = focus ? draft : value;
   return (
     <div className="ins-color">
       <label className="swatch" style={{ background: value }}>
-        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} aria-label={`Color ${fam}`} />
+        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} aria-label={`Color ${name}`} />
       </label>
-      <span className="ins-color-name">{es(fam)}</span>
-      <input className="ins-hex" value={shown} spellCheck={false} aria-label={`Hex ${fam}`}
+      {nameSlot ?? <span className="ins-color-name">{name}</span>}
+      <input className="ins-hex" value={shown} spellCheck={false} aria-label={`Hex ${name}`}
         onFocus={() => { setDraft(value); setFocus(true); }}
         onChange={(e) => { setDraft(e.target.value); const n = normalizeHex(e.target.value); if (n && /^#?[0-9a-f]{6}$/i.test(e.target.value.trim())) onChange(n); }}
         onBlur={() => { setFocus(false); const n = normalizeHex(draft); if (n && n !== value) onChange(n); }} />
       {auto
         ? <span className="ins-auto" title="Se calcula solo. Escribe o elige un color para fijarlo.">Auto</span>
-        : onReset && <button className="ins-icon" onClick={onReset} aria-label={`${resetLabel}: ${es(fam)}`} title={resetLabel}><Icon name="undo" size={14} /></button>}
+        : onReset && <button className="ins-icon" onClick={onReset} aria-label={`${resetLabel}: ${name}`} title={resetLabel}><Icon name="undo" size={14} /></button>}
+      {onRemove && <button className="ins-icon" onClick={onRemove} aria-label={`Eliminar ${name}`} title="Eliminar semántico"><Icon name="trash" size={14} /></button>}
     </div>
   );
 }
+
+/** Name of a custom semantic: edited freely, committed on blur so the token key changes once. */
+function SemanticName({ value, onCommit }) {
+  const [draft, setDraft] = useState(value);
+  return (
+    <input className="ins-color-name ins-sem-name" value={draft} aria-label="Nombre del semántico" maxLength={24}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => { const v = draft.trim(); if (v && v !== value) onCommit(v); else setDraft(value); }}
+      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()} />
+  );
+}
+
+// Suggested colours for new semantics: distinct from the four standard ones.
+const SEMANTIC_SUGGEST = ['#7c3aed', '#0891b2', '#be185d', '#4d7c0f', '#b45309', '#0f766e'];
 
 function ColorGroup({ title, hint, children }) {
   return (
@@ -211,6 +227,39 @@ export default function Inspector({ brand, update, sys, onRandom, dirty, storage
     return <ColorRow key={`l-${f}${brand.id}${sub?.id ?? ''}`} fam={f} value={ap.seeds[f]} auto={!!ap.auto[f]}
       onChange={(h) => setColor(f, h)} onReset={derivable && own[f] ? () => setColor(f, '') : null} resetLabel="Derivar del primario" />;
   };
+  // Custom semantics are shared by every brand in the system (like the standard ones).
+  const customs = brand.customSemantics ?? [];
+  const setCustoms = (list, darkColors = brand.darkColors ?? {}) => update({ ...brand, customSemantics: list, darkColors });
+  const addSemantic = () => {
+    if (customs.length >= MAX_CUSTOM_SEMANTICS) return;
+    const used = customs.map((c) => c.color);
+    const color = SEMANTIC_SUGGEST.find((c) => !used.includes(c)) ?? SEMANTIC_SUGGEST[0];
+    const name = `Semántico ${customs.length + 1}`;
+    setCustoms([...customs, { id: Math.random().toString(36).slice(2, 10), key: uniqueSemanticKey(name, customs.map((c) => c.key)), name, color }]);
+  };
+  const editSemantic = (id, patch) => setCustoms(customs.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  const renameSemantic = (c, name) => {
+    const key = uniqueSemanticKey(name, customs.filter((x) => x.id !== c.id).map((x) => x.key));
+    const dark = { ...(brand.darkColors ?? {}) };
+    if (dark[c.key]) { dark[key] = dark[c.key]; if (key !== c.key) delete dark[c.key]; }
+    setCustoms(customs.map((x) => (x.id === c.id ? { ...x, name, key } : x)), dark);
+  };
+  const removeSemantic = (c) => {
+    const dark = { ...(brand.darkColors ?? {}) };
+    delete dark[c.key];
+    undoable(`Semántico «${c.name}» eliminado`, { ...brand, customSemantics: customs.filter((x) => x.id !== c.id), darkColors: dark });
+  };
+  const customRow = (c) => {
+    if (!ap.ramps[c.key]) return null;
+    if (mode === 'dark') {
+      const fixed = !!(brand.darkColors ?? {})[c.key];
+      return <ColorRow key={`d-${c.id}`} fam={c.key} label={c.name} value={ap.ramps[c.key][8]} auto={!fixed}
+        onChange={(h) => setDark(c.key, h)} onReset={fixed ? () => setDark(c.key, '') : null} resetLabel="Adaptar del color claro" />;
+    }
+    return <ColorRow key={`l-${c.id}`} fam={c.key} label={c.name} value={ap.seeds[c.key]}
+      nameSlot={<SemanticName key={c.name} value={c.name} onCommit={(v) => renameSemantic(c, v)} />}
+      onChange={(h) => editSemantic(c.id, { color: h })} onRemove={() => removeSemantic(c)} />;
+  };
   const primarySolid = ap.roles['primary-solid'];
   const moved = primarySolid.toLowerCase() !== ap.ramps.primary[8].toLowerCase();
   const custom = brand.customFonts ?? [];
@@ -276,6 +325,11 @@ export default function Inspector({ brand, update, sys, onRandom, dirty, storage
         {!sub && (
           <ColorGroup title="Semánticos" hint="Solo para estados">
             {SEMANTIC_FAMILIES.map(row)}
+            {customs.map(customRow)}
+            {mode === 'light' && (customs.length < MAX_CUSTOM_SEMANTICS
+              ? <button className="ins-add" onClick={addSemantic}><Icon name="plus" size={14} />Añadir semántico</button>
+              : <p className="ins-hint">Máximo {MAX_CUSTOM_SEMANTICS} semánticos propios.</p>)}
+            {mode === 'light' && customs.length > 0 && <p className="ins-hint">Cada uno genera su rampa y roles <code>--{customs[0].key}-solid</code>, <code>-subtle</code>, <code>-text</code>… en claro y oscuro. Úsalos solo para ese significado.</p>}
             {mode === 'light' && (
               <label className="ins-toggle">
                 <span><b>Armonizar con el primario</b><small>Gira el tono hasta 15° hacia tu marca. El rojo sigue siendo rojo.</small></span>

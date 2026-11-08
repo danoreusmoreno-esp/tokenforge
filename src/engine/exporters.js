@@ -1,4 +1,4 @@
-import { FAMILIES, computeSystem } from './tokens.js';
+import { computeSystem } from './tokens.js';
 import { effectiveBrand, slug } from './brands.js';
 import { motionCSS, toMotionJS, motionAgents } from './motion.js';
 import { COMPONENTS } from './catalog.js';
@@ -12,7 +12,7 @@ const fontStack = (name) =>
 export function cssVars(sys, appearance = 'light', viewport = 'desktop', components = []) {
   const ap = sys.appearances[appearance];
   const v = {};
-  for (const fam of FAMILIES) ap.ramps[fam].forEach((hex, i) => (v[`--color-${fam}-${i + 1}`] = hex));
+  for (const fam of sys.families) ap.ramps[fam].forEach((hex, i) => (v[`--color-${fam}-${i + 1}`] = hex));
   for (const [k, hex] of Object.entries(ap.roles)) v[`--${k}`] = hex;
   for (const [k, px] of Object.entries(sys.spacing)) v[`--space-${k}`] = `${px}px`;
   for (const [k, px] of Object.entries(sys.layout[viewport])) v[`--${k}`] = `${px}px`;
@@ -85,7 +85,7 @@ function dtcgCore(sys) {
   const D = sys.appearances.dark;
   const modes = (l, d) => ({ $extensions: { modes: { light: l, dark: d } } });
   const out = { $description: `${sys.brand.name} design tokens`, color: {}, role: {}, space: {}, radius: {}, shadow: {}, typography: {}, font: {}, motion: {}, layout: {}, component: {} };
-  for (const fam of FAMILIES) {
+  for (const fam of sys.families) {
     out.color[fam] = {};
     L.ramps[fam].forEach((hex, i) => (out.color[fam][i + 1] = { $type: 'color', $value: hex, ...modes(hex, D.ramps[fam][i]) }));
   }
@@ -129,7 +129,7 @@ function figmaCore(sys) {
   const D = sys.appearances.dark;
   const set = (ap) => {
     const o = { color: {}, role: {} };
-    for (const fam of FAMILIES) {
+    for (const fam of sys.families) {
       o.color[fam] = {};
       ap.ramps[fam].forEach((hex, i) => (o.color[fam][i + 1] = { value: hex, type: 'color' }));
     }
@@ -163,7 +163,7 @@ function figmaCore(sys) {
 export function toTailwind(sys0) {
   const sys = family(sys0).m;
   const colors = {};
-  for (const fam of FAMILIES) {
+  for (const fam of sys.families) {
     colors[fam] = {};
     for (let i = 1; i <= 12; i++) colors[fam][i] = `var(--color-${fam}-${i})`;
   }
@@ -211,7 +211,7 @@ Tokens live in \`tokens.css\` as CSS custom properties. Dark mode: set \`data-th
 | \`--primary-text\` | ${r['primary-text']} | Links and brand text on surfaces |
 | \`--secondary-{solid,subtle,text}\` | ${r['secondary-solid']} / ${r['secondary-subtle']} / ${r['secondary-text']} | Quieter brand colour: tonal buttons, chips, selected rows |
 | \`--tertiary-{solid,subtle,text}\` | ${r['tertiary-solid']} / ${r['tertiary-subtle']} / ${r['tertiary-text']} | Contrasting highlight: badges, illustrations, data accents. Never for the main action |
-| \`--{success,warning,critical,info}-{solid,subtle,text,border}\` | — | Semantic status only: never decorate with them |
+| \`--{success,warning,critical,info}-{solid,subtle,text,border}\` | — | Semantic status only: never decorate with them |${(sys.custom ?? []).map((c) => `\n| \`--${c.key}-{solid,subtle,text,border}\` | ${r[`${c.key}-solid`]} | Custom semantic «${c.name}»: use only for that meaning |`).join('')}
 
 Colour hierarchy: primary is for the one main action per view; secondary supports it; tertiary adds contrast.
 Every role has a dark value: switch themes with \`data-theme\`, never hard-code a hex for dark mode.

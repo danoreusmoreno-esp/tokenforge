@@ -1069,3 +1069,11 @@ a.pill.sm { text-decoration: none; }
 .role-v { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--c-text-2); }
 .role-v i { flex: none; width: 20px; height: 20px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(127,127,127,.3); }
 @media (max-width: 640px) { .role-tr { grid-template-columns: minmax(0, 1fr) auto auto; } .role-v span { display: none; } }
+/* Custom semantics */
+.ins-add { all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; border-radius: 14px; border: 1.5px dashed var(--c-edge); color: var(--c-text-2); font-size: 13px; font-weight: 500; cursor: pointer; transition: border-color 150ms var(--c-ease), color 150ms var(--c-ease); }
+.ins-add:hover { border-color: var(--c-control); color: var(--c-text); }
+.ins-add:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+.ins-sem-name { border: 0; background: transparent; font: inherit; color: var(--c-text); padding: 4px 0; border-bottom: 1px dashed transparent; min-width: 0; }
+.ins-sem-name:hover { border-bottom-color: var(--c-control); }
+.ins-sem-name:focus { outline: none; border-bottom-color: var(--c-ink); }
+.ins-hint code { font: 11px var(--c-mono); }

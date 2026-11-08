@@ -34,6 +34,14 @@ function AnimatedNumber({ value }) {
   return <>{n}</>;
 }
 
+/** Badges for the team's own semantic colours (read from the brand, styled with their roles). */
+function CustomBadges() {
+  const { brand } = useContext(MotionCfg);
+  return (brand?.customSemantics ?? []).filter((c) => c.key).map((c) => (
+    <span key={c.id} className="badge" style={{ background: `var(--${c.key}-subtle)`, color: `var(--${c.key}-text)` }}>{c.name}</span>
+  ));
+}
+
 const BADGE_ES = { neutral: 'Neutro', primary: 'Primario', secondary: 'Secundario', tertiary: 'Terciario', success: 'Éxito', warning: 'Aviso', critical: 'Crítico', info: 'Info' };
 const statusIcon = { info: 'info', success: 'check2', warning: 'alert', critical: 'alert' };
 
@@ -314,7 +322,7 @@ export const PREVIEWS = {
   ),
   badge: ({ v, s }) => v
     ? <span className={`badge ${v} ${s === 'sm' ? 'sm' : ''}`}><i />{BADGE_ES[v]}</span>
-    : <div className="row">{['neutral', 'primary', 'secondary', 'tertiary', 'success', 'warning', 'critical', 'info'].map((k) => <span key={k} className={`badge ${k}`}>{BADGE_ES[k]}</span>)}<span className="badge solid">12</span></div>,
+    : <div className="row">{['neutral', 'primary', 'secondary', 'tertiary', 'success', 'warning', 'critical', 'info'].map((k) => <span key={k} className={`badge ${k}`}>{BADGE_ES[k]}</span>)}<CustomBadges /><span className="badge solid">12</span></div>,
   progress: ({ v, st }) => v === 'circular'
     ? <svg className="ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="var(--bg-active)" strokeWidth="5" /><circle cx="22" cy="22" r="18" fill="none" stroke={st === 'error' ? 'var(--critical-solid)' : 'var(--primary-solid)'} strokeWidth="5" strokeLinecap="round" strokeDasharray="113" strokeDashoffset="40" transform="rotate(-90 22 22)" /></svg>
     : <div className="col" style={{ width: '100%', maxWidth: 320, gap: 8 }}><div className="row t-small" style={{ justifyContent: 'space-between' }}><span>Subiendo…</span><span className="faint">64 %</span></div><div className={`progress ${st === 'error' ? 'err' : ''}`}><div style={{ width: '64%' }} /></div></div>,
