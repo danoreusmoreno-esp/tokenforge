@@ -57,7 +57,9 @@ function cssCore(sys) {
   const light = cssVars(sys, 'light', 'desktop', comps);
   const dark = cssVars(sys, 'dark', 'desktop');
   const darkOnly = {};
-  for (const k of Object.keys(dark)) if (k.startsWith('--color-') || !k.match(/^--(space|radius|text|font|duration|ease|layout|component|section)/)) darkOnly[k] = dark[k];
+  // Everything that changes with the theme: ramps, colour roles (text-* roles included) and shadows.
+  const themed = new Set(Object.keys(sys.appearances.dark.roles).map((r) => `--${r}`));
+  for (const k of Object.keys(dark)) if (k.startsWith('--color-') || k.startsWith('--shadow-') || themed.has(k)) darkOnly[k] = dark[k];
   const vpVars = (vp) => {
     const o = {};
     for (const [k, px] of Object.entries(sys.layout[vp])) o[`--${k}`] = `${px}px`;

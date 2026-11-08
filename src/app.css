@@ -1077,3 +1077,13 @@ a.pill.sm { text-decoration: none; }
 .ins-sem-name:hover { border-bottom-color: var(--c-control); }
 .ins-sem-name:focus { outline: none; border-bottom-color: var(--c-ink); }
 .ins-hint code { font: 11px var(--c-mono); }
+
+/* Export · React package: file tree + preview */
+.pkg { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; min-width: 0; }
+.pkg-tree { display: flex; flex-direction: column; gap: 2px; max-height: 560px; overflow: auto; padding: 4px; border-radius: 14px; background: var(--c-raised); }
+.pkg-tree button { all: unset; box-sizing: border-box; display: flex; align-items: center; min-height: 32px; padding: 4px 8px; border-radius: 10px; font-size: 12px; color: var(--c-text-2); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pkg-tree button:hover { background: var(--c-sheet); color: var(--c-text); }
+.pkg-tree button.on { background: var(--c-ink); color: var(--c-on-ink); }
+.pkg-tree button:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
+.pkg .code.big { max-height: 560px; }
+@media (max-width: 860px) { .pkg { grid-template-columns: minmax(0, 1fr); } .pkg-tree { max-height: 200px; } }

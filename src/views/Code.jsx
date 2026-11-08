@@ -1,13 +1,17 @@
 import { useMemo, useState } from 'react';
 import { EXPORTS, brandAssets } from '../engine/exporters.js';
+import { toReactPackage } from '../engine/react.js';
+import { zip } from '../engine/zip.js';
+import { slug } from '../engine/brands.js';
+import dsCss from '../ds.css?raw';
 import { Icon } from '../components/Icons.jsx';
 import { encodeBrand } from '../store.js';
 
 // The hosted single-file build runs in a sandbox that blocks downloads and hash links.
 const HOSTED = import.meta.env.MODE === 'single';
 
-function download(name, text) {
-  const blob = new Blob([text], { type: 'text/plain' });
+function download(name, data, type = 'text/plain') {
+  const blob = new Blob([data], { type });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = name;
@@ -26,6 +30,7 @@ const WHY = {
   agents: 'Guía para agentes de IA (Claude Code, Cursor…) para que usen tus tokens y no inventen.',
   brief: 'Objetivos, principios y hoja de ruta para compartir con el equipo.',
   readme: 'Índice de los archivos y cómo usarlos.',
+  react: 'Componentes React con TypeScript, uno por cada componente de tu sistema, con sus estilos y tus tokens. Copia la carpeta en tu app y envuélvela en DesignSystemProvider.',
 };
 
 /** Files to start with, from the stack chosen in Bases. */
@@ -33,7 +38,7 @@ function recommended(brand) {
   const stack = new Set(brand.brief?.stack ?? []);
   const ids = new Set(['css', 'figma', 'agents']);
   if (stack.has('tailwind')) ids.add('tailwind');
-  if (stack.has('react')) ids.add('motion');
+  if (stack.has('react')) { ids.add('motion'); ids.add('react'); }
   if (stack.has('swiftui') || stack.has('compose') || stack.has('angular') || stack.has('vue') || stack.has('svelte')) ids.add('json');
   if (brand.brief?.done) ids.add('brief');
   return ids;
@@ -44,7 +49,15 @@ export default function Code({ sys, brand, go }) {
   const [tab, setTab] = useState('css');
   const [copied, setCopied] = useState('');
   const files = useMemo(() => EXPORTS.map((e) => ({ ...e, text: e.fn(sys) })), [sys]);
-  const cur = files.find((f) => f.id === tab);
+  const pkg = useMemo(() => toReactPackage(sys, { componentsCss: dsCss, tokensCss: files.find((f) => f.id === 'css').text }), [sys, files]);
+  const [pkgFile, setPkgFile] = useState('README.md');
+  const pkgName = `${slug(sys.brand.__master?.name ?? sys.brand.name)}-react`;
+  const pkgCur = pkg.find((f) => f.file === pkgFile) ?? pkg[0];
+  const pkgComponents = pkg.filter((f) => f.file.startsWith('components/')).length;
+  const downloadZip = () => download(`${pkgName}.zip`, zip(pkg.map((f) => ({ path: `${pkgName}/${f.file}`, text: f.text }))), 'application/zip');
+  const cur = tab === 'react'
+    ? { id: 'react', file: `${pkgName}/${pkgCur.file}`, text: pkgCur.text }
+    : files.find((f) => f.id === tab);
   const flash = (m) => { setCopied(m); setTimeout(() => setCopied(''), 1600); };
   const copy = (t, m) => navigator.clipboard?.writeText(t).then(() => flash(m)).catch(() => flash('No se pudo copiar'));
   const shareUrl = `${location.origin}${location.pathname}#b=${encodeBrand(brand)}`;
@@ -75,6 +88,9 @@ export default function Code({ sys, brand, go }) {
               <span className="ct-row">{f.label}{rec.has(f.id) && <em className="rec-badge">Recomendado</em>}</span><span className="mono t-caption faint">{f.file}</span>
             </button>
           ))}
+          <button className={tab === 'react' ? 'on' : ''} onClick={() => setTab('react')}>
+            <span className="ct-row">React{rec.has('react') && <em className="rec-badge">Recomendado</em>}</span><span className="mono t-caption faint">{pkgName}/ · {pkgComponents} componentes</span>
+          </button>
         </div>
         <div className="code-main">
           <div className="code-bar">
@@ -82,11 +98,24 @@ export default function Code({ sys, brand, go }) {
             <div className="row" style={{ gap: 8 }}>
               {copied && <span className="t-caption" style={{ color: 'var(--success-text)' }}>{copied}</span>}
               <button className="btn ghost sm" onClick={() => copy(cur.text, `Copiado: pégalo en ${cur.file}`)}><Icon name="copy" size={14} />Copiar</button>
-              {!HOSTED && <button className="btn outline sm" onClick={() => download(cur.file, cur.text)}><Icon name="download" size={14} />Descargar</button>}
+              {!HOSTED && tab !== 'react' && <button className="btn outline sm" onClick={() => download(cur.file, cur.text)}><Icon name="download" size={14} />Descargar</button>}
+              {!HOSTED && tab === 'react' && <button className="btn primary sm" onClick={downloadZip}><Icon name="download" size={14} />Descargar .zip</button>}
             </div>
           </div>
-          <p className="why-file">{WHY[cur.id]}</p>
-          <pre className="code big">{cur.text}</pre>
+          <p className="why-file">{WHY[cur.id]}{tab === 'react' && HOSTED && ' Para descargar el paquete en .zip, abre la versión web en danoreusmoreno-esp.github.io/tokenforge.'}</p>
+          {tab === 'react' ? (
+            <div className="pkg">
+              <nav className="pkg-tree" aria-label="Archivos del paquete React">
+                {pkg.map((f) => (
+                  <button key={f.file} className={f.file === pkgCur.file ? 'on' : ''} aria-current={f.file === pkgCur.file || undefined} onClick={() => setPkgFile(f.file)}
+                    style={{ paddingLeft: 8 + (f.file.split('/').length - 1) * 12 }}>
+                    <span className="mono">{f.file.split('/').pop()}</span>
+                  </button>
+                ))}
+              </nav>
+              <pre className="code big">{cur.text}</pre>
+            </div>
+          ) : <pre className="code big">{cur.text}</pre>}
         </div>
       </div>
       {tab === 'figma' && (

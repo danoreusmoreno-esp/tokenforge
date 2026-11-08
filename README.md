@@ -26,6 +26,8 @@ The interface is in Spanish. Code exports (`tokens.css`, JSON, Tailwind, `AGENTS
 
 **4. Export** — `tokens.css`, W3C DTCG `tokens.json`, Tokens Studio `figma-tokens.json` (→ Figma Variables, Light/Dark modes), `tailwind.config.js`, `AGENTS.md` for AI coding agents, `README.md`. Share a brand via link.
 
+**React components** — a typed React + TypeScript package with one component per catalogue entry (only the ones in your system), styled by the same classes as the tool and painted only with your tokens: `DesignSystemProvider` (theme and sub-brand), `tokens.css`, `components.css`, an `examples/Showcase.tsx` with every component in use, and a README. Download it as a .zip. `npm run check:react` type-checks all 56 components in strict mode and renders them in Chromium, light and dark.
+
 Brands are stored in the browser (localStorage). Random brand and six starting directions included.
 
 ## Develop
@@ -48,5 +50,5 @@ src/ds.css    component library styled only with the generated tokens
 ```
 
 ## Roadmap
-- Phase 2: generated documentation site per foundation/component, more components, React component code export.
+- Phase 2: React component code export (done), more components, generated documentation site.
 - Phase 3: accounts and cloud sync, team sharing, native Figma plugin, GitHub push.

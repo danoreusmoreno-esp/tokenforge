@@ -219,3 +219,46 @@ test('custom semantic keys never collide with families, roles or each other', ()
   const many = Array.from({ length: 9 }, (_, i) => ({ id: String(i), key: `s${i}`, name: `S${i}`, color: '#0891b2' }));
   assert.equal(familiesOf({ ...brand, customSemantics: many }).length, FAMILIES.length + MAX_CUSTOM_SEMANTICS);
 });
+
+test('tokens.css dark block switches every colour role, text roles included', () => {
+  const css = EXPORTS.find((e) => e.id === 'css').fn(computeSystem(brand));
+  const dark = css.slice(css.indexOf('[data-theme="dark"] {'), css.indexOf('}', css.indexOf('[data-theme="dark"] {')));
+  for (const role of ['--text-primary', '--text-secondary', '--text-tertiary', '--bg-surface', '--primary-solid', '--shadow-md', '--color-neutral-1']) {
+    assert.match(dark, new RegExp(`${role}:`), `${role} missing from dark block`);
+  }
+  assert.doesNotMatch(dark, /--text-body-size|--space-4|--radius-boxes/, 'non-colour tokens stay out of the dark block');
+});
+
+import { toReactPackage, REACT_READY, EXAMPLES, reactName } from '../src/engine/react.js';
+import { zip } from '../src/engine/zip.js';
+
+test('React package: every catalogue component has a template and an example', () => {
+  for (const c of COMPONENTS) {
+    assert.ok(REACT_READY.includes(c.id), `${c.id} has no React template`);
+    assert.ok(EXAMPLES[c.id], `${c.id} has no example`);
+  }
+  const sys = computeSystem({ ...brand, components: ['button', 'text-field', 'badge'] });
+  const files = toReactPackage(sys, { componentsCss: '.ds .btn {}', tokensCss: ':root{}' });
+  const names = files.map((f) => f.file);
+  for (const f of ['README.md', 'index.ts', 'DesignSystemProvider.tsx', 'Icon.tsx', 'cx.ts', 'tokens.css', 'components.css', 'examples/Showcase.tsx']) assert.ok(names.includes(f), f);
+  assert.deepEqual(names.filter((n) => n.startsWith('components/')), ['components/Button.tsx', 'components/TextField.tsx', 'components/Badge.tsx']);
+  const button = files.find((f) => f.file === 'components/Button.tsx').text;
+  assert.match(button, /export type ButtonVariant = 'primary' \| 'secondary' \| 'outline' \| 'ghost' \| 'destructive';/);
+  assert.match(button, /variant = 'primary', size = 'md'/);
+  assert.doesNotMatch(files.map((f) => f.text).join('\n'), /__V__|__VD__|__S__|__SD__|__VLIST__/, 'placeholders left behind');
+  assert.match(files.find((f) => f.file === 'index.ts').text, /export \{ Button \} from '.\/components\/Button';/);
+  assert.equal(reactName('nav-bar'), 'BottomNav');
+});
+
+test('zip writer produces a valid archive', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const { writeFileSync, mkdtempSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const { tmpdir } = await import('node:os');
+  const dir = mkdtempSync(join(tmpdir(), 'tfzip-'));
+  const file = join(dir, 'pkg.zip');
+  writeFileSync(file, zip([{ path: 'pkg/README.md', text: '# Hola ñ' }, { path: 'pkg/components/Button.tsx', text: 'export {};\n' }]));
+  const out = execFileSync('unzip', ['-t', file]).toString();
+  assert.match(out, /No errors detected/);
+  assert.equal(execFileSync('unzip', ['-p', file, 'pkg/README.md']).toString(), '# Hola ñ');
+});
