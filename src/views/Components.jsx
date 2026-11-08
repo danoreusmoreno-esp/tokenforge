@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { COMPONENTS, CATEGORIES, SYSTEMS, FEATURED, CORE_IDS, systemLabel } from '../engine/catalog.js';
 import { componentTokens } from '../engine/exporters.js';
 import { Preview } from '../components/previews.jsx';
@@ -7,6 +7,45 @@ import NextStep from '../components/NextStep.jsx';
 import { ENTER, HOVER, TAP, EFFECTS, EFFECT_FOR, SPRINGS, motionFor, defaultMotion } from '../engine/motion.js';
 
 const TOTAL = FEATURED.length;
+
+/**
+ * Catalogue thumbnail: lays the preview out at a readable width, then scales it
+ * down just enough to fit the frame, so nothing is cropped or squeezed.
+ */
+const THUMB = 0.82;
+const MIN_THUMB = 0.5; // below this a thumbnail is unreadable: keep this size and show the top instead
+function FitPreview({ children, onClick }) {
+  const frame = useRef(null);
+  const inner = useRef(null);
+  const [scale, setScale] = useState(THUMB);
+  const [crop, setCrop] = useState(false);
+  useLayoutEffect(() => {
+    const f = frame.current, i = inner.current;
+    if (!f || !i) return undefined;
+    const fit = () => {
+      const cs = getComputedStyle(f);
+      const aw = f.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const ah = f.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      const live = i.firstElementChild;
+      const w = Math.max(i.offsetWidth, live ? live.scrollWidth : 0);
+      const h = live ? live.scrollHeight : i.offsetHeight;
+      if (!w || !h) return;
+      const s = Math.min(THUMB, aw / w, ah / h);
+      setScale(Math.max(MIN_THUMB, s));
+      setCrop(s < MIN_THUMB);
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(f);
+    if (i.firstElementChild) ro.observe(i.firstElementChild);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div className={`cat-prev ${crop ? 'crop' : ''}`} ref={frame} onClick={onClick}>
+      <div className="cat-prev-inner" ref={inner} style={{ transform: `scale(${scale})` }}>{children}</div>
+    </div>
+  );
+}
 
 // Display labels for variant, size and state ids (the ids stay in English: they are props).
 const VAL_ES = {
@@ -86,7 +125,7 @@ function Catalogue({ brand, setComponents, open, go }) {
           <div className="cat-grid">
             {COMPONENTS.filter((c) => c.cat === cat.id && visible(c)).map((c) => (
               <div key={c.id} className={`cat-card ${enabled.has(c.id) ? 'in' : ''}`}>
-                <div className="cat-prev" onClick={() => open(c.id)}><div className="cat-prev-inner"><Preview id={c.id} /></div></div>
+                <FitPreview onClick={() => open(c.id)}><Preview id={c.id} /></FitPreview>
                 <div className="cat-meta">
                   <div style={{ minWidth: 0 }}>
                     <button className="cat-name" onClick={() => open(c.id)}>{c.name}</button>

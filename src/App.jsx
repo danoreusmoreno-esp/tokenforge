@@ -216,7 +216,7 @@ export default function App() {
           <div className="top-actions">
             <button className="pill" onClick={() => undoable('Marca aleatoria aplicada', randomize(draft))} title="Prueba color, tipografía y forma al azar. Puedes deshacerlo."><Icon name="dice" size={16} stroke={1.6} /><span className="only-desktop">Aleatoria</span></button>
             <button className="pill only-tablet icon" onClick={() => setInsOpen(!insOpen)} aria-label="Ajustes de marca"><Icon name="settings" size={16} /></button>
-            {view !== 'code' && view !== 'brief' && <button className="pill dark" onClick={() => go('code')}><Icon name="download" size={16} stroke={1.8} /><span>Exportar</span></button>}
+            {view !== 'code' && view !== 'brief' && <button className="pill dark export-btn" aria-label="Exportar" onClick={() => go('code')}><Icon name="download" size={16} stroke={1.8} /><span>Exportar</span></button>}
           </div>
         </header>
 

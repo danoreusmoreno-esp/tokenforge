@@ -361,7 +361,7 @@ export const PREVIEWS = {
   ),
   stat: ({ st }) => (
     <div className="stat card" style={{ width: '100%', maxWidth: 320 }}>
-      <div className="row" style={{ justifyContent: 'space-between' }}><span className="t-small muted">Preparación del espacio</span><span className={`badge ${st === 'down' ? 'critical' : 'success'}`}>{st === 'down' ? '−3%' : '+6%'}</span></div>
+      <div className="row stat-hd"><span className="t-small muted">Preparación del espacio</span><span className={`badge ${st === 'down' ? 'critical' : 'success'}`}>{st === 'down' ? '−3%' : '+6%'}</span></div>
       <div className="num" style={{ margin: '8px 0 12px' }}><AnimatedNumber value={98} /><span className="t-lead muted">%</span></div>
       <Chart />
     </div>

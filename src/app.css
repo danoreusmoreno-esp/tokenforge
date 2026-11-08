@@ -996,3 +996,22 @@ a.pill.sm { text-decoration: none; }
 @media (max-width: 860px) { .two-col { grid-template-columns: minmax(0, 1fr); } }
 .main .seg-tabs { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); padding-right: 40px; }
 .main .page-hd .seg-tabs { -webkit-mask-image: none; mask-image: none; padding-right: 4px; }
+
+/* Mobile last: later grid rules must not bring the rail column back on small screens */
+@media (max-width: 860px) {
+  .app, .app.no-ins { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Catalogue thumbnails: the live area fills the layout width so components size as they would on a page;
+   FitPreview then scales the whole thing to fit the frame. */
+.cat-prev-inner { width: calc(100% / 0.82); flex: none; }
+.cat-prev-inner > .ds.live { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.cat-prev.crop { align-items: flex-start; }
+.cat-prev.crop .cat-prev-inner { transform-origin: top center; }
+.cat-prev-inner .ds.live .savebar { width: max-content; max-width: none; }
+/* Small phones: Export goes icon-only so the brand name is not cut to one letter */
+@media (max-width: 480px) {
+  .topbar-app .export-btn { width: 44px; padding: 0; justify-content: center; }
+  .topbar-app .export-btn span { display: none; }
+}
+.cat-prev-inner .ds.live .scrim:has(.dialog) { width: max-content !important; }

@@ -173,7 +173,7 @@
 .ds .toast { width: min(100%, var(--toast-width, 360px)); display: flex; gap: 12px; padding: 12px 16px; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-boxes); box-shadow: var(--shadow-lg); font-size: var(--text-small-size); }
 .ds .toast .ic { color: var(--success-text); }
 .ds .toast.critical .ic { color: var(--critical-text); }
-.ds .badge { display: inline-flex; align-items: center; gap: 4px; height: var(--badge-height, 24px); padding: 0 8px; border-radius: min(var(--radius-selectors), 999px); font-size: var(--text-caption-size); font-weight: 600; background: var(--bg-muted); color: var(--text-secondary); }
+.ds .badge { display: inline-flex; align-items: center; white-space: nowrap; gap: 4px; height: var(--badge-height, 24px); padding: 0 8px; border-radius: min(var(--radius-selectors), 999px); font-size: var(--text-caption-size); font-weight: 600; background: var(--bg-muted); color: var(--text-secondary); }
 .ds .badge.sm { height: 20px; padding: 0 8px; font-size: 11px; }
 .ds .badge.accent { background: var(--accent-subtle); color: var(--accent-text); }
 .ds .badge.success { background: var(--success-subtle); color: var(--success-text); }
@@ -195,8 +195,8 @@
 
 /* Overlays */
 .ds .dialog { background: var(--bg-surface); border-radius: var(--radius-boxes); box-shadow: var(--shadow-lg); border: 1px solid var(--border-subtle); padding: 20px; width: min(100%, var(--dialog-width-md, 480px)); }
-.ds .dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-.ds .scrim { background: color-mix(in srgb, var(--color-neutral-12) 35%, transparent); padding: 24px; border-radius: var(--radius-boxes); display: grid; place-items: center; }
+.ds .dialog .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.ds .scrim { background: color-mix(in srgb, var(--color-neutral-12) 35%, transparent); padding: 24px; border-radius: var(--radius-boxes); display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; }
 .ds .drawer { margin-left: auto; width: min(100%, 280px); height: 100%; background: var(--bg-surface); border-left: 1px solid var(--border-subtle); box-shadow: var(--shadow-lg); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .ds .popover { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-boxes); box-shadow: var(--shadow-lg); padding: 16px; width: 240px; position: relative; }
 .ds .tooltip { display: inline-block; background: var(--color-neutral-12); color: var(--color-neutral-1); font-size: var(--text-caption-size); padding: 8px 12px; border-radius: min(var(--radius-fields), 8px); max-width: var(--tooltip-max-width, 240px); position: relative; }
@@ -232,9 +232,12 @@
 .ds .tl > div::before { content: ''; position: absolute; left: -20px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg-surface); border: 2px solid var(--accent-solid); }
 .ds pre.code { margin: 0; background: var(--color-neutral-12); color: var(--color-neutral-2); font: var(--text-caption-size)/1.6 var(--font-mono); padding: 12px 16px; border-radius: var(--radius-boxes); overflow: auto; }
 .ds code.inl { font-family: var(--font-mono); font-size: .9em; background: var(--bg-muted); padding: 1px 4px; border-radius: 4px; }
-.ds kbd { font: 600 11px var(--font-mono); background: var(--bg-surface); border: 1px solid var(--border-default); border-bottom-width: 2px; border-radius: 5px; padding: 4px 8px; color: var(--text-secondary); }
+.ds kbd { font: 600 11px var(--font-mono); background: var(--bg-surface); border: 1px solid var(--border-default); border-bottom-width: 2px; border-radius: 5px; padding: 2px 6px; color: var(--text-secondary); }
 .ds hr.div { border: 0; border-top: 1px solid var(--border-subtle); margin: 0; width: 100%; }
 .ds .vdiv { width: 1px; align-self: stretch; background: var(--border-subtle); }
+.ds .stat-hd { justify-content: space-between; flex-wrap: nowrap; }
+.ds .stat-hd > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ds .stat-hd .badge { flex: none; }
 .ds .stat .num { font: 700 var(--text-h1-size)/1 var(--font-heading); letter-spacing: var(--text-h1-tracking); }
 .ds .trend.up { color: var(--success-text); }
 .ds .trend.down { color: var(--critical-text); }
