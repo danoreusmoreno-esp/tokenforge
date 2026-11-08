@@ -1087,3 +1087,4 @@ a.pill.sm { text-decoration: none; }
 .pkg-tree button:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 2px; }
 .pkg .code.big { max-height: 560px; }
 @media (max-width: 860px) { .pkg { grid-template-columns: minmax(0, 1fr); } .pkg-tree { max-height: 200px; } }
+.bcard-body > .ds.live { flex: 1 1 auto; min-width: 0; }

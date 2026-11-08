@@ -11,7 +11,7 @@ export const REACT_NAMES = {
   'icon-button': 'IconButton', 'button-group': 'ButtonGroup', fab: 'Fab', 'text-field': 'TextField',
   search: 'SearchField', 'number-input': 'NumberInput', 'tag-input': 'TagInput', otp: 'OtpInput',
   'date-picker': 'DatePicker', 'file-upload': 'FileUpload', radio: 'RadioGroup', segmented: 'SegmentedControl',
-  'page-control': 'PageControl', sidebar: 'SideNav', 'nav-rail': 'NavRail', 'nav-bar': 'BottomNav', topbar: 'TopBar',
+  'page-control': 'PageControl', sidebar: 'SideNav', 'inline-edit': 'InlineEdit', 'time-picker': 'TimePicker', 'color-picker': 'ColorPicker', 'context-menu': 'ContextMenu', 'page-banner': 'PageBanner', 'media-card': 'MediaCard', 'product-card': 'ProductCard', 'pricing-card': 'PricingCard', 'profile-card': 'ProfileCard', 'nav-rail': 'NavRail', 'nav-bar': 'BottomNav', topbar: 'TopBar',
   'save-bar': 'SaveBar', progress: 'ProgressBar', 'empty-state': 'EmptyState', 'action-sheet': 'ActionSheet',
   table: 'DataTable', code: 'CodeBlock', stat: 'Stat', kbd: 'Kbd',
 };
@@ -34,7 +34,7 @@ const ICON_PATHS = {
   search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4', info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v5M12 8v.01',
   alert: 'M12 3l9.5 17h-19zM12 10v4M12 17v.01', checkCircle: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8 12l3 3 5-6',
   star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z', upload: 'M12 16V4M7 9l5-5 5 5M4 16v4h16v-4',
-  file: 'M7 3h7l5 5v13H7zM14 3v5h5', more: 'M5 12v.01M12 12v.01M19 12v.01',
+  file: 'M7 3h7l5 5v13H7zM14 3v5h5', more: 'M5 12v.01M12 12v.01M19 12v.01', clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2', edit: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',
 };
 
 const ICON = `import type { CSSProperties } from 'react';
@@ -1646,6 +1646,526 @@ export function Kbd({ keys }: { keys: string[] }) {
 }
 `;
 
+
+T['inline-edit'] = String.raw`import { useEffect, useRef, useState } from 'react';
+import { cx } from '../cx';
+import { Icon } from '../Icon';
+
+export interface InlineEditProps {
+  label: string;
+  value: string;
+  /** Return an error message to keep the field open, or nothing to accept. */
+  onSave: (value: string) => string | void;
+  /** text: free text. select: pick from options. */
+  variant?: __V__;
+  options?: string[];
+  placeholder?: string;
+  className?: string;
+}
+
+/** Shows the value as text; click (or Enter) to edit, Enter or ✓ to save, Escape or ✕ to cancel. */
+export function InlineEdit({ label, value, onSave, variant = '__VD__', options = [], placeholder = 'Add a value', className }: InlineEditProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [error, setError] = useState('');
+  const field = useRef<HTMLInputElement & HTMLSelectElement>(null);
+  useEffect(() => { if (editing) field.current?.focus(); }, [editing]);
+  const save = () => { const e = onSave(draft); if (e) { setError(e); return; } setError(''); setEditing(false); };
+  const cancel = () => { setDraft(value); setError(''); setEditing(false); };
+  if (!editing) {
+    return (
+      <div className={cx('inline-edit', className)}>
+        <button type="button" className="ie-view" aria-label={label + ': ' + (value || placeholder) + '. Edit'} onClick={() => { setDraft(value); setEditing(true); }}>
+          {value ? value : <span className="ie-empty">{placeholder}</span>}<Icon name="edit" size={14} />
+        </button>
+      </div>
+    );
+  }
+  const keys = (e: React.KeyboardEvent) => { if (e.key === 'Enter') { e.preventDefault(); save(); } if (e.key === 'Escape') cancel(); };
+  return (
+    <div className={cx('col', className)} style={{ gap: 4 }}>
+      <div className="ie-edit">
+        {variant === 'select'
+          ? <div className="input select"><select ref={field} aria-label={label} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={keys}>{options.map((o) => <option key={o}>{o}</option>)}</select><Icon name="chevronDown" size={16} /></div>
+          : <input ref={field} className={cx('input', error && 'error')} aria-label={label} aria-invalid={error ? true : undefined} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={keys} />}
+        <button type="button" className="btn outline icon sm" aria-label="Save" onClick={save}><Icon name="check" size={14} /></button>
+        <button type="button" className="btn ghost icon sm" aria-label="Cancel" onClick={cancel}><Icon name="x" size={14} /></button>
+      </div>
+      {error && <span className="help err" role="alert">{error}</span>}
+    </div>
+  );
+}
+`;
+
+T['time-picker'] = String.raw`import { useId, useMemo, useState } from 'react';
+import { cx } from '../cx';
+import { Icon } from '../Icon';
+
+export interface TimePickerProps {
+  label: string;
+  /** "HH:MM", 24-hour. */
+  value: string | null;
+  onChange: (value: string) => void;
+  /** list: pick from slots. input: native time field (best on mobile). */
+  variant?: __V__;
+  /** Minutes between slots in the list. */
+  step?: number;
+  min?: string;
+  max?: string;
+  className?: string;
+}
+
+const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const toTime = (n: number) => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+
+export function TimePicker({ label, value, onChange, variant = '__VD__', step = 30, min = '00:00', max = '23:59', className }: TimePickerProps) {
+  const id = useId();
+  const [open, setOpen] = useState(false);
+  const slots = useMemo(() => { const out: string[] = []; for (let n = toMin(min); n <= toMin(max); n += step) out.push(toTime(n)); return out; }, [min, max, step]);
+  if (variant === 'input') {
+    return (
+      <div className={cx('field tp', className)}>
+        <label className="label" htmlFor={id}>{label}</label>
+        <div className="input"><Icon name="clock" size={16} /><input id={id} type="time" value={value ?? ''} min={min} max={max} step={step * 60} onChange={(e) => onChange(e.target.value)} /></div>
+      </div>
+    );
+  }
+  return (
+    <div className={cx('field tp combo', className)}>
+      <label className="label" id={id + '-l'}>{label}</label>
+      <button type="button" className={cx('input select', open && 'focus')} aria-haspopup="listbox" aria-expanded={open} aria-labelledby={id + '-l'}
+        onClick={() => setOpen(!open)} onKeyDown={(e) => e.key === 'Escape' && setOpen(false)} style={{ width: '100%' }}>
+        <span>{value ?? '--:--'}</span><Icon name="chevronDown" size={16} />
+      </button>
+      {open && (
+        <div className="menu" role="listbox" aria-labelledby={id + '-l'}>
+          {slots.map((t) => (
+            <div key={t} role="option" tabIndex={0} aria-selected={t === value} className={cx(t === value && 'hover')}
+              onClick={() => { onChange(t); setOpen(false); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(t); setOpen(false); } }}>{t}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+`;
+
+T['color-picker'] = String.raw`import { useRef, useState, type PointerEvent } from 'react';
+import { cx } from '../cx';
+
+export interface ColorPickerProps {
+  /** Hex colour, e.g. "#7c5cff". */
+  value: string;
+  onChange: (hex: string) => void;
+  /** swatches: palette only. full: saturation area, hue and palette. */
+  variant?: __V__;
+  swatches?: string[];
+  label?: string;
+  className?: string;
+}
+
+const DEFAULT_SWATCHES = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899'];
+
+function hexToHsv(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const max = Math.max(r, g, b), d = max - Math.min(r, g, b);
+  const h = d === 0 ? 0 : max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [(h * 60 + 360) % 360, max === 0 ? 0 : d / max, max];
+}
+function hsvToHex(h: number, s: number, v: number) {
+  const f = (k: number) => { const x = (k + h / 60) % 6; return v - v * s * Math.max(0, Math.min(x, 4 - x, 1)); };
+  return '#' + [f(5), f(3), f(1)].map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('');
+}
+const valid = (t: string) => /^#[0-9a-f]{6}$/i.test(t);
+
+export function ColorPicker({ value, onChange, variant = '__VD__', swatches = DEFAULT_SWATCHES, label = 'Colour', className }: ColorPickerProps) {
+  const [h, s, v] = hexToHsv(valid(value) ? value : '#000000');
+  const [hue, setHue] = useState(h);
+  const [text, setText] = useState(value);
+  const area = useRef<HTMLDivElement>(null);
+  const set = (hex: string) => { setText(hex); onChange(hex); };
+  const drag = (e: PointerEvent) => {
+    const r = area.current!.getBoundingClientRect();
+    const sat = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    const val = 1 - Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+    set(hsvToHex(hue, sat, val));
+  };
+  return (
+    <div className={cx('cpick', className)} role="group" aria-label={label}>
+      {variant === 'full' && (
+        <>
+          <div ref={area} className="cp-area" style={{ ['--cp-hue' as string]: hsvToHex(hue, 1, 1) }} aria-hidden="true"
+            onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); drag(e); }} onPointerMove={(e) => e.buttons && drag(e)}>
+            <span className="cp-knob" style={{ left: s * 100 + '%', top: (1 - v) * 100 + '%', background: value }} />
+          </div>
+          <div className="cp-hue">
+            <input type="range" min={0} max={359} value={Math.round(hue)} aria-label="Hue" onChange={(e) => { const n = Number(e.target.value); setHue(n); set(hsvToHex(n, s || 1, v || 1)); }} />
+            <span className="cp-knob" style={{ left: (hue / 360) * 100 + '%', background: hsvToHex(hue, 1, 1) }} />
+          </div>
+        </>
+      )}
+      <div className="cp-swatches">
+        {swatches.map((c) => <button key={c} type="button" aria-label={c} aria-pressed={c.toLowerCase() === value.toLowerCase()} className={cx(c.toLowerCase() === value.toLowerCase() && 'on')} style={{ background: c }} onClick={() => { setHue(hexToHsv(c)[0]); set(c); }} />)}
+      </div>
+      <div className="cp-row">
+        <span className="cp-prev" style={{ background: value }} aria-hidden="true" />
+        <input className="input" value={text} aria-label={label + ' (hex)'} spellCheck={false}
+          onChange={(e) => { setText(e.target.value); const t = e.target.value.trim(); const hex = t.startsWith('#') ? t : '#' + t; if (valid(hex)) { setHue(hexToHsv(hex)[0]); onChange(hex.toLowerCase()); } }} />
+      </div>
+    </div>
+  );
+}
+`;
+
+T['context-menu'] = String.raw`import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { cx } from '../cx';
+
+export type ContextMenuEntry = { id: string; label: string; icon?: ReactNode; shortcut?: string; danger?: boolean; disabled?: boolean } | 'separator';
+export interface ContextMenuProps {
+  items: ContextMenuEntry[];
+  onSelect: (id: string) => void;
+  /** The area that opens the menu on right click, long press, or Shift+F10 when focused. */
+  children: ReactNode;
+  label?: string;
+  className?: string;
+}
+
+export function ContextMenu({ items, onSelect, children, label = 'Actions', className }: ContextMenuProps) {
+  const [at, setAt] = useState<{ x: number; y: number } | null>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  const area = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!at) return undefined;
+    menu.current?.querySelector<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])')?.focus();
+    const close = (e: MouseEvent) => { if (!menu.current?.contains(e.target as Node)) setAt(null); };
+    const esc = (e: globalThis.KeyboardEvent) => { if (e.key === 'Escape') { setAt(null); area.current?.focus(); } };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', esc); };
+  }, [at]);
+  const openAtElement = () => { const r = area.current!.getBoundingClientRect(); setAt({ x: r.left + 16, y: r.top + 16 }); };
+  const move = (e: KeyboardEvent) => {
+    const els = Array.from(menu.current?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])') ?? []);
+    const i = els.indexOf(document.activeElement as HTMLElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); els[(i + 1) % els.length]?.focus(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); els[(i - 1 + els.length) % els.length]?.focus(); }
+  };
+  const pick = (id: string) => { setAt(null); onSelect(id); area.current?.focus(); };
+  return (
+    <div ref={area} className={className} tabIndex={0} aria-haspopup="menu" aria-label={label + ' (Shift+F10)'}
+      onContextMenu={(e) => { e.preventDefault(); setAt({ x: e.clientX, y: e.clientY }); }}
+      onKeyDown={(e) => { if ((e.shiftKey && e.key === 'F10') || e.key === 'ContextMenu') { e.preventDefault(); openAtElement(); } }}>
+      {children}
+      {at && (
+        <div ref={menu} className="menu ctx-menu" role="menu" aria-label={label} style={{ left: Math.min(at.x, window.innerWidth - 220), top: Math.min(at.y, window.innerHeight - 40 * items.length) }} onKeyDown={move}>
+          {items.map((it, i) => it === 'separator' ? <hr key={'s' + i} /> : (
+            <div key={it.id} role="menuitem" tabIndex={-1} aria-disabled={it.disabled || undefined} className={cx(it.danger && 'danger')}
+              onClick={() => !it.disabled && pick(it.id)} onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !it.disabled) { e.preventDefault(); pick(it.id); } }}>
+              {it.icon}{it.label}{it.shortcut && <kbd>{it.shortcut}</kbd>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+`;
+
+T['page-banner'] = String.raw`import type { ReactNode } from 'react';
+import { cx } from '../cx';
+import { Icon, type IconName } from '../Icon';
+
+export type PageBannerTone = __V__;
+const ICON: Record<string, IconName> = { info: 'info', promo: 'star', warning: 'alert', critical: 'alert' };
+
+export interface PageBannerProps {
+  tone?: PageBannerTone;
+  title?: ReactNode;
+  children: ReactNode;
+  action?: { label: string; href?: string; onClick?: () => void };
+  onDismiss?: () => void;
+  className?: string;
+}
+
+/** Full-width message above the page. One at a time; critical ones are announced at once. */
+export function PageBanner({ tone = '__VD__', title, children, action, onDismiss, className }: PageBannerProps) {
+  return (
+    <div className={cx('pbanner', tone, className)} role={tone === 'critical' ? 'alert' : 'region'} aria-label={tone === 'critical' ? undefined : 'Announcement'}>
+      <Icon name={ICON[tone] ?? 'info'} size={16} />
+      <span className="pb-txt">{title && <b>{title}</b>}{children}</span>
+      {action && (action.href ? <a className="pb-action" href={action.href}>{action.label}</a> : <button type="button" className="pb-action" onClick={action.onClick} style={{ all: 'unset', fontWeight: 600, textDecoration: 'underline', cursor: 'pointer' }}>{action.label}</button>)}
+      {onDismiss && <button type="button" className="pb-close" aria-label="Dismiss" onClick={onDismiss}><Icon name="x" size={14} /></button>}
+    </div>
+  );
+}
+`;
+
+T.hero = String.raw`import type { ReactNode } from 'react';
+import { cx } from '../cx';
+
+export interface HeroProps {
+  /** centered: copy only. split: copy beside media. image: copy over a full-bleed image. */
+  variant?: __V__;
+  size?: __S__;
+  eyebrow?: ReactNode;
+  title: ReactNode;
+  description?: ReactNode;
+  /** Buttons. Put the primary action first. */
+  actions?: ReactNode;
+  /** split: image URL or any node. image: background image URL. A brand-coloured placeholder is used when empty. */
+  media?: string | ReactNode;
+  mediaAlt?: string;
+  className?: string;
+}
+
+/** The opening section of a page. Exactly one h1 per page: this is it. */
+export function Hero({ variant = '__VD__', size = '__SD__', eyebrow, title, description, actions, media, mediaAlt = '', className }: HeroProps) {
+  const copy = (
+    <div className="hero-copy">
+      {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+      <h1>{title}</h1>
+      {description && <p className="lead">{description}</p>}
+      {actions && <div className="hero-actions">{actions}</div>}
+    </div>
+  );
+  const art = (cls: string, strong = false) => typeof media === 'string'
+    ? <div className={cx(cls, 'art-ph', strong && 'strong')}><img src={media} alt={mediaAlt} /></div>
+    : media ? <div className={cls}>{media}</div> : <div className={cx(cls, 'art-ph', strong && 'strong')} aria-hidden="true" />;
+  return (
+    <section className={cx('hero', variant, size === 'lg' && 'lg', className)}>
+      {variant === 'image' && art('hero-bg', true)}
+      {copy}
+      {variant === 'split' && art('hero-media')}
+    </section>
+  );
+}
+`;
+
+T['media-card'] = String.raw`import type { ReactNode } from 'react';
+import { cx } from '../cx';
+
+export interface MediaCardProps {
+  title: ReactNode;
+  description?: ReactNode;
+  eyebrow?: ReactNode;
+  /** Image URL or any node (video, illustration). A brand-coloured placeholder is used when empty. */
+  media?: string | ReactNode;
+  mediaAlt?: string;
+  actions?: ReactNode;
+  /** Makes the whole card a link. Keep actions empty in that case. */
+  href?: string;
+  variant?: __V__;
+  className?: string;
+}
+
+export function MediaCard({ title, description, eyebrow, media, mediaAlt = '', actions, href, variant = '__VD__', className }: MediaCardProps) {
+  const pic = typeof media === 'string'
+    ? <div className="mcard-media art-ph"><img src={media} alt={mediaAlt} /></div>
+    : media ? <div className="mcard-media">{media}</div> : <div className="mcard-media art-ph" aria-hidden="true" />;
+  const body = (
+    <div className="mcard-main">
+      <div className="mcard-body">
+        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+        <h3>{href ? <a href={href} style={{ color: 'inherit', textDecoration: 'none' }}>{title}</a> : title}</h3>
+        {description && <p className="t-small muted">{description}</p>}
+      </div>
+      {actions && <div className="mcard-actions">{actions}</div>}
+    </div>
+  );
+  return <article className={cx('mcard', variant === 'horizontal' && 'horizontal', href && 'interactive', className)}>{pic}{body}</article>;
+}
+`;
+
+T['product-card'] = String.raw`import type { ReactNode } from 'react';
+import { cx } from '../cx';
+import { Icon } from '../Icon';
+
+export interface ProductCardProps {
+  name: string;
+  /** Formatted price, e.g. "79,00 €". */
+  price: string;
+  /** Previous price when on sale. */
+  compareAt?: string;
+  image?: string;
+  rating?: number;
+  reviews?: number;
+  badge?: ReactNode;
+  soldOut?: boolean;
+  favorite?: boolean;
+  onFavorite?: (favorite: boolean) => void;
+  onAdd?: () => void;
+  addLabel?: string;
+  href?: string;
+  variant?: __V__;
+  className?: string;
+}
+
+export function ProductCard({ name, price, compareAt, image, rating, reviews, badge, soldOut, favorite = false, onFavorite, onAdd, addLabel = 'Add to cart', href, variant = '__VD__', className }: ProductCardProps) {
+  return (
+    <article className={cx('pcard', variant === 'compact' && 'compact', soldOut && 'sold-out', className)}>
+      <div className="pcard-media art-ph">
+        {image && <img src={image} alt="" />}
+        {badge}
+        {onFavorite && <button type="button" className="btn ghost icon pcard-fav" aria-pressed={favorite} aria-label={(favorite ? 'Remove ' : 'Save ') + name} onClick={() => onFavorite(!favorite)}><Icon name="star" size={16} /></button>}
+      </div>
+      <div className="pcard-body">
+        {href ? <a className="pcard-name" href={href} style={{ color: 'inherit', textDecoration: 'none' }}>{name}</a> : <span className="pcard-name">{name}</span>}
+        {rating != null && (
+          <div className="row" style={{ gap: 4 }} role="img" aria-label={'Rated ' + rating + ' of 5'}>
+            {[1, 2, 3, 4, 5].map((k) => <Icon key={k} name="star" size={12} style={{ color: k <= Math.round(rating) ? 'var(--warning-solid)' : 'var(--border-strong)', fill: k <= Math.round(rating) ? 'currentColor' : 'none' }} />)}
+            {reviews != null && <span className="help">({reviews})</span>}
+          </div>
+        )}
+        <div className="price">{compareAt ? <><b className="sale">{price}</b><s aria-label={'Was ' + compareAt}>{compareAt}</s></> : <b>{price}</b>}</div>
+        {variant !== 'compact' && onAdd && <button type="button" className="btn primary sm block" disabled={soldOut} onClick={onAdd}>{soldOut ? 'Sold out' : addLabel}</button>}
+      </div>
+    </article>
+  );
+}
+`;
+
+T['pricing-card'] = String.raw`import type { ReactNode } from 'react';
+import { cx } from '../cx';
+import { Icon } from '../Icon';
+
+export interface PricingFeature { label: string; included?: boolean }
+export interface PricingCardProps {
+  name: string;
+  description?: string;
+  /** Formatted amount, e.g. "24 €". */
+  price: string;
+  period?: string;
+  features: PricingFeature[];
+  /** The call to action, usually a Button with block. */
+  action: ReactNode;
+  /** Highlights the recommended plan. Use on one card at most. */
+  featured?: boolean;
+  tag?: string;
+  className?: string;
+}
+
+export function PricingCard({ name, description, price, period = '/ month', features, action, featured = false, tag = 'Most popular', className }: PricingCardProps) {
+  return (
+    <article className={cx('prcard', featured && 'featured', className)} aria-label={name + ' plan'}>
+      {featured && <span className="badge primary prcard-tag">{tag}</span>}
+      <div className="col" style={{ gap: 4 }}><h3 className="prcard-name">{name}</h3>{description && <span className="help">{description}</span>}</div>
+      <div className="prcard-price"><span className="amount">{price}</span><span className="per">{period}</span></div>
+      <ul>
+        {features.map((f) => (
+          <li key={f.label} className={cx(f.included === false && 'no')}>
+            <Icon name={f.included === false ? 'minus' : 'check'} size={14} strokeWidth={2.4} />
+            {f.label}{f.included === false && <span className="vh"> (not included)</span>}
+          </li>
+        ))}
+      </ul>
+      {action}
+    </article>
+  );
+}
+`;
+
+T['profile-card'] = String.raw`import type { ReactNode } from 'react';
+import { cx } from '../cx';
+
+export interface ProfileCardProps {
+  name: string;
+  role?: string;
+  avatar?: string;
+  online?: boolean;
+  stats?: Array<{ label: string; value: ReactNode }>;
+  actions?: ReactNode;
+  /** cover: adds a banner image behind the avatar. */
+  variant?: __V__;
+  cover?: string;
+  className?: string;
+}
+
+const initials = (n: string) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+
+export function ProfileCard({ name, role, avatar, online, stats = [], actions, variant = '__VD__', cover, className }: ProfileCardProps) {
+  return (
+    <article className={cx('prof', variant === 'cover' && 'cover', className)}>
+      {variant === 'cover' && <div className="prof-cover art-ph strong" aria-hidden="true">{cover && <img src={cover} alt="" />}</div>}
+      <div className="prof-body">
+        <span className="avatar xl" role="img" aria-label={name} style={avatar ? { backgroundImage: 'url(' + avatar + ')', backgroundSize: 'cover', color: 'transparent' } : undefined}>
+          {!avatar && initials(name)}{online && <span className="on" />}
+        </span>
+        <b>{name}</b>
+        {role && <span className="help">{role}</span>}
+        {stats.length > 0 && <dl className="prof-stats" style={{ margin: 0 }}>{stats.map((s) => <div key={s.label}><dd style={{ margin: 0 }}><b>{s.value}</b></dd><dt>{s.label}</dt></div>)}</dl>}
+        {actions && <div className="prof-actions">{actions}</div>}
+      </div>
+    </article>
+  );
+}
+`;
+
+T.carousel = String.raw`import { Children, useEffect, useRef, useState, type ReactNode } from 'react';
+import { cx } from '../cx';
+import { Icon } from '../Icon';
+
+export interface CarouselProps {
+  label: string;
+  children: ReactNode;
+  /** slides: one at a time. peek: shows the edge of the next slide. */
+  variant?: __V__;
+  className?: string;
+}
+
+/** Scroll-snap carousel: swipe, arrows, dots and keyboard. No autoplay: people read at their own pace. */
+export function Carousel({ label, children, variant = '__VD__', className }: CarouselProps) {
+  const slides = Children.toArray(children);
+  const track = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return undefined;
+    const onScroll = () => {
+      const kids = Array.from(el.children) as HTMLElement[];
+      const i = kids.reduce((best, k, n) => (Math.abs(k.offsetLeft - el.offsetLeft - el.scrollLeft) < Math.abs(kids[best].offsetLeft - el.offsetLeft - el.scrollLeft) ? n : best), 0);
+      setIndex(i);
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+  const go = (i: number) => {
+    const el = track.current;
+    const n = (i + slides.length) % slides.length;
+    const kid = el?.children[n] as HTMLElement | undefined;
+    if (el && kid) el.scrollTo({ left: kid.offsetLeft - el.offsetLeft });
+    setIndex(n);
+  };
+  return (
+    <section className={cx('carousel', variant === 'peek' && 'peek', className)} aria-roledescription="carousel" aria-label={label}
+      onKeyDown={(e) => { if (e.key === 'ArrowRight') go(index + 1); if (e.key === 'ArrowLeft') go(index - 1); }}>
+      <div className="carousel-track" ref={track} aria-live="polite">
+        {slides.map((s, i) => <div key={i} role="group" aria-roledescription="slide" aria-label={i + 1 + ' of ' + slides.length}>{s}</div>)}
+      </div>
+      <div className="carousel-foot">
+        <div className="pagectl" role="tablist" aria-label="Slides">
+          {slides.map((_, i) => <button key={i} type="button" role="tab" aria-selected={i === index} aria-label={'Slide ' + (i + 1)} className={cx(i === index && 'on')} onClick={() => go(i)} />)}
+        </div>
+        <div className="row" style={{ gap: 4 }}>
+          <button type="button" className="btn outline icon sm" aria-label="Previous slide" onClick={() => go(index - 1)}><Icon name="chevronLeft" size={14} /></button>
+          <button type="button" className="btn outline icon sm" aria-label="Next slide" onClick={() => go(index + 1)}><Icon name="chevronRight" size={14} /></button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** A slide with a brand-coloured background (or an image) and an optional caption. */
+export function CarouselSlide({ title, caption, image, strong }: { title?: string; caption?: string; image?: string; strong?: boolean }) {
+  return (
+    <div className={cx('slide art-ph', strong && 'strong')}>
+      {image && <img src={image} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+      {(title || caption) && <div className="slide-cap">{title && <b>{title}</b>}{caption && <span className="muted">{caption}</span>}</div>}
+    </div>
+  );
+}
+`;
+
 // ---------------------------------------------------------------------------
 
 function fill(tpl, meta) {
@@ -2076,6 +2596,72 @@ export const EXAMPLES = {
 }`,
   kbd: `function Example() {
   return <p>Search <Kbd keys={['⌘', 'K']} /></p>;
+}`,
+  'inline-edit': `function Example() {
+  const [name, setName] = useState('Autumn launch');
+  return <InlineEdit label="Campaign name" value={name} onSave={(v) => (v.trim() ? setName(v) : 'The name cannot be empty.')} />;
+}`,
+  'time-picker': `function Example() {
+  const [time, setTime] = useState<string | null>('10:00');
+  return <TimePicker label="Start time" value={time} onChange={setTime} min="09:00" max="18:00" />;
+}`,
+  'color-picker': `function Example() {
+  const [color, setColor] = useState('#7c5cff');
+  return <ColorPicker value={color} onChange={setColor} variant="full" />;
+}`,
+  'context-menu': `function Example() {
+  const [last, setLast] = useState('');
+  return (
+    <ContextMenu onSelect={setLast} items={[
+      { id: 'rename', label: 'Rename', shortcut: 'F2' },
+      { id: 'duplicate', label: 'Duplicate', shortcut: '⌘D' },
+      'separator',
+      { id: 'delete', label: 'Delete', danger: true },
+    ]}>
+      <div className="ctx-area">Right-click here{last && ' · last: ' + last}</div>
+    </ContextMenu>
+  );
+}`,
+  'page-banner': `function Example() {
+  const [open, setOpen] = useState(true);
+  return open ? <PageBanner tone="promo" title="Autumn sale:" action={{ label: 'See plans', href: '#pricing' }} onDismiss={() => setOpen(false)}>20% off every plan until Sunday.</PageBanner> : null;
+}`,
+  hero: `function Example() {
+  return <Hero variant="split" eyebrow="Design system 2.1" title="Design once. Ship everywhere."
+    description="Tokens, components and docs from a single source, ready for Figma, the web and your AI agents."
+    actions={<><Button size="lg">Start free</Button><Button size="lg" variant="outline">Watch demo</Button></>} />;
+}`,
+  'media-card': `function Example() {
+  return <MediaCard eyebrow="Guide · 6 min" title="How to name your tokens"
+    description="Primitive, semantic and component: three levels that scale without breaking."
+    actions={<><Button size="sm">Read</Button><Button size="sm" variant="ghost">Save</Button></>} />;
+}`,
+  'product-card': `function Example() {
+  const [fav, setFav] = useState(false);
+  return <ProductCard name="Nordic lamp" price="€63.20" compareAt="€79.00" rating={4} reviews={128}
+    badge={<Badge tone="critical">−20%</Badge>} favorite={fav} onFavorite={setFav} onAdd={() => {}} />;
+}`,
+  'pricing-card': `function Example() {
+  return (
+    <div className="row" style={{ alignItems: 'stretch', paddingTop: 12 }}>
+      <PricingCard name="Basic" description="To get started" price="€0" features={[{ label: 'Unlimited brands' }, { label: 'Sub-brands', included: false }]} action={<Button variant="outline" block>Start free</Button>} />
+      <PricingCard featured name="Team" description="For product teams" price="€24" features={[{ label: 'Unlimited brands' }, { label: 'Sub-brands' }]} action={<Button block>Try 14 days</Button>} />
+    </div>
+  );
+}`,
+  'profile-card': `function Example() {
+  return <ProfileCard variant="cover" name="Maya Díaz" role="Systems designer · Madrid" online
+    stats={[{ label: 'Tokens', value: 128 }, { label: 'Components', value: 46 }]}
+    actions={<><Button size="sm">Follow</Button><Button size="sm" variant="outline">Message</Button></>} />;
+}`,
+  carousel: `function Example() {
+  return (
+    <Carousel label="What's new">
+      <CarouselSlide strong title="New collection" caption="Autumn 2026" />
+      <CarouselSlide title="Free shipping" caption="On orders over €50" />
+      <CarouselSlide strong title="Tokens 2.1" caption="Better dark mode" />
+    </Carousel>
+  );
 }`,
 };
 

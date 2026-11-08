@@ -262,3 +262,18 @@ test('zip writer produces a valid archive', async () => {
   assert.match(out, /No errors detected/);
   assert.equal(execFileSync('unzip', ['-p', file, 'pkg/README.md']).toString(), '# Hola ñ');
 });
+
+test('phase 2 components: catalogue, recommendations, previews and React', () => {
+  const ids = ['inline-edit', 'time-picker', 'color-picker', 'context-menu', 'page-banner', 'hero', 'media-card', 'product-card', 'pricing-card', 'profile-card', 'carousel'];
+  for (const id of ids) {
+    const c = COMPONENTS.find((x) => x.id === id);
+    assert.ok(c, id);
+    assert.ok(c.name && c.nameEn && c.desc && c.descEn && c.variants.length, id);
+    assert.ok(REACT_READY.includes(id) && EXAMPLES[id], id + ' React');
+  }
+  assert.ok(COMPONENTS.filter((c) => c.cat === 'content').length >= 6);
+  const mk = recommend({ ...structuredClone(EMPTY_BRIEF), productType: ['marketing'] }, { ...brand });
+  for (const id of ['hero', 'media-card', 'pricing-card']) assert.ok(mk.components.includes(id), 'marketing gets ' + id);
+  const shop = recommend({ ...structuredClone(EMPTY_BRIEF), productType: ['commerce'] }, { ...brand });
+  assert.ok(shop.components.includes('product-card') && shop.components.includes('carousel'));
+});

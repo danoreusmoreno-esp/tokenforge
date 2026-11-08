@@ -76,16 +76,18 @@ export const EFFECT_FOR = {
   tabs: 'sliding-bg', segmented: 'sliding-bg', sidebar: 'sliding-bg', 'nav-bar': 'sliding-bg',
   stat: 'number', checkbox: 'draw-check', switch: 'spring-knob', accordion: 'expand',
   menu: 'stagger', list: 'stagger', timeline: 'stagger', 'action-sheet': 'stagger', toast: 'stagger', alert: 'stagger',
+  'context-menu': 'stagger', 'page-banner': 'stagger',
 };
 
-const OVERLAYS = ['dialog', 'popover', 'menu', 'tooltip', 'drawer', 'action-sheet', 'toast', 'combobox', 'select'];
-const PRESSABLE = ['button', 'icon-button', 'fab', 'chip', 'button-group', 'toolbar', 'pagination', 'card', 'segmented', 'tabs', 'nav-bar', 'nav-rail', 'rating'];
+const OVERLAYS = ['dialog', 'popover', 'menu', 'tooltip', 'drawer', 'action-sheet', 'toast', 'combobox', 'select', 'context-menu', 'time-picker'];
+const LIFT = ['card', 'media-card', 'product-card', 'profile-card', 'pricing-card'];
+const PRESSABLE = ['button', 'icon-button', 'fab', 'chip', 'button-group', 'toolbar', 'pagination', 'card', 'segmented', 'tabs', 'nav-bar', 'nav-rail', 'rating', 'media-card', 'product-card', 'carousel'];
 
 /** Sensible defaults by component kind (Emil: overlays enter, pressables respond, nothing frequent decorates). */
 export function defaultMotion(id) {
   return {
-    enter: OVERLAYS.includes(id) ? (id === 'toast' || id === 'drawer' || id === 'action-sheet' ? 'slide-up' : 'scale') : 'none',
-    hover: id === 'card' ? 'lift' : id === 'fab' ? 'magnetic' : 'none',
+    enter: OVERLAYS.includes(id) ? (id === 'toast' || id === 'drawer' || id === 'action-sheet' ? 'slide-up' : 'scale') : id === 'hero' ? 'slide-up' : 'none',
+    hover: LIFT.includes(id) ? 'lift' : id === 'fab' ? 'magnetic' : 'none',
     tap: PRESSABLE.includes(id) ? (id === 'fab' || id === 'rating' ? 'bounce' : 'press') : 'none',
     effect: EFFECT_FOR[id] ?? 'none',
   };

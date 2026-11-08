@@ -132,13 +132,13 @@ export function recommend(brief, brand) {
 
   const comps = new Set(CORE_IDS);
   const add = (...ids) => ids.forEach((i) => comps.add(i));
-  if (types.has('saas')) add('breadcrumb', 'pagination', 'combobox', 'search', 'popover', 'empty-state', 'skeleton', 'save-bar', 'segmented');
-  if (types.has('dashboard')) add('stat', 'pagination', 'search', 'segmented', 'date-picker', 'skeleton', 'empty-state', 'toolbar', 'topbar');
-  if (types.has('commerce')) add('rating', 'number-input', 'search', 'breadcrumb', 'pagination', 'drawer', 'save-bar', 'file-upload');
-  if (types.has('marketing')) add('accordion', 'link', 'divider');
-  if (types.has('content')) add('accordion', 'breadcrumb', 'pagination', 'divider', 'code');
+  if (types.has('saas')) add('breadcrumb', 'pagination', 'combobox', 'search', 'popover', 'empty-state', 'skeleton', 'save-bar', 'segmented', 'inline-edit', 'context-menu', 'page-banner');
+  if (types.has('dashboard')) add('stat', 'pagination', 'search', 'segmented', 'date-picker', 'skeleton', 'empty-state', 'toolbar', 'topbar', 'inline-edit', 'context-menu', 'time-picker');
+  if (types.has('commerce')) add('rating', 'number-input', 'search', 'breadcrumb', 'pagination', 'drawer', 'save-bar', 'file-upload', 'product-card', 'carousel', 'page-banner', 'hero');
+  if (types.has('marketing')) add('accordion', 'link', 'divider', 'hero', 'media-card', 'pricing-card', 'carousel', 'page-banner');
+  if (types.has('content')) add('accordion', 'breadcrumb', 'pagination', 'divider', 'code', 'hero', 'media-card', 'profile-card');
   if (types.has('mobile') || plats.has('ios') || plats.has('android')) add('nav-bar', 'action-sheet', 'drawer', 'segmented', 'page-control');
-  if (plats.has('desktop')) add('toolbar', 'nav-rail', 'kbd', 'menu');
+  if (plats.has('desktop')) add('toolbar', 'nav-rail', 'kbd', 'menu', 'context-menu');
   if (brief.goals.includes('ai')) add('code');
 
   return {

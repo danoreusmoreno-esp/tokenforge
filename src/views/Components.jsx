@@ -13,8 +13,10 @@ const TOTAL = FEATURED.length;
  * down just enough to fit the frame, so nothing is cropped or squeezed.
  */
 const THUMB = 0.82;
-const MIN_THUMB = 0.5; // below this a thumbnail is unreadable: keep this size and show the top instead
-function FitPreview({ children, onClick }) {
+const MIN_THUMB = 0.5; // below this a tall thumbnail is unreadable: keep this size and show the top instead
+// Full-width components are laid out at a real page width, then scaled down whole.
+const WIDE = { hero: 880, 'page-banner': 640, 'pricing-card': 640 };
+function FitPreview({ children, onClick, width }) {
   const frame = useRef(null);
   const inner = useRef(null);
   const [scale, setScale] = useState(THUMB);
@@ -30,9 +32,12 @@ function FitPreview({ children, onClick }) {
       const w = Math.max(i.offsetWidth, live ? live.scrollWidth : 0);
       const h = live ? live.scrollHeight : i.offsetHeight;
       if (!w || !h) return;
-      const s = Math.min(THUMB, aw / w, ah / h);
-      setScale(Math.max(MIN_THUMB, s));
-      setCrop(s < MIN_THUMB);
+      const byWidth = aw / w;
+      const s = Math.min(THUMB, byWidth, ah / h);
+      // Too tall but narrow enough: keep a readable size and show the top. Too wide: scale down whole.
+      const cropTop = s < MIN_THUMB && byWidth >= MIN_THUMB;
+      setScale(cropTop ? MIN_THUMB : s);
+      setCrop(cropTop);
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -42,7 +47,7 @@ function FitPreview({ children, onClick }) {
   }, []);
   return (
     <div className={`cat-prev ${crop ? 'crop' : ''}`} ref={frame} onClick={onClick}>
-      <div className="cat-prev-inner" ref={inner} style={{ transform: `scale(${scale})` }}>{children}</div>
+      <div className="cat-prev-inner" ref={inner} style={{ transform: `scale(${scale})`, ...(width ? { width } : null) }}>{children}</div>
     </div>
   );
 }
@@ -125,7 +130,7 @@ function Catalogue({ brand, setComponents, open, go }) {
           <div className="cat-grid">
             {COMPONENTS.filter((c) => c.cat === cat.id && visible(c)).map((c) => (
               <div key={c.id} className={`cat-card ${enabled.has(c.id) ? 'in' : ''}`}>
-                <FitPreview onClick={() => open(c.id)}><Preview id={c.id} /></FitPreview>
+                <FitPreview onClick={() => open(c.id)} width={WIDE[c.id]}><Preview id={c.id} /></FitPreview>
                 <div className="cat-meta">
                   <div style={{ minWidth: 0 }}>
                     <button className="cat-name" onClick={() => open(c.id)}>{c.name}</button>

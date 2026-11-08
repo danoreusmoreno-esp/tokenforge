@@ -71,7 +71,26 @@ async function render() {
     const panel = await p.textContent('[data-id="tabs"] [role="tabpanel"]');
     await p.focus('[data-id="slider"] input.b'); await p.keyboard.press('ArrowRight');
     const fill = await p.$eval('[data-id="slider"] .fill', (e) => e.style.width);
+    // Phase 2 components.
+    await p.click('[data-id="inline-edit"] .ie-view');
+    await p.fill('[data-id="inline-edit"] input', '');
+    await p.keyboard.press('Enter');
+    const inlineError = await p.textContent('[data-id="inline-edit"] .help.err').catch(() => null);
+    await p.fill('[data-id="inline-edit"] input', 'Winter launch'); await p.keyboard.press('Enter');
+    const inlineSaved = await p.textContent('[data-id="inline-edit"] .ie-view');
+    await p.click('[data-id="context-menu"] .ctx-area', { button: 'right' });
+    const ctxItems = await p.$$eval('.ctx-menu [role="menuitem"]', (els) => els.length);
+    await p.keyboard.press('Escape');
+    const ctxClosed = (await p.$$('.ctx-menu')).length === 0;
+    await p.click('[data-id="carousel"] button[aria-label="Next slide"]'); await p.waitForTimeout(400);
+    const slide = await p.$eval('[data-id="carousel"] [role="tab"][aria-selected="true"]', (e) => e.getAttribute('aria-label'));
+    await p.click('[data-id="color-picker"] .cp-swatches button:nth-child(4)');
+    const hex = await p.inputValue('[data-id="color-picker"] .cp-row input');
+    await p.click('[data-id="time-picker"] button.select');
+    await p.click('[data-id="time-picker"] [role="option"]:has-text("11:30")');
+    const time = await p.textContent('[data-id="time-picker"] button.select');
     console.log(theme, JSON.stringify({ sections: n, dialogOpen, dialogClosed, opts, picked, panel, fill }));
+    console.log(theme, JSON.stringify({ inlineError, inlineSaved, ctxItems, ctxClosed, slide, hex, time }));
     await p.screenshot({ path: join(out, 'showcase-' + theme + '.png'), fullPage: true });
     await p.close();
   }

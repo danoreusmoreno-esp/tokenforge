@@ -36,6 +36,7 @@ export const CATEGORIES = [
   { id: 'overlays', name: 'Capas superpuestas' },
   { id: 'data', name: 'Mostrar datos' },
   { id: 'layout', name: 'Estructura' },
+  { id: 'content', name: 'Contenido y marketing' },
 ];
 
 // Names in each system. First five: Material 3, Apple HIG, Polaris, Carbon, Fluent 2;
@@ -239,6 +240,43 @@ const RAW = [
   { id: 'kbd', name: 'Keyboard key', cat: 'layout', others: ['primer', 'radix', 'spectrum'],
     names: n(null, null, null, null, null),
     desc: 'Shows a keyboard shortcut.', variants: ['default'], sizes: ['sm'], states: ['default'], tokens: {} },
+
+  // Phase 2: inputs, overlays and feedback
+  { id: 'inline-edit', name: 'Inline edit', cat: 'inputs', others: ['atlassian'],
+    names: n(null, null, null, null, null),
+    desc: 'Edit a value in place: read view until clicked, then a field with confirm and cancel.', variants: ['text', 'select'], sizes: ['md'], states: ['view', 'editing', 'error'], tokens: {} },
+  { id: 'time-picker', name: 'Time picker', cat: 'inputs', others: ['atlassian', 'spectrum'],
+    names: n('Time picker', 'Date picker (time)', null, 'Time picker', 'TimePicker'),
+    desc: 'Pick a time from a list of slots or type it.', variants: ['list', 'input'], sizes: ['md'], states: ['default', 'open'], tokens: { 'step-minutes': 30 } },
+  { id: 'color-picker', name: 'Color picker', cat: 'inputs', others: ['spectrum'],
+    names: n(null, 'Color well', 'ColorPicker', null, 'ColorPicker'),
+    desc: 'Pick a colour from swatches or a full area with hue and hex.', variants: ['swatches', 'full'], sizes: ['md'], states: ['default'], tokens: {} },
+  { id: 'context-menu', name: 'Context menu', cat: 'overlays', others: ['radix'],
+    names: n('Menu (context)', 'Context menu', null, 'Menu', 'Menu (context)'),
+    desc: 'Actions for an item, opened with right click or long press.', variants: ['default'], sizes: ['md'], states: ['closed', 'open'], tokens: { 'item-height': 32 } },
+  { id: 'page-banner', name: 'Page banner', cat: 'feedback', others: ['atlassian', 'primer'],
+    names: n(null, null, 'Banner', 'Actionable notification', 'MessageBar'),
+    desc: 'Full-width message at the top of a page or app: announcements, promotions, system status.', variants: ['info', 'promo', 'warning', 'critical'], sizes: ['md'], states: ['default', 'dismissible'], tokens: { 'height': 48 } },
+
+  // Content and marketing
+  { id: 'hero', name: 'Hero', cat: 'content', others: [],
+    names: n(null, null, null, 'Lead space', null),
+    desc: 'Opening section of a page: headline, supporting text and the main calls to action.', variants: ['centered', 'split', 'image'], sizes: ['md', 'lg'], states: ['default'], tokens: { 'padding-y': 64, 'max-width': 720 } },
+  { id: 'media-card', name: 'Media card', cat: 'content', others: ['spectrum'],
+    names: n('Card (with media)', null, 'MediaCard', 'Tile', 'Card (preview)'),
+    desc: 'Card led by an image or video, with title, text and actions.', variants: ['vertical', 'horizontal'], sizes: ['md'], states: ['default', 'interactive'], tokens: { 'media-height': 160 } },
+  { id: 'product-card', name: 'Product card', cat: 'content', others: [],
+    names: n(null, null, null, null, null),
+    desc: 'Product in a grid: image, name, price, rating and add to cart.', variants: ['default', 'compact'], sizes: ['md'], states: ['default', 'sale', 'sold-out'], tokens: {} },
+  { id: 'pricing-card', name: 'Pricing card', cat: 'content', others: [],
+    names: n(null, null, null, null, null),
+    desc: 'One plan: price, period, what it includes and the call to action.', variants: ['default', 'featured'], sizes: ['md'], states: ['default'], tokens: {} },
+  { id: 'profile-card', name: 'Profile card', cat: 'content', others: ['atlassian', 'radix'],
+    names: n(null, null, null, null, 'Persona'),
+    desc: 'A person at a glance: avatar, name, role, stats and contact.', variants: ['default', 'cover'], sizes: ['md'], states: ['default'], tokens: {} },
+  { id: 'carousel', name: 'Carousel', cat: 'content', others: ['radix'],
+    names: n('Carousel', null, null, null, 'Carousel'),
+    desc: 'Horizontally scrolling set of slides with arrows and page dots.', variants: ['slides', 'peek'], sizes: ['md'], states: ['default'], tokens: { 'gap': 16 } },
 ];
 
 
@@ -300,6 +338,17 @@ const ES = {
   code: ['Bloque de código', 'Fragmento monoespaciado con acción de copiar.'],
   divider: ['Separador', 'Separa grupos de contenido.'],
   kbd: ['Tecla', 'Muestra un atajo de teclado.'],
+  'inline-edit': ['Edición en línea', 'Edita un valor en su sitio: se ve como texto y al pulsarlo pasa a campo con confirmar y cancelar.'],
+  'time-picker': ['Selector de hora', 'Elige una hora de una lista de franjas o escríbela.'],
+  'color-picker': ['Selector de color', 'Elige un color de una paleta o de un área completa con tono y hex.'],
+  'context-menu': ['Menú contextual', 'Acciones de un elemento al hacer clic derecho o pulsación larga.'],
+  'page-banner': ['Banner de página', 'Mensaje a todo el ancho arriba de la página: anuncios, promociones o estado del sistema.'],
+  hero: ['Hero', 'Sección de apertura de una página: titular, texto de apoyo y las llamadas a la acción principales.'],
+  'media-card': ['Tarjeta multimedia', 'Tarjeta encabezada por una imagen o vídeo, con título, texto y acciones.'],
+  'product-card': ['Tarjeta de producto', 'Producto en una cuadrícula: imagen, nombre, precio, valoración y añadir al carrito.'],
+  'pricing-card': ['Tarjeta de precio', 'Un plan: precio, periodo, qué incluye y la llamada a la acción.'],
+  'profile-card': ['Tarjeta de perfil', 'Una persona de un vistazo: avatar, nombre, cargo, cifras y contacto.'],
+  carousel: ['Carrusel', 'Diapositivas con desplazamiento horizontal, flechas e indicador de página.'],
 };
 
 // Atlassian, Primer, Spectrum, shadcn — null where there is no direct equivalent.
@@ -360,6 +409,17 @@ const MORE = {
   code: ['Code / CodeBlock', null, null, null],
   divider: [null, null, 'Divider', 'Separator'],
   kbd: [null, null, 'Keyboard', 'Kbd'],
+  'inline-edit': ['Inline edit', null, null, null],
+  'time-picker': ['Time picker', null, 'TimeField', null],
+  'color-picker': [null, null, 'ColorArea / ColorWheel', null],
+  'context-menu': [null, null, null, 'Context Menu'],
+  'page-banner': ['Banner', 'Banner', null, null],
+  hero: [null, null, null, null],
+  'media-card': [null, null, 'Card (asset)', null],
+  'product-card': [null, null, null, null],
+  'pricing-card': [null, null, null, null],
+  'profile-card': ['Profile card', null, null, 'Hover Card'],
+  carousel: [null, null, null, 'Carousel'],
 };
 
 export const COMPONENTS = RAW.map(({ others, ...c }) => {
