@@ -277,3 +277,51 @@ test('phase 2 components: catalogue, recommendations, previews and React', () =>
   const shop = recommend({ ...structuredClone(EMPTY_BRIEF), productType: ['commerce'] }, { ...brand });
   assert.ok(shop.components.includes('product-card') && shop.components.includes('carousel'));
 });
+
+import { toDocsSite, tokenIndex, describePart } from '../src/engine/docs.js';
+import { GUIDE, BEHAVIOR, ANATOMY } from '../src/engine/guide.js';
+
+test('docs: guidance, behaviour and anatomy exist for every component', () => {
+  for (const c of COMPONENTS) {
+    const g = GUIDE[c.id];
+    assert.ok(g && g.use.length && g.avoid.length && g.a11y.length, `${c.id} guide`);
+    assert.ok(BEHAVIOR[c.id]?.length, `${c.id} behaviour`);
+    assert.ok(ANATOMY[c.id]?.root && ANATOMY[c.id].parts.length, `${c.id} anatomy`);
+    if (ANATOMY[c.id].v) assert.ok(c.variants.includes(ANATOMY[c.id].v), `${c.id} anatomy variant exists`);
+  }
+});
+
+test('docs: measured values are tied to the right tokens', () => {
+  const sys = computeSystem(brand);
+  const idx = tokenIndex(sys);
+  const r = sys.appearances.light.roles;
+  const rgb = (h) => `rgb(${[1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(', ')})`;
+  const d = describePart({ w: 90, h: 40, text: true, style: { pt: 0, pr: 16, pb: 0, pl: 16, gap: 8, radius: sys.radius.fields, bw: 1, bc: rgb(r['success-solid']), bg: rgb(r['success-solid']), color: rgb(r['success-on-solid']), fs: sys.type.desktop.small.size, lh: 20, fw: '600' } }, idx);
+  const by = Object.fromEntries(d.map((x) => [x.k, x.t]));
+  assert.equal(by.Fondo, '--success-solid');
+  assert.equal(by.Color, '--success-on-solid');
+  assert.match(by.Relleno, /--space-4/);
+  assert.match(by.Radio, /--radius-fields/);
+  assert.match(by.Texto, /--text-small-size/);
+});
+
+test('docs: site has every page and no broken internal links', () => {
+  const sys = computeSystem({ ...brand, components: ['button', 'hero', 'badge'] });
+  const captures = { button: { variants: [{ v: 'primary', html: '<button class="btn primary">B</button>' }], anatomy: { v: 'primary', w: 90, h: 40, html: '<button class="btn primary">B</button>', parts: [{ name: 'Contenedor', x: 0, y: 0, w: 90, h: 40, text: true, style: { pt: 0, pr: 16, pb: 0, pl: 16, gap: 8, radius: 8, bw: 0, bc: '', bg: 'rgb(0, 0, 0)', color: 'rgb(255, 255, 255)', fs: 14, lh: 20, fw: '600' } }] } } };
+  const { files, name } = toDocsSite(sys, { captures, tokensCss: ':root{}', componentsCss: '.ds{}', assets: [{ kind: 'Logo', name: brand.name, file: 'logo-forge.png', dataUrl: 'data:image/png;base64,AA==' }] });
+  assert.equal(name, 'forge-docs');
+  const paths = new Set(files.map((f) => f.file));
+  for (const f of ['index.html', 'foundations/color.html', 'foundations/typography.html', 'foundations/spacing.html', 'foundations/shape.html', 'foundations/motion.html', 'components/button.html', 'components/hero.html', 'components/badge.html', 'assets/docs.css', 'assets/logo-forge.png']) assert.ok(paths.has(f), f);
+  for (const f of files.filter((x) => x.file.endsWith('.html'))) {
+    const dir = f.file.includes('/') ? f.file.slice(0, f.file.lastIndexOf('/') + 1) : '';
+    for (const [, href] of f.text.matchAll(/(?:href|src)="([^"#:]+?)(?:#[^"]*)?"/g)) {
+      const parts = [];
+      for (const s of (dir + href).split('/')) { if (s === '..') parts.pop(); else if (s !== '.') parts.push(s); }
+      assert.ok(paths.has(parts.join('/')), `${f.file} links to missing ${href}`);
+    }
+  }
+  const page = files.find((f) => f.file === 'components/button.html').text;
+  for (const id of ['ejemplos', 'anatomia', 'comportamiento', 'uso', 'accesibilidad', 'tokens', 'codigo', 'referencias']) assert.match(page, new RegExp(`id="${id}"`));
+  assert.match(page, /--space-4/);
+  assert.match(files.find((f) => f.file === 'components/hero.html').text, /No se pudo medir/, 'missing captures are said, not hidden');
+});

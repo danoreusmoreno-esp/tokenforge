@@ -1088,3 +1088,15 @@ a.pill.sm { text-decoration: none; }
 .pkg .code.big { max-height: 560px; }
 @media (max-width: 860px) { .pkg { grid-template-columns: minmax(0, 1fr); } .pkg-tree { max-height: 200px; } }
 .bcard-body > .ds.live { flex: 1 1 auto; min-width: 0; }
+
+/* Export · documentation preview */
+.docs-pkg { grid-template-columns: 200px minmax(0, 1fr); }
+.docs-viewport { position: relative; overflow: hidden; border-radius: 14px; box-shadow: 0 0 0 1px var(--c-edge); background: #fff; min-width: 0; }
+.docs-frame { display: block; border: 0; background: #fff; }
+.docs-wait { padding: 48px 24px; text-align: center; color: var(--c-text-2); border-radius: 14px; background: var(--c-raised); }
+
+.docs-preview { position: relative; min-width: 0; }
+.docs-expand { position: absolute; top: 12px; right: 12px; z-index: 2; background: var(--c-sheet); }
+.docs-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(10, 10, 12, .55); padding: 56px 24px 24px; display: flex; }
+.docs-overlay .docs-viewport.big { flex: 1; height: auto; }
+.docs-close { position: absolute; top: 12px; right: 24px; }
