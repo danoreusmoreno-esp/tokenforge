@@ -175,7 +175,7 @@ const RAW = [
     desc: 'Appears when a form has unsaved changes, with Discard and Save always in reach.', variants: ['default'], sizes: ['md'], states: ['default', 'saving'], tokens: { 'height': 56 } },
   { id: 'badge', name: 'Badge', cat: 'feedback', core: true, others: SEC,
     names: n('Badge', 'Badge (tab bar, app icon)', 'Badge', 'Tag (read-only)', 'Badge'),
-    desc: 'Short status label or count.', variants: ['neutral', 'accent', 'success', 'warning', 'critical', 'info'], sizes: ['sm', 'md'], states: ['default'], tokens: { 'height': 22 } },
+    desc: 'Short status label or count.', variants: ['neutral', 'primary', 'secondary', 'tertiary', 'success', 'warning', 'critical', 'info'], sizes: ['sm', 'md'], states: ['default'], tokens: { 'height': 22 } },
   { id: 'progress', name: 'Progress bar', cat: 'feedback', core: true, others: SEC,
     names: n('Progress indicator (linear, circular)', 'Progress indicator', 'ProgressBar', 'Progress bar', 'ProgressBar'),
     desc: 'Determinate or indeterminate progress.', variants: ['linear', 'circular'], sizes: ['md'], states: ['default', 'error'], tokens: { 'height': 6 } },

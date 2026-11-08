@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FAMILIES } from '../engine/tokens.js';
+import { BRAND_FAMILIES, SEMANTIC_FAMILIES } from '../engine/tokens.js';
 import { wcag, apca } from '../engine/color.js';
 import { Live } from '../components/Live.jsx';
 import NextStep from '../components/NextStep.jsx';
@@ -35,43 +35,99 @@ const AUDIT_ES = {
   'Primary button label': 'Texto de botón principal', 'Link text': 'Enlace', 'Destructive button label': 'Texto de botón destructivo',
   'Success badge': 'Badge de éxito', 'Warning badge': 'Badge de aviso', 'Critical badge': 'Badge crítico', 'Info badge': 'Badge informativo',
   'Field border (non-text, 3:1)': 'Borde de campo (interfaz, 3:1)',
+  'Secondary fill label': 'Texto sobre secundario', 'Secondary tonal text': 'Texto tonal secundario',
+  'Tertiary fill label': 'Texto sobre terciario', 'Tertiary brand text': 'Texto terciario de marca',
 };
 const STEP_USE = ['Fondo app', 'Fondo sutil', 'Fondo UI', 'Hover', 'Activo', 'Borde sutil', 'Borde', 'Borde fuerte', 'Sólido', 'Sólido hover', 'Texto bajo contraste', 'Texto alto contraste'];
 
 function copy(t) { navigator.clipboard?.writeText(t).catch(() => {}); }
 
-function Colors({ sys, appearance }) {
-  const ap = sys.appearances[appearance];
-  const roles = Object.entries(ap.roles);
+const FAM = {
+  primary: ['Primario', 'La acción principal: botón primario, foco, controles marcados. Una por vista.'],
+  secondary: ['Secundario', 'Apoya al primario sin competir: botón tonal, chips y navegación seleccionados.'],
+  tertiary: ['Terciario', 'Contraste y acentos: badges, ilustraciones, datos. Nunca la acción principal.'],
+  neutral: ['Neutro', 'Fondos, superficies, bordes y texto. La mayor parte de la interfaz.'],
+  success: ['Éxito', 'Confirmaciones y estados correctos.'],
+  warning: ['Aviso', 'Algo requiere atención, sin bloquear.'],
+  critical: ['Crítico', 'Errores y acciones destructivas.'],
+  info: ['Info', 'Mensajes neutros y novedades.'],
+};
+const GROUPS = [['Marca', BRAND_FAMILIES], ['Neutro', ['neutral']], ['Semánticos', SEMANTIC_FAMILIES]];
+const ROLE_GROUPS = [
+  ['Superficies, bordes y texto', (k) => /^(bg|border|text|focus)-/.test(k)],
+  ...[...BRAND_FAMILIES, ...SEMANTIC_FAMILIES].map((f) => [FAM[f][0], (k) => k.startsWith(`${f}-`)]),
+];
+
+function Sw({ hex, label }) {
+  return (
+    <button className="kc-sw" style={{ background: hex, color: wcag('#fff', hex) > 4.5 ? '#fff' : '#111' }} onClick={() => copy(hex)} title={`${label}: ${hex} (clic para copiar)`}>
+      <span>{label}</span><b>{hex.toUpperCase()}</b>
+    </button>
+  );
+}
+
+function Colors({ sys }) {
+  const L = sys.appearances.light, D = sys.appearances.dark;
+  const roleKeys = Object.keys(L.roles);
+  const auto = (ap, f) => (ap === D ? ap.auto[`dark:${f}`] : ap.auto[f]);
   return (
     <>
       <section className="fd-sec">
+        <h2 className="t-h3">Colores clave</h2>
+        <p className="muted t-small">Tres niveles: colores clave → rampas de 12 pasos → roles semánticos. Cada color tiene versión clara y oscura; «auto» significa que se calcula a partir de otro y se actualiza solo.</p>
+        {GROUPS.map(([g, fams]) => (
+          <div key={g} className="kc-group">
+            <h3 className="kc-hd">{g}</h3>
+            <div className="kc-grid">
+              {fams.map((f) => (
+                <article key={f} className="kc-card">
+                  <div className="kc-swatches"><Sw hex={L.ramps[f][8]} label="Claro" /><Sw hex={D.ramps[f][8]} label="Oscuro" /></div>
+                  <div className="kc-meta">
+                    <div className="row" style={{ gap: 8 }}><b>{FAM[f][0]}</b><code className="mono t-caption faint">{f}</code>
+                      {(auto(L, f) || auto(D, f)) && <span className="kc-auto">{auto(L, f) ? 'auto del primario' : 'oscuro auto'}</span>}
+                    </div>
+                    <p className="t-caption muted">{FAM[f][1]}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+      <section className="fd-sec">
         <h2 className="t-h3">Rampas</h2>
-        <p className="muted t-small">Doce pasos por familia, con su gemelo oscuro. El paso 9 es el color que escribiste. Pulsa un color para copiar su variable.</p>
+        <p className="muted t-small">Doce pasos por familia, en claro y en oscuro. En claro los pasos van de claro a oscuro; en oscuro, al revés, así que el mismo número cumple la misma función en los dos modos. Pulsa un color para copiar su variable.</p>
         <div className="ramp-table">
           <div className="ramp-row head"><span />{STEP_USE.map((u, i) => <span key={i} title={u}>{i + 1}</span>)}</div>
-          {FAMILIES.map((f) => (
-            <div key={f} className="ramp-row">
-              <span className="t-caption">{f}</span>
-              {ap.ramps[f].map((h, i) => (
-                <button key={i} className="chip-sw" style={{ background: h, color: wcag('#fff', h) > 4.5 ? '#fff' : '#111' }} onClick={() => copy(`var(--color-${f}-${i + 1})`)} title={`--color-${f}-${i + 1}: ${h} (clic para copiar)`}>
+          {GROUPS.map(([g, fams]) => fams.map((f) => [['light', L, FAM[f][0]], ['dark', D, 'oscuro']].map(([ap, A, label]) => (
+            <div key={f + ap} className={`ramp-row ${ap === 'dark' ? 'is-dark' : 'is-light'}`}>
+              <span className="t-caption">{ap === 'dark' ? <span className="faint">☾ {label}</span> : label}</span>
+              {A.ramps[f].map((h, i) => (
+                <button key={i} className="chip-sw" style={{ background: h, color: wcag('#fff', h) > 4.5 ? '#fff' : '#111' }} onClick={() => copy(`var(--color-${f}-${i + 1})`)} title={`--color-${f}-${i + 1} (${ap === 'dark' ? 'oscuro' : 'claro'}): ${h} (clic para copiar)`}>
                   <span>{h.slice(1)}</span>
                 </button>
               ))}
             </div>
-          ))}
+          ))))}
         </div>
       </section>
       <section className="fd-sec">
         <h2 className="t-h3">Roles semánticos</h2>
-        <p className="muted t-small">En el producto usa roles, nunca pasos de la rampa. Los textos sobre sólidos ya cumplen WCAG AA.</p>
-        <div className="role-grid">
-          {roles.map(([k, h]) => (
-            <button key={k} className="role" onClick={() => copy(`var(--${k})`)} title="Copiar variable CSS">
-              <span className="role-sw" style={{ background: h }} />
-              <span className="mono t-caption">--{k}</span>
-              <span className="mono t-caption faint">{h}</span>
-            </button>
+        <p className="muted t-small">En el producto usa roles, nunca pasos de la rampa: el mismo rol cambia de valor con el modo. Los textos sobre sólidos cumplen WCAG AA en claro y en oscuro.</p>
+        <div className="role-table">
+          <div className="role-tr head"><span>Rol</span><span>Claro</span><span>Oscuro</span></div>
+          {ROLE_GROUPS.map(([g, test]) => (
+            <div key={g} className="role-tg">
+              <div className="role-tg-hd">{g}</div>
+              {roleKeys.filter(test).map((k) => (
+                <div key={k} className="role-tr">
+                  <button className="mono t-caption role-k" onClick={() => copy(`var(--${k})`)} title="Copiar variable CSS">--{k}</button>
+                  {[L, D].map((A, i) => (
+                    <span key={i} className={`role-v ${i ? 'dk' : ''}`}><i style={{ background: A.roles[k] }} /><span className="mono t-caption">{A.roles[k]}</span></span>
+                  ))}
+                </div>
+              ))}
+            </div>
           ))}
         </div>
       </section>
@@ -135,7 +191,7 @@ function Shape({ sys, appearance }) {
         <Live className="row stage-well" style={{ gap: 24, alignItems: 'flex-end' }}>
           {Object.entries(sys.radius).map(([k, r]) => (
             <div key={k} className="col" style={{ alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 96, height: k === 'boxes' ? 72 : k === 'fields' ? 40 : 28, borderRadius: Math.min(r, 48), border: '2px solid var(--accent-solid)', background: 'var(--accent-subtle)' }} />
+              <div style={{ width: 96, height: k === 'boxes' ? 72 : k === 'fields' ? 40 : 28, borderRadius: Math.min(r, 48), border: '2px solid var(--primary-solid)', background: 'var(--primary-subtle)' }} />
               <span className="mono t-caption">radius-{k} · {r}px</span>
             </div>
           ))}

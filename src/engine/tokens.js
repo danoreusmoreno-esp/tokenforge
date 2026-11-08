@@ -1,6 +1,41 @@
-import { buildRamp, solveSolid, wcag, apca } from './color.js';
+import { buildRamp, solveSolid, wcag, apca, deriveSecondary, deriveTertiary, harmonize, normalizeHex } from './color.js';
 
-export const FAMILIES = ['accent', 'neutral', 'success', 'critical', 'warning', 'info'];
+// Colour architecture: brand key colours (primary, secondary, tertiary), one neutral,
+// and semantic/status colours. Every family gets a 12-step ramp per appearance.
+export const BRAND_FAMILIES = ['primary', 'secondary', 'tertiary'];
+export const SEMANTIC_FAMILIES = ['success', 'warning', 'critical', 'info'];
+export const FAMILIES = [...BRAND_FAMILIES, 'neutral', ...SEMANTIC_FAMILIES];
+/** Families that derive from the primary when the user leaves them empty. */
+export const DERIVED = { secondary: deriveSecondary, tertiary: deriveTertiary };
+const ROLE_FAMILIES = [...BRAND_FAMILIES, ...SEMANTIC_FAMILIES];
+
+const valid = (hex) => (hex ? normalizeHex(hex) : null);
+
+/**
+ * Seed colour of every family for one appearance.
+ * Light: the colour the user chose, or derived from primary when empty; semantics optionally harmonized.
+ * Dark: an explicit dark seed when the user set one, otherwise the light seed (the ramp adapts it).
+ * Returns { seeds, auto } where auto[fam] says the seed was derived rather than chosen.
+ */
+export function resolveSeeds(brand, appearance = 'light') {
+  const c = brand.colors ?? {};
+  const primary = valid(c.primary) ?? DEFAULT_BRAND.colors.primary;
+  const seeds = {}, auto = {};
+  for (const fam of FAMILIES) {
+    let hex = fam === 'primary' ? primary : valid(c[fam]);
+    if (!hex && DERIVED[fam]) { hex = DERIVED[fam](primary); auto[fam] = true; }
+    if (!hex) hex = DEFAULT_BRAND.colors[fam];
+    if (brand.harmonize && SEMANTIC_FAMILIES.includes(fam)) hex = harmonize(hex, primary);
+    seeds[fam] = hex;
+  }
+  if (appearance === 'dark') {
+    for (const fam of FAMILIES) {
+      const d = valid(brand.darkColors?.[fam]);
+      if (d) seeds[fam] = d; else auto[`dark:${fam}`] = true;
+    }
+  }
+  return { seeds, auto };
+}
 
 export const FONTS = [
   { name: 'Inter', category: 'sans-serif' },
@@ -66,13 +101,18 @@ export const DEFAULT_BRAND = {
   id: 'default',
   name: 'Forge',
   colors: {
-    accent: '#7c5cff',
+    primary: '#7c5cff',
+    secondary: '',
+    tertiary: '',
     neutral: '#64616b',
     success: '#079455',
     critical: '#d92d20',
     warning: '#dc6803',
     info: '#1570ef',
   },
+  // Optional per-family seeds for dark mode; empty means "adapt the light colour".
+  darkColors: {},
+  harmonize: false,
   font: 'Inter',
   headingFont: 'Inter',
   monoFont: 'JetBrains Mono',
@@ -176,9 +216,9 @@ function roles(ramps, appearance) {
     'text-secondary': n[10],
     'text-tertiary': firstPassing(n, 8, surface, 4.5),
     'text-disabled': n[7],
-    'focus-ring': ramps.accent[7],
+    'focus-ring': ramps.primary[7],
   };
-  for (const fam of ['accent', 'success', 'critical', 'warning', 'info']) {
+  for (const fam of ROLE_FAMILIES) {
     const ramp = ramps[fam];
     const solved = solveSolid(ramp[8]);
     const hover = solveSolid(ramp[9]);
@@ -209,8 +249,11 @@ export function computeSystem(brand) {
   const out = { brand, appearances: {} };
   for (const appearance of ['light', 'dark']) {
     const ramps = {};
-    for (const fam of FAMILIES) ramps[fam] = buildRamp(brand.colors[fam], appearance);
+    const { seeds, auto } = resolveSeeds(brand, appearance);
+    for (const fam of FAMILIES) ramps[fam] = buildRamp(seeds[fam], appearance);
     out.appearances[appearance] = {
+      seeds,
+      auto,
       ramps,
       roles: roles(ramps, appearance),
       shadow: shadowTokens(brand.shadow, appearance),
@@ -242,8 +285,12 @@ export function auditContrast(sys) {
       ['text-primary', 'bg-surface', 'Body text'],
       ['text-secondary', 'bg-surface', 'Secondary text'],
       ['text-tertiary', 'bg-surface', 'Tertiary text'],
-      ['accent-on-solid', 'accent-solid', 'Primary button label'],
-      ['accent-text', 'bg-surface', 'Link text'],
+      ['primary-on-solid', 'primary-solid', 'Primary button label'],
+      ['primary-text', 'bg-surface', 'Link text'],
+      ['secondary-on-solid', 'secondary-solid', 'Secondary fill label'],
+      ['secondary-text', 'secondary-subtle', 'Secondary tonal text'],
+      ['tertiary-on-solid', 'tertiary-solid', 'Tertiary fill label'],
+      ['tertiary-text', 'bg-surface', 'Tertiary brand text'],
       ['critical-on-solid', 'critical-solid', 'Destructive button label'],
       ['success-text', 'success-subtle', 'Success badge'],
       ['warning-text', 'warning-subtle', 'Warning badge'],

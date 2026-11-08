@@ -251,7 +251,7 @@ function Summary({ sys, brand, onEdit, go }) {
           </div>
           <div className="card">
             <h3 className="card-t">Alcance</h3>
-            <div className="row" style={{ marginBottom: 8 }}><span className="badge accent">{scope.level}</span></div>
+            <div className="row" style={{ marginBottom: 8 }}><span className="badge primary">{scope.level}</span></div>
             <p className="t-small muted">{scope.text}</p>
             <p className="t-small" style={{ marginTop: 8 }}>{[...b.productType.map((x) => lbl('productType', x)), ...b.platforms.map((x) => lbl('platforms', x))].join(' · ') || '—'}</p>
           </div>
@@ -277,7 +277,7 @@ function Summary({ sys, brand, onEdit, go }) {
       <section className="fd-sec">
         <h2 className="t-h3">Foundations propuestas</h2>
         <div className="found-row">
-          <div><span className="t-caption faint">Acento</span><b className="row" style={{ gap: 8 }}><i className="dot" style={{ background: brand.colors.accent }} />{brand.colors.accent}</b></div>
+          <div><span className="t-caption faint">Acento</span><b className="row" style={{ gap: 8 }}><i className="dot" style={{ background: brand.colors.primary }} />{brand.colors.primary}</b></div>
           <div><span className="t-caption faint">Tipografía</span><b>{sys.fonts.heading} / {sys.fonts.body}</b></div>
           <div><span className="t-caption faint">Densidad</span><b>{ES_VAL[brand.density]} · texto a {sys.type.desktop.body.size}px</b></div>
           <div><span className="t-caption faint">Radio</span><b>{sys.radius.boxes}/{sys.radius.fields}/{sys.radius.selectors}px</b></div>

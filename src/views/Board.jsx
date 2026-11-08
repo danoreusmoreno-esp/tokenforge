@@ -18,14 +18,20 @@ export default function Board({ sys, appearance, onOpen, go }) {
       </header>
     <Live className="board">
       <div className="card bcard span2">
-        <div className="ramp">{ramp.accent.map((h, i) => <span key={i} style={{ background: h }} title={`accent-${i + 1} ${h}`} />)}</div>
-        <div className="ramp small">{ramp.neutral.map((h, i) => <span key={i} style={{ background: h }} title={`neutral-${i + 1} ${h}`} />)}</div>
+        <div className="pal">
+          {[['primary', 'Primario'], ['secondary', 'Secundario'], ['tertiary', 'Terciario'], ['neutral', 'Neutro']].map(([f, t]) => (
+            <div key={f} className={`pal-row ${f}`}>
+              <span className="t-caption muted">{t}</span>
+              <div className="ramp">{ramp[f].map((h, i) => <span key={i} style={{ background: h }} title={`${f}-${i + 1} ${h}`} />)}</div>
+            </div>
+          ))}
+        </div>
         <div className="row" style={{ marginTop: 12 }}>
           {['success', 'warning', 'critical', 'info'].map((f) => <span key={f} className="row t-caption muted" style={{ gap: 8 }}><i style={{ width: 12, height: 12, borderRadius: 4, background: ramp[f][8], display: 'inline-block' }} />{{ success: 'éxito', warning: 'aviso', critical: 'crítico', info: 'info' }[f]}</span>)}
         </div>
       </div>
       <div className="card bcard span2 specimen">
-        <div className="t-display" style={{ fontFamily: 'var(--font-heading)', color: 'var(--accent-text)' }}>Aa</div>
+        <div className="t-display" style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary-text)' }}>Aa</div>
         <div className="col" style={{ gap: 4 }}>
           <span className="t-h3">{sys.fonts.heading}</span>
           <span className="t-small muted">Texto en {sys.fonts.body} · {sys.type.desktop.body.size}/{sys.type.desktop.body.lineHeightPx}px</span>

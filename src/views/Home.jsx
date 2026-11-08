@@ -29,7 +29,7 @@ function Architecture({ brand, setBrand }) {
       </div>
       <ul className="arch">
         {items.map(({ id, name, b, master }) => {
-          const ramp = computeSystem(b).appearances.light.ramps.accent;
+          const ramp = computeSystem(b).appearances.light.ramps.primary;
           const on = (brand.activeSub ?? null) === id;
           return (
             <li key={id ?? 'master'}>
@@ -71,7 +71,7 @@ export default function Home({ sys, brand, brands, activeId, go, onStarter, onNe
     { id: 'code', t: 'Exportar', state: 'Código, Figma y agentes', done: false },
   ];
   const next = steps.find((s) => !s.done) ?? steps[4];
-  const ramp = sys.appearances.light.ramps.accent;
+  const ramp = sys.appearances.light.ramps.primary;
   const t = sys.type.desktop;
 
   return (
@@ -151,7 +151,7 @@ export default function Home({ sys, brand, brands, activeId, go, onStarter, onNe
           <ul className="brand-list">
             {brands.map((b) => (
               <li key={b.id} className={b.id === activeId ? 'on' : ''}>
-                {b.logo ? <img className="brand-logo" src={b.logo} alt="" /> : <span className="brand-sw">{['accent', 'neutral', 'success', 'critical', 'warning', 'info'].map((f) => <i key={f} style={{ background: b.colors[f] }} />)}</span>}
+                {b.logo ? <img className="brand-logo" src={b.logo} alt="" /> : <span className="brand-sw">{['primary', 'neutral', 'success', 'critical', 'warning', 'info'].map((f) => <i key={f} style={{ background: b.colors[f] }} />)}</span>}
                 <div className="bl-txt"><b>{b.name}</b><span className="muted small">{(b.subbrands?.length ?? 0) > 0 ? `${b.subbrands.length + 1} marcas · ` : ''}{b.components?.length ?? 0} componentes</span></div>
                 {b.id === activeId ? <span className="chip-on">Editando</span> : <button className="pill sm" onClick={() => onSelect(b.id)}>Abrir</button>}
                 <button className="round" aria-label={`Duplicar ${b.name}`} title="Duplicar" onClick={() => onDuplicate(b.id)}><Icon name="copy" size={15} /></button>
@@ -169,7 +169,7 @@ export default function Home({ sys, brand, brands, activeId, go, onStarter, onNe
             {STARTERS.map((s) => (
               <li key={s.id}>
                 <button onClick={() => onStarter(s)}>
-                  <span className="starter-sw" style={{ background: s.brand.colors.accent, borderRadius: Math.min(RADIUS[s.brand.radius.fields], 14) }} />
+                  <span className="starter-sw" style={{ background: s.brand.colors.primary, borderRadius: Math.min(RADIUS[s.brand.radius.fields], 14) }} />
                   <span className="bl-txt"><b>{s.name}</b><span className="muted small">{s.note}</span></span>
                 </button>
               </li>

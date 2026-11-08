@@ -34,7 +34,7 @@ function AnimatedNumber({ value }) {
   return <>{n}</>;
 }
 
-const BADGE_ES = { neutral: 'Neutro', accent: 'Acento', success: 'Éxito', warning: 'Aviso', critical: 'Crítico', info: 'Info' };
+const BADGE_ES = { neutral: 'Neutro', primary: 'Primario', secondary: 'Secundario', tertiary: 'Terciario', success: 'Éxito', warning: 'Aviso', critical: 'Crítico', info: 'Info' };
 const statusIcon = { info: 'info', success: 'check2', warning: 'alert', critical: 'alert' };
 
 function Btn({ v = 'primary', s = 'md', st = 'default', children = 'Botón', icon = 'star' }) {
@@ -138,8 +138,8 @@ function Chart() {
   const path = (arr) => arr.map((y, i) => `${i ? 'L' : 'M'}${(i / (arr.length - 1)) * 280},${100 - y}`).join(' ');
   return (
     <svg viewBox="0 0 280 100" width="100%" height="100" preserveAspectRatio="none" style={{ display: 'block' }}>
-      <path d={`${path(a)} L280,100 L0,100 Z`} fill="var(--accent-subtle)" />
-      <path d={path(a)} fill="none" stroke="var(--accent-solid)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+      <path d={`${path(a)} L280,100 L0,100 Z`} fill="var(--primary-subtle)" />
+      <path d={path(a)} fill="none" stroke="var(--primary-solid)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
       <path d={path(b)} fill="none" stroke="var(--info-solid)" strokeWidth="2" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
     </svg>
   );
@@ -314,9 +314,9 @@ export const PREVIEWS = {
   ),
   badge: ({ v, s }) => v
     ? <span className={`badge ${v} ${s === 'sm' ? 'sm' : ''}`}><i />{BADGE_ES[v]}</span>
-    : <div className="row">{['neutral', 'accent', 'success', 'warning', 'critical', 'info'].map((k) => <span key={k} className={`badge ${k}`}>{BADGE_ES[k]}</span>)}<span className="badge solid">12</span></div>,
+    : <div className="row">{['neutral', 'primary', 'secondary', 'tertiary', 'success', 'warning', 'critical', 'info'].map((k) => <span key={k} className={`badge ${k}`}>{BADGE_ES[k]}</span>)}<span className="badge solid">12</span></div>,
   progress: ({ v, st }) => v === 'circular'
-    ? <svg className="ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="var(--bg-active)" strokeWidth="5" /><circle cx="22" cy="22" r="18" fill="none" stroke={st === 'error' ? 'var(--critical-solid)' : 'var(--accent-solid)'} strokeWidth="5" strokeLinecap="round" strokeDasharray="113" strokeDashoffset="40" transform="rotate(-90 22 22)" /></svg>
+    ? <svg className="ring" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="var(--bg-active)" strokeWidth="5" /><circle cx="22" cy="22" r="18" fill="none" stroke={st === 'error' ? 'var(--critical-solid)' : 'var(--primary-solid)'} strokeWidth="5" strokeLinecap="round" strokeDasharray="113" strokeDashoffset="40" transform="rotate(-90 22 22)" /></svg>
     : <div className="col" style={{ width: '100%', maxWidth: 320, gap: 8 }}><div className="row t-small" style={{ justifyContent: 'space-between' }}><span>Subiendo…</span><span className="faint">64 %</span></div><div className={`progress ${st === 'error' ? 'err' : ''}`}><div style={{ width: '64%' }} /></div></div>,
   spinner: ({ s }) => <div className="row"><Spinner size={s === 'sm' ? 14 : s === 'lg' ? 32 : 22} /><span className="t-small muted">Cargando tokens…</span></div>,
   skeleton: () => <div className="row" style={{ alignItems: 'flex-start', flexWrap: 'nowrap', width: '100%', maxWidth: 320 }}><div className="skel" style={{ width: 40, height: 40, borderRadius: '50%', flex: 'none' }} /><div className="col" style={{ flex: 1, gap: 8 }}><div className="skel" style={{ height: 12, width: '70%' }} /><div className="skel" style={{ height: 12 }} /><div className="skel" style={{ height: 12, width: '40%' }} /></div></div>,
@@ -346,7 +346,7 @@ export const PREVIEWS = {
     <table className={`tbl ${v === 'zebra' ? 'zebra' : ''}`}>
       <thead><tr><th>Token</th><th>Valor</th><th>Estado</th></tr></thead>
       <tbody>
-        {[['accent-solid', 'var', 'Publicado', 'success'], ['text-primary', 'var', 'Borrador', 'neutral'], ['border-strong', 'var', 'En revisión', 'warning'], ['focus-ring', 'var', 'Publicado', 'success']].map(([t, , s, k], i) => (
+        {[['primary-solid', 'var', 'Publicado', 'success'], ['text-primary', 'var', 'Borrador', 'neutral'], ['border-strong', 'var', 'En revisión', 'warning'], ['focus-ring', 'var', 'Publicado', 'success']].map(([t, , s, k], i) => (
           <tr key={t} className={i === 1 ? 'sel' : ''}><td className="mono t-caption">{t}</td><td><span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: 4, background: `var(--${t})`, verticalAlign: 'middle', border: '1px solid var(--border-subtle)' }} /></td><td><span className={`badge ${k}`}>{s}</span></td></tr>
         ))}
       </tbody>
@@ -367,10 +367,10 @@ export const PREVIEWS = {
     </div>
   ),
   accordion: () => <div style={{ width: '100%' }}><Acc /></div>,
-  timeline: () => <div className="tl">{[['Publicada la v2.1', 'hace 2 min'], ['Acento cambiado a', 'hace 1 h'], ['Marca creada', 'Ayer']].map(([t, d], i) => <div key={t}><b>{t}</b> {i === 1 && <code className="inl">accent-9</code>}<div className="help">{d}</div></div>)}</div>,
+  timeline: () => <div className="tl">{[['Publicada la v2.1', 'hace 2 min'], ['Primario cambiado a', 'hace 1 h'], ['Marca creada', 'Ayer']].map(([t, d], i) => <div key={t}><b>{t}</b> {i === 1 && <code className="inl">primary-9</code>}<div className="help">{d}</div></div>)}</div>,
   code: ({ v }) => v === 'inline'
-    ? <p className="t-small">Usa <code className="inl">var(--accent-solid)</code> para los rellenos principales.</p>
-    : <pre className="code">{`.button {\n  background: var(--accent-solid);\n  color: var(--accent-on-solid);\n  border-radius: var(--radius-fields);\n}`}</pre>,
+    ? <p className="t-small">Usa <code className="inl">var(--primary-solid)</code> para los rellenos principales.</p>
+    : <pre className="code">{`.button {\n  background: var(--primary-solid);\n  color: var(--primary-on-solid);\n  border-radius: var(--radius-fields);\n}`}</pre>,
   divider: ({ v }) => v === 'vertical'
     ? <div className="row" style={{ height: 24 }}><span className="t-small">Editar</span><span className="vdiv" /><span className="t-small">Compartir</span><span className="vdiv" /><span className="t-small">Exportar</span></div>
     : <div className="col" style={{ width: '100%' }}><span className="t-small">Arriba</span><hr className="div" /><span className="t-small">Abajo</span></div>,

@@ -175,7 +175,7 @@ export default function App() {
 
   const current = NAV.find((n) => n.id === view) ?? NAV[0];
   // Highlights in the tool come from the brand being built: a pale step of its accent.
-  const tint = sys.appearances.light.ramps.accent;
+  const tint = sys.appearances.light.ramps.primary;
   const motionCfg = useMemo(() => ({ brand: draft, spring: systemSpring(sys) }), [draft, sys]);
   const shellVars = { '--c-tint': tint[3], '--c-tint-strong': tint[5], '--c-tint-ink': tint[11] };
 
@@ -208,7 +208,7 @@ export default function App() {
           <button className="brand-pill" onClick={() => go('home')} title="Tus marcas">
             {sys.brand.logo
               ? <img className="pill-logo" src={sys.brand.logo} alt="" />
-              : <span className="sw-dots">{['accent', 'neutral', 'success', 'critical'].map((f) => <i key={f} style={{ background: sys.brand.colors[f] }} />)}</span>}
+              : <span className="sw-dots">{['primary', 'neutral', 'success', 'critical'].map((f) => <i key={f} style={{ background: sys.brand.colors[f] }} />)}</span>}
             <span className="sw-name">{draft.name}{sys.brand.subName ? ` · ${sys.brand.subName}` : ''}</span>
             <span className="crumb-sep only-desktop">/</span>
             <span className="crumb-cur only-desktop">{current.label}</span>
@@ -236,7 +236,7 @@ export default function App() {
       </div>
 
       <div className={`ins-wrap ${insOpen ? 'open' : ''}`}>
-        <Inspector brand={draft} update={setDraft} sys={sys} dirty={dirty} storageError={storageError} undoable={undoable} onRandom={() => undoable('Marca aleatoria aplicada', randomize(draft))} />
+        <Inspector brand={draft} update={setDraft} sys={sys} dirty={dirty} storageError={storageError} undoable={undoable} appearance={theme} setAppearance={setTheme} onRandom={() => undoable('Marca aleatoria aplicada', randomize(draft))} />
       </div>
       {toast && (
         <div className="toast-app" role="status" key={toast.id}>

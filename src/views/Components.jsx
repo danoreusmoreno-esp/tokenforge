@@ -54,7 +54,7 @@ const VAL_ES = {
   regular: 'normal', extended: 'extendido', floating: 'flotante', filled: 'relleno', single: 'simple', multi: 'múltiple',
   dropzone: 'zona de arrastre', button: 'botón', range: 'rango', card: 'tarjeta', filter: 'filtro', input: 'entrada', static: 'estático',
   display: 'solo lectura', line: 'línea', pill: 'píldora', numbered: 'numerada', simple: 'simple', collapsed: 'contraída',
-  horizontal: 'horizontal', vertical: 'vertical', neutral: 'neutro', accent: 'acento', success: 'éxito', warning: 'aviso',
+  horizontal: 'horizontal', vertical: 'vertical', neutral: 'neutro', tertiary: 'terciario', success: 'éxito', warning: 'aviso',
   critical: 'crítico', info: 'info', linear: 'lineal', circular: 'circular', text: 'texto', block: 'bloque', avatar: 'avatar',
   right: 'derecha', bottom: 'inferior', elevated: 'elevada', zebra: 'cebra', image: 'imagen', initials: 'iniciales',
   default: 'por defecto', hover: 'hover', focus: 'foco', disabled: 'deshabilitado', loading: 'cargando', selected: 'seleccionado',
@@ -104,7 +104,7 @@ function Catalogue({ brand, setComponents, open, go }) {
           </p>
         </div>
         <div className="row">
-          <span className="badge accent">{brand.components.length} en el sistema</span>
+          <span className="badge primary">{brand.components.length} en el sistema</span>
           <button className="btn outline sm" onClick={() => setComponents([...CORE_IDS])}>Set básico</button>
           <button className="btn outline sm" onClick={() => setComponents(COMPONENTS.map((c) => c.id))}>Añadir todos</button>
           <button className="btn ghost sm" onClick={() => setComponents([])}>Quitar todos</button>

@@ -9,14 +9,14 @@ The interface is in Spanish. Code exports (`tokens.css`, JSON, Tailwind, `AGENTS
 **0. Bases** — a six-step questionnaire before any pixel: why a design system, success measures, team and product scope, platforms, starting approach (scratch, audit or adopt), existing assets, people and stack, up to three principles, personality sliders, accessibility target and dark mode. Answers generate the first foundations and component set, a brief and a roadmap (`BRIEF.md`).
 
 **1. Foundations**
-- 6 colour families (accent, neutral, success, critical, warning, info) → 12-step OKLCH ramps, each with a dark twin. Step 9 is the colour you typed.
-- ~50 semantic roles (`bg-*`, `border-*`, `text-*`, `{accent,success,…}-{solid,subtle,text,border,on-solid}`) solved for WCAG AA in light and dark. Solids that can't carry a readable label get nudged.
+- 8 colour families in three groups: brand key colours (primary, secondary, tertiary), one neutral, and semantic colours (success, warning, critical, info). Secondary and tertiary derive from the primary (Material 3 style: same hue but quieter, and +60° for contrast) until you set them; semantics can be harmonized toward the primary (≤15° hue shift). Each family becomes a 12-step OKLCH ramp per appearance. Dark mode adapts every colour by default, or takes your own dark seed per family.
+- ~50 semantic roles (`bg-*`, `border-*`, `text-*`, `{primary,secondary,tertiary,success,…}-{solid,subtle,text,border,on-solid}`) solved for WCAG AA in light and dark. Solids that can't carry a readable label get nudged.
 - Contrast audit with WCAG 2 and APCA side by side.
 - Type scale with five densities; headings step down on tablet/mobile.
 - Spacing from one base unit, plus layout tokens per viewport.
 - Radius on three axes (boxes, fields, selectors), elevation, motion.
 
-**Brands, logos and fonts** — upload a logo per brand; add up to 4 sub-brands inside the same system (each with its own accent, neutral, fonts and logo; structure, status colours and components are shared). Exports put the master at `:root` and each sub-brand under `[data-brand="…"]`, add per-brand sets to the Figma file and list brands in AGENTS.md. Upload your own font files (WOFF2, WOFF, TTF, OTF) or type any Google Fonts family; uploaded fonts are emitted as `@font-face` pointing to `./fonts/`.
+**Brands, logos and fonts** — upload a logo per brand; add up to 4 sub-brands inside the same system (each with its own primary, secondary, tertiary, neutral (light and dark), fonts and logo; structure, status colours and components are shared). Exports put the master at `:root` and each sub-brand under `[data-brand="…"]`, add per-brand sets to the Figma file and list brands in AGENTS.md. Upload your own font files (WOFF2, WOFF, TTF, OTF) or type any Google Fonts family; uploaded fonts are emitted as `@font-face` pointing to `./fonts/`.
 
 **Motion** — springs in the Motion (motion.dev) model (bounce + visual duration) compiled to CSS `linear()`; per component: entrance, hover, tap and its own effect (sliding background, animated number, drawn check, spring knob, smooth expand, stagger). Exported as keyframes and `data-enter/hover/tap` rules in tokens.css and as presets for `motion/react` in `motion.js`.
 

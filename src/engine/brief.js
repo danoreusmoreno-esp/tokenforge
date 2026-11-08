@@ -128,7 +128,7 @@ export function recommend(brief, brand) {
   else if (p.tone < 25) { font = 'IBM Plex Sans'; headingFont = 'IBM Plex Sans'; }
   if (brief.brandFont.trim()) { font = brief.brandFont.trim(); headingFont = font; }
 
-  const accent = normalizeHex(brief.brandColor || '') || brand.colors.accent;
+  const primary = normalizeHex(brief.brandColor || '') || brand.colors.primary;
 
   const comps = new Set(CORE_IDS);
   const add = (...ids) => ids.forEach((i) => comps.add(i));
@@ -143,7 +143,7 @@ export function recommend(brief, brand) {
 
   return {
     ...brand,
-    colors: { ...brand.colors, accent },
+    colors: { ...brand.colors, primary },
     font,
     headingFont,
     density,
@@ -177,7 +177,7 @@ const label = (list, id) => QUESTIONS[list].find((x) => x.id === id)?.label ?? i
 
 /** BRIEF.md — the shared agreement written down first (in Spanish, for the team). */
 export function toBrief(sys) {
-  const b = sys.brand.brief ?? EMPTY_BRIEF;
+  const b = { ...EMPTY_BRIEF, ...(sys.brand.brief ?? {}) };
   const name = sys.brand.name;
   const scope = recommendedScope(b);
   const list = (key, ids) => (ids.length ? ids.map((id) => `- ${label(key, id)}`).join('\n') : '- _Sin responder todavía_');

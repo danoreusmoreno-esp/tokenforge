@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FAMILIES, FONTS, DENSITIES, RADIUS_PRESETS, SHADOW_PRESETS, SPACING_PRESETS, MOTION_PRESETS } from '../engine/tokens.js';
+import { BRAND_FAMILIES, SEMANTIC_FAMILIES, FONTS, DENSITIES, RADIUS_PRESETS, SHADOW_PRESETS, SPACING_PRESETS, MOTION_PRESETS } from '../engine/tokens.js';
 import { normalizeHex, tintedNeutral, wcag } from '../engine/color.js';
 import { Icon } from './Icons.jsx';
 import { MAX_SUBBRANDS, SUB_FIELDS, newSubbrand, fontFormat, familyFromFile } from '../engine/brands.js';
@@ -8,7 +8,7 @@ const cap = (s) => s[0].toUpperCase() + s.slice(1);
 const AXIS = { boxes: 'Cajas', fields: 'Campos', selectors: 'Selectores' };
 // Spanish labels for preset keys (the keys stay in English: they are token values).
 const ES = {
-  accent: 'Acento', neutral: 'Neutro', success: 'Éxito', critical: 'Crítico', warning: 'Aviso', info: 'Info',
+  primary: 'Primario', secondary: 'Secundario', tertiary: 'Terciario', neutral: 'Neutro', success: 'Éxito', critical: 'Crítico', warning: 'Aviso', info: 'Info',
   compact: 'Compacta', snug: 'Ajustada', default: 'Normal', comfortable: 'Cómoda', spacious: 'Amplia',
   none: 'Ninguno', subtle: 'Sutil', soft: 'Suave', rounded: 'Redondeado', large: 'Grande', pill: 'Píldora',
   medium: 'Media', strong: 'Fuerte', tight: 'Ceñido', quiet: 'Sereno', roomy: 'Holgado',
@@ -16,7 +16,7 @@ const ES = {
 };
 const es = (k) => ES[k] ?? cap(k);
 
-function ColorRow({ fam, value, onChange }) {
+function ColorRow({ fam, value, onChange, auto = false, onReset, resetLabel = 'Volver a automático' }) {
   const [draft, setDraft] = useState(value);
   const [focus, setFocus] = useState(false);
   const shown = focus ? draft : value;
@@ -29,7 +29,19 @@ function ColorRow({ fam, value, onChange }) {
       <input className="ins-hex" value={shown} spellCheck={false} aria-label={`Hex ${fam}`}
         onFocus={() => { setDraft(value); setFocus(true); }}
         onChange={(e) => { setDraft(e.target.value); const n = normalizeHex(e.target.value); if (n && /^#?[0-9a-f]{6}$/i.test(e.target.value.trim())) onChange(n); }}
-        onBlur={() => { setFocus(false); const n = normalizeHex(draft); if (n) onChange(n); }} />
+        onBlur={() => { setFocus(false); const n = normalizeHex(draft); if (n && n !== value) onChange(n); }} />
+      {auto
+        ? <span className="ins-auto" title="Se calcula solo. Escribe o elige un color para fijarlo.">Auto</span>
+        : onReset && <button className="ins-icon" onClick={onReset} aria-label={`${resetLabel}: ${es(fam)}`} title={resetLabel}><Icon name="undo" size={14} /></button>}
+    </div>
+  );
+}
+
+function ColorGroup({ title, hint, children }) {
+  return (
+    <div className="ins-group">
+      <div className="ins-group-hd"><span>{title}</span>{hint && <small>{hint}</small>}</div>
+      {children}
     </div>
   );
 }
@@ -171,7 +183,7 @@ function FontUploads({ fonts, onChange }) {
   );
 }
 
-export default function Inspector({ brand, update, sys, onRandom, dirty, storageError, undoable }) {
+export default function Inspector({ brand, update, sys, onRandom, dirty, storageError, undoable, appearance = 'light', setAppearance }) {
   const set = (patch) => update({ ...brand, ...patch });
   const subs = brand.subbrands ?? [];
   const sub = subs.find((x) => x.id === brand.activeSub) ?? null;
@@ -179,8 +191,28 @@ export default function Inspector({ brand, update, sys, onRandom, dirty, storage
   const colors = sub ? { ...brand.colors, ...Object.fromEntries(Object.entries(sub.colors).filter(([, v]) => v)) } : brand.colors;
   const setColor = (fam, hex) => (sub && SUB_FIELDS.includes(fam) ? setSub({ colors: { ...sub.colors, [fam]: hex } }) : update({ ...brand, colors: { ...brand.colors, [fam]: hex } }));
   const setRadius = (k, v) => update({ ...brand, radius: { ...brand.radius, [k]: v } });
-  const accentSolid = sys.appearances.light.roles['accent-solid'];
-  const moved = accentSolid.toLowerCase() !== colors.accent.toLowerCase();
+  // Colour editing follows the preview theme: what you edit is what you see.
+  const mode = appearance === 'dark' ? 'dark' : 'light';
+  const ap = sys.appearances[mode];
+  const darkSrc = sub ? (sub.darkColors ?? {}) : (brand.darkColors ?? {});
+  const setDark = (fam, hex) => {
+    const next = { ...darkSrc, [fam]: hex };
+    if (!hex) delete next[fam];
+    if (sub) setSub({ darkColors: next }); else set({ darkColors: next });
+  };
+  const own = sub ? sub.colors : brand.colors;
+  const row = (f) => {
+    if (mode === 'dark') {
+      const fixed = !!darkSrc[f];
+      return <ColorRow key={`d-${f}${brand.id}${sub?.id ?? ''}`} fam={f} value={ap.ramps[f][8]} auto={!fixed}
+        onChange={(h) => setDark(f, h)} onReset={fixed ? () => setDark(f, '') : null} resetLabel="Adaptar del color claro" />;
+    }
+    const derivable = f === 'secondary' || f === 'tertiary';
+    return <ColorRow key={`l-${f}${brand.id}${sub?.id ?? ''}`} fam={f} value={ap.seeds[f]} auto={!!ap.auto[f]}
+      onChange={(h) => setColor(f, h)} onReset={derivable && own[f] ? () => setColor(f, '') : null} resetLabel="Derivar del primario" />;
+  };
+  const primarySolid = ap.roles['primary-solid'];
+  const moved = primarySolid.toLowerCase() !== ap.ramps.primary[8].toLowerCase();
   const custom = brand.customFonts ?? [];
   const addSub = () => {
     if (subs.length >= MAX_SUBBRANDS) return;
@@ -188,7 +220,6 @@ export default function Inspector({ brand, update, sys, onRandom, dirty, storage
     update({ ...brand, subbrands: [...subs, s], activeSub: s.id });
   };
   const removeSub = (id) => undoable(`Submarca «${subs.find((x) => x.id === id)?.name}» eliminada`, { ...brand, subbrands: subs.filter((x) => x.id !== id), activeSub: brand.activeSub === id ? null : brand.activeSub });
-  const fams = sub ? SUB_FIELDS : FAMILIES;
 
   return (
     <aside className="inspector" aria-label="Inspector de marca">
@@ -201,11 +232,11 @@ export default function Inspector({ brand, update, sys, onRandom, dirty, storage
       <Section title="Marcas" value={subs.length ? `${subs.length + 1} marcas` : 'Una marca'} open>
         <div className="brand-tabs" role="tablist" aria-label="Marca que editas">
           <button role="tab" aria-selected={!sub} className={!sub ? 'on' : ''} onClick={() => set({ activeSub: null })}>
-            <i style={{ background: brand.colors.accent }} />{brand.name}<small>Principal</small>
+            <i style={{ background: brand.colors.primary }} />{brand.name}<small>Principal</small>
           </button>
           {subs.map((x) => (
             <button key={x.id} role="tab" aria-selected={sub?.id === x.id} className={sub?.id === x.id ? 'on' : ''} onClick={() => set({ activeSub: x.id })}>
-              <i style={{ background: x.colors.accent || brand.colors.accent }} />{x.name}
+              <i style={{ background: x.colors.primary || brand.colors.primary }} />{x.name}
             </button>
           ))}
           {subs.length < MAX_SUBBRANDS
@@ -223,13 +254,38 @@ export default function Inspector({ brand, update, sys, onRandom, dirty, storage
         )}
         <span className="ins-sublabel">{sub ? `Logo de ${sub.name}` : 'Logo'}</span>
         <LogoField value={sub ? sub.logo : brand.logo} onChange={(v) => (sub ? setSub({ logo: v }) : set({ logo: v }))} label={sub ? `Logo de ${sub.name}` : `Logo de ${brand.name}`} />
-        {sub && <p className="ins-hint">La submarca cambia acento, neutro, tipografías y logo. Estados, espaciado, radios, sombras, movimiento y componentes se comparten con {brand.name}.</p>}
+        {sub && <p className="ins-hint">La submarca cambia primario, secundario, terciario, neutro (en claro y oscuro), tipografías y logo. Estados, espaciado, radios, sombras, movimiento y componentes se comparten con {brand.name}.</p>}
       </Section>
 
       <Section title="Color" value={sub ? sub.name : ''} open>
-        {fams.map((f) => <ColorRow key={f + brand.id + (sub?.id ?? '')} fam={f} value={colors[f]} onChange={(h) => setColor(f, h)} />)}
-        <button className="ins-link" onClick={() => setColor('neutral', tintedNeutral(colors.accent))}><Icon name="sparkles" size={13} />Teñir el neutro con el acento</button>
-        {moved && <p className="ins-note">Acento sólido ajustado a {accentSolid} para que su texto cumpla AA ({wcag(sys.appearances.light.roles['accent-on-solid'], accentSolid).toFixed(1)}:1).</p>}
+        <div className="seg-mini" role="tablist" aria-label="Modo que editas">
+          {[['light', 'Claro', 'sun'], ['dark', 'Oscuro', 'moon']].map(([k, t, ic]) => (
+            <button key={k} role="tab" aria-selected={mode === k} className={mode === k ? 'on' : ''} onClick={() => setAppearance?.(k)}><Icon name={ic} size={14} />{t}</button>
+          ))}
+        </div>
+        <p className="ins-hint">{mode === 'light'
+          ? 'Eliges los colores en claro. El modo oscuro los adapta solo; cámbialo arriba para revisarlo o fijar tus propios tonos.'
+          : 'Cada color se adapta del claro (Auto). Fija un tono solo si tu marca define su versión oscura. Los roles se recalculan para cumplir AA.'}</p>
+        <ColorGroup title="Marca" hint="Primario para la acción principal">
+          {BRAND_FAMILIES.map(row)}
+        </ColorGroup>
+        <ColorGroup title="Neutro" hint="Superficies, bordes y texto">
+          {row('neutral')}
+          {mode === 'light' && <button className="ins-link" onClick={() => setColor('neutral', tintedNeutral(colors.primary))}><Icon name="sparkles" size={13} />Teñir el neutro con el primario</button>}
+        </ColorGroup>
+        {!sub && (
+          <ColorGroup title="Semánticos" hint="Solo para estados">
+            {SEMANTIC_FAMILIES.map(row)}
+            {mode === 'light' && (
+              <label className="ins-toggle">
+                <span><b>Armonizar con el primario</b><small>Gira el tono hasta 15° hacia tu marca. El rojo sigue siendo rojo.</small></span>
+                <input type="checkbox" checked={!!brand.harmonize} onChange={(e) => set({ harmonize: e.target.checked })} />
+                <i aria-hidden="true" />
+              </label>
+            )}
+          </ColorGroup>
+        )}
+        {moved && <p className="ins-note">Primario sólido ajustado a {primarySolid} en {mode === 'dark' ? 'oscuro' : 'claro'} para que su texto cumpla AA ({wcag(ap.roles['primary-on-solid'], primarySolid).toFixed(1)}:1).</p>}
       </Section>
 
       <Section title="Tipografía" value={sub ? (sub.font || brand.font) : brand.font}>

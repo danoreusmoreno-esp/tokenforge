@@ -1,6 +1,7 @@
 import { DEFAULT_BRAND, FONTS, DENSITIES, RADIUS_PRESETS, SHADOW_PRESETS, SPACING_PRESETS, MOTION_PRESETS } from './engine/tokens.js';
 import { randomHex, tintedNeutral } from './engine/color.js';
 import { CORE_IDS } from './engine/catalog.js';
+import { EMPTY_BRIEF } from './engine/brief.js';
 
 const KEY = 'tf-brands-v1';
 const ACTIVE = 'tf-active-v1';
@@ -21,9 +22,16 @@ export function loadBrands() {
   return [newBrand()];
 }
 
+/** v1 brands called the primary colour "accent". */
+function renameAccent(colors = {}) {
+  const { accent, ...rest } = colors;
+  return accent && !rest.primary ? { ...rest, primary: accent } : rest;
+}
+
 function migrate(b) {
   const base = newBrand();
-  return { ...base, ...b, colors: { ...base.colors, ...b.colors }, radius: { ...base.radius, ...b.radius }, components: b.components ?? base.components, componentTokens: b.componentTokens ?? {}, subbrands: b.subbrands ?? [], customFonts: b.customFonts ?? [], logo: b.logo ?? null, activeSub: b.activeSub ?? null };
+  const subbrands = (b.subbrands ?? []).map((x) => ({ ...x, colors: renameAccent(x.colors) }));
+  return { ...base, ...b, colors: { ...base.colors, ...renameAccent(b.colors) }, darkColors: b.darkColors ?? {}, harmonize: b.harmonize ?? false, subbrands, ...(b.brief ? { brief: { ...structuredClone(EMPTY_BRIEF), ...b.brief } } : {}), radius: { ...base.radius, ...b.radius }, components: b.components ?? base.components, componentTokens: b.componentTokens ?? {}, customFonts: b.customFonts ?? [], logo: b.logo ?? null, activeSub: b.activeSub ?? null };
 }
 
 /** Returns false when the browser refuses (usually quota: logos and fonts are stored inline). */
@@ -43,12 +51,13 @@ const pick = (o) => { const k = Object.keys(o); return k[Math.floor(Math.random(
 const NAMES = ['Nova', 'Atlas', 'Ember', 'Fjord', 'Lumen', 'Orbit', 'Quill', 'Sable', 'Tide', 'Verde', 'Zinc', 'Harbor', 'Kite', 'Mesa'];
 
 export function randomize(brand) {
-  const accent = randomHex();
+  const primary = randomHex();
   const radiusKey = pick(RADIUS_PRESETS);
   return {
     ...brand,
     name: brand.name,
-    colors: { ...brand.colors, accent, neutral: tintedNeutral(accent, Math.random() * 0.02) },
+    colors: { ...brand.colors, primary, secondary: '', tertiary: '', neutral: tintedNeutral(primary, Math.random() * 0.02) },
+    darkColors: {},
     font: SANS[Math.floor(Math.random() * SANS.length)].name,
     headingFont: TEXT_FONTS[Math.floor(Math.random() * TEXT_FONTS.length)].name,
     density: pick(DENSITIES),
@@ -65,20 +74,20 @@ export function randomName() {
 
 /** Starting points that echo the character of the reference systems. Values are our own approximations. */
 export const STARTERS = [
-  { id: 'material', name: 'Estilo Material', system: 'm3', note: 'Tonal, redondeado, movimiento expresivo', brand: { colors: { accent: '#6750a4', neutral: '#79747e' }, font: 'Roboto Flex', headingFont: 'Roboto Flex', density: 'default', radius: { boxes: 'large', fields: 'pill', selectors: 'soft' }, shadow: 'subtle', spacing: 'quiet', motion: 'expressive' } },
-  { id: 'apple', name: 'Estilo Apple', system: 'hig', note: 'Azul de sistema, superficies agrupadas, esquinas suaves', brand: { colors: { accent: '#007aff', neutral: '#8e8e93' }, font: 'Inter', headingFont: 'Inter', density: 'comfortable', radius: { boxes: 'large', fields: 'rounded', selectors: 'pill' }, shadow: 'subtle', spacing: 'roomy', motion: 'standard' } },
-  { id: 'polaris', name: 'Estilo Polaris', system: 'polaris', note: 'Panel de comercio, verde sereno, tarjetas compactas', brand: { colors: { accent: '#008060', neutral: '#6d7175' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'rounded', fields: 'soft', selectors: 'subtle' }, shadow: 'medium', spacing: 'quiet', motion: 'snappy' } },
-  { id: 'carbon', name: 'Estilo Carbon', system: 'carbon', note: 'Esquinas rectas, datos densos, contraste fuerte', brand: { colors: { accent: '#0f62fe', neutral: '#6f6f6f' }, font: 'IBM Plex Sans', headingFont: 'IBM Plex Sans', monoFont: 'IBM Plex Mono', density: 'compact', radius: { boxes: 'none', fields: 'none', selectors: 'none' }, shadow: 'none', spacing: 'quiet', motion: 'standard' } },
-  { id: 'fluent', name: 'Estilo Fluent', system: 'fluent', note: 'Azul de productividad, profundidad suave, radio pequeño', brand: { colors: { accent: '#0f6cbd', neutral: '#707070' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'soft', fields: 'subtle', selectors: 'subtle' }, shadow: 'medium', spacing: 'quiet', motion: 'standard' } },
-  { id: 'atlassian', name: 'Estilo Atlassian', system: 'atlassian', note: 'Azul colaborativo, lozenges, profundidad ligera', brand: { colors: { accent: '#0c66e4', neutral: '#626f86' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'subtle', fields: 'subtle', selectors: 'subtle' }, shadow: 'subtle', spacing: 'quiet', motion: 'snappy' } },
-  { id: 'primer', name: 'Estilo Primer', system: 'primer', note: 'Herramienta para devs, bordes nítidos, acción verde', brand: { colors: { accent: '#1f883d', neutral: '#656d76' }, font: 'Inter', headingFont: 'Inter', monoFont: 'JetBrains Mono', density: 'compact', radius: { boxes: 'soft', fields: 'soft', selectors: 'subtle' }, shadow: 'subtle', spacing: 'tight', motion: 'snappy' } },
-  { id: 'spectrum', name: 'Estilo Spectrum', system: 'spectrum', note: 'Herramientas creativas, redondeado, áreas de toque amplias', brand: { colors: { accent: '#3b63fb', neutral: '#6d6d6d' }, font: 'Source Sans 3', headingFont: 'Source Sans 3', density: 'default', radius: { boxes: 'rounded', fields: 'soft', selectors: 'soft' }, shadow: 'subtle', spacing: 'quiet', motion: 'standard' } },
-  { id: 'shadcn', name: 'Estilo shadcn', system: 'radix', note: 'Negro neutro, bordes finos, minimalista', brand: { colors: { accent: '#18181b', neutral: '#71717a' }, font: 'Geist', headingFont: 'Geist', monoFont: 'Geist Mono', density: 'snug', radius: { boxes: 'rounded', fields: 'soft', selectors: 'soft' }, shadow: 'subtle', spacing: 'quiet', motion: 'snappy' } },
+  { id: 'material', name: 'Estilo Material', system: 'm3', note: 'Tonal, redondeado, movimiento expresivo', brand: { colors: { primary: '#6750a4', neutral: '#79747e' }, font: 'Roboto Flex', headingFont: 'Roboto Flex', density: 'default', radius: { boxes: 'large', fields: 'pill', selectors: 'soft' }, shadow: 'subtle', spacing: 'quiet', motion: 'expressive' } },
+  { id: 'apple', name: 'Estilo Apple', system: 'hig', note: 'Azul de sistema, superficies agrupadas, esquinas suaves', brand: { colors: { primary: '#007aff', neutral: '#8e8e93' }, font: 'Inter', headingFont: 'Inter', density: 'comfortable', radius: { boxes: 'large', fields: 'rounded', selectors: 'pill' }, shadow: 'subtle', spacing: 'roomy', motion: 'standard' } },
+  { id: 'polaris', name: 'Estilo Polaris', system: 'polaris', note: 'Panel de comercio, verde sereno, tarjetas compactas', brand: { colors: { primary: '#008060', neutral: '#6d7175' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'rounded', fields: 'soft', selectors: 'subtle' }, shadow: 'medium', spacing: 'quiet', motion: 'snappy' } },
+  { id: 'carbon', name: 'Estilo Carbon', system: 'carbon', note: 'Esquinas rectas, datos densos, contraste fuerte', brand: { colors: { primary: '#0f62fe', neutral: '#6f6f6f' }, font: 'IBM Plex Sans', headingFont: 'IBM Plex Sans', monoFont: 'IBM Plex Mono', density: 'compact', radius: { boxes: 'none', fields: 'none', selectors: 'none' }, shadow: 'none', spacing: 'quiet', motion: 'standard' } },
+  { id: 'fluent', name: 'Estilo Fluent', system: 'fluent', note: 'Azul de productividad, profundidad suave, radio pequeño', brand: { colors: { primary: '#0f6cbd', neutral: '#707070' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'soft', fields: 'subtle', selectors: 'subtle' }, shadow: 'medium', spacing: 'quiet', motion: 'standard' } },
+  { id: 'atlassian', name: 'Estilo Atlassian', system: 'atlassian', note: 'Azul colaborativo, lozenges, profundidad ligera', brand: { colors: { primary: '#0c66e4', neutral: '#626f86' }, font: 'Inter', headingFont: 'Inter', density: 'snug', radius: { boxes: 'subtle', fields: 'subtle', selectors: 'subtle' }, shadow: 'subtle', spacing: 'quiet', motion: 'snappy' } },
+  { id: 'primer', name: 'Estilo Primer', system: 'primer', note: 'Herramienta para devs, bordes nítidos, acción verde', brand: { colors: { primary: '#1f883d', neutral: '#656d76' }, font: 'Inter', headingFont: 'Inter', monoFont: 'JetBrains Mono', density: 'compact', radius: { boxes: 'soft', fields: 'soft', selectors: 'subtle' }, shadow: 'subtle', spacing: 'tight', motion: 'snappy' } },
+  { id: 'spectrum', name: 'Estilo Spectrum', system: 'spectrum', note: 'Herramientas creativas, redondeado, áreas de toque amplias', brand: { colors: { primary: '#3b63fb', neutral: '#6d6d6d' }, font: 'Source Sans 3', headingFont: 'Source Sans 3', density: 'default', radius: { boxes: 'rounded', fields: 'soft', selectors: 'soft' }, shadow: 'subtle', spacing: 'quiet', motion: 'standard' } },
+  { id: 'shadcn', name: 'Estilo shadcn', system: 'radix', note: 'Negro neutro, bordes finos, minimalista', brand: { colors: { primary: '#18181b', neutral: '#71717a' }, font: 'Geist', headingFont: 'Geist', monoFont: 'Geist Mono', density: 'snug', radius: { boxes: 'rounded', fields: 'soft', selectors: 'soft' }, shadow: 'subtle', spacing: 'quiet', motion: 'snappy' } },
 ];
 
 export function applyStarter(brand, starter) {
   const s = starter.brand;
-  return { ...brand, ...s, colors: { ...brand.colors, ...s.colors }, radius: { ...brand.radius, ...s.radius } };
+  return { ...brand, ...s, colors: { ...brand.colors, secondary: '', tertiary: '', ...s.colors }, darkColors: {}, radius: { ...brand.radius, ...s.radius } };
 }
 
 // Share link: brand encoded in the URL hash.

@@ -29,10 +29,13 @@ test('solveSolid always yields an AA label', () => {
 test('every audited pair passes WCAG for 200 random brands', () => {
   const radius = Object.keys(RADIUS_PRESETS);
   for (let i = 0; i < 200; i++) {
-    const accent = randomHex();
-    const sys = computeSystem({ ...brand, colors: { ...brand.colors, accent }, density: Object.keys(DENSITIES)[i % 5], radius: { boxes: radius[i % 6], fields: radius[(i + 1) % 6], selectors: radius[(i + 2) % 6] } });
+    const primary = randomHex();
+    // Mix auto and custom secondary/tertiary, harmonized semantics and custom dark seeds.
+    const colors = { ...brand.colors, primary, secondary: i % 3 ? '' : randomHex(), tertiary: i % 4 ? '' : randomHex() };
+    const darkColors = i % 5 ? {} : { primary: randomHex(), secondary: randomHex(), neutral: randomHex() };
+    const sys = computeSystem({ ...brand, colors, darkColors, harmonize: i % 2 === 0, density: Object.keys(DENSITIES)[i % 5], radius: { boxes: radius[i % 6], fields: radius[(i + 1) % 6], selectors: radius[(i + 2) % 6] } });
     const fails = sys.audit.filter((r) => !r.wcagPass);
-    assert.deepEqual(fails.map((f) => `${f.appearance} ${f.label} ${f.ratio.toFixed(2)}`), [], `accent ${accent}`);
+    assert.deepEqual(fails.map((f) => `${f.appearance} ${f.label} ${f.ratio.toFixed(2)}`), [], `primary ${primary} ${JSON.stringify({ colors, darkColors })}`);
   }
 });
 
@@ -56,7 +59,7 @@ import { recommend, EMPTY_BRIEF, toBrief } from '../src/engine/brief.js';
 test('brief answers shape the generated system', () => {
   const brief = { ...structuredClone(EMPTY_BRIEF), productType: ['mobile', 'commerce'], platforms: ['ios'], brandColor: '#0f62fe', principles: ['accessible', 'clear'], personality: { tone: 10, energy: 10, density: 5, shape: 0 } };
   const b = recommend(brief, { ...brand });
-  assert.equal(b.colors.accent, '#0f62fe');
+  assert.equal(b.colors.primary, '#0f62fe');
   assert.equal(b.density, 'compact');
   assert.equal(b.radius.boxes, 'none');
   assert.ok(b.components.includes('nav-bar') && b.components.includes('rating'));
@@ -77,10 +80,10 @@ import { toCSS as css2, toFigma as fig2, toDTCG as dtcg2, toAgents as ag2 } from
 
 test('sub-brands override identity and export as data-brand themes', () => {
   const master = { ...brand, name: 'Grupo Sol', subbrands: [], customFonts: [{ id: 'f1', name: 'Sol Sans', file: 'SolSans.woff2', format: 'woff2', size: 1000, dataUrl: 'data:font/woff2;base64,AA==' }] };
-  const s1 = { ...newSubbrand(master, 1), name: 'Sol Playa', colors: { accent: '#0e7490', neutral: '' }, font: 'Sol Sans' };
+  const s1 = { ...newSubbrand(master, 1), name: 'Sol Playa', colors: { primary: '#0e7490', neutral: '' }, font: 'Sol Sans' };
   master.subbrands = [s1];
   const eff = effectiveBrand(master, s1.id);
-  assert.equal(eff.colors.accent, '#0e7490');
+  assert.equal(eff.colors.primary, '#0e7490');
   assert.equal(eff.colors.neutral, master.colors.neutral);
   assert.equal(eff.font, 'Sol Sans');
   assert.equal(eff.density, master.density);
@@ -88,10 +91,10 @@ test('sub-brands override identity and export as data-brand themes', () => {
   const css = css2(sys);
   assert.match(css, /@font-face \{\n  font-family: 'Sol Sans';/);
   assert.match(css, new RegExp(`\\[data-brand="${slug('Sol Playa')}"\\]`));
-  assert.match(css, /:root \{[\s\S]*--color-accent-9: #7c5cff/);
+  assert.match(css, /:root \{[\s\S]*--color-primary-9: #7c5cff/);
   const fig = JSON.parse(fig2(sys));
   assert.ok(fig['light-sol-playa'] && fig.$themes.some((t) => t.id === 'dark-sol-playa'));
-  assert.ok(JSON.parse(dtcg2(sys)).brand['sol-playa'].role['accent-solid']);
+  assert.ok(JSON.parse(dtcg2(sys)).brand['sol-playa'].role['primary-solid']);
   assert.match(ag2(sys), /data-brand="sol-playa"/);
 });
 
@@ -120,4 +123,68 @@ test('spacing, layout and line heights sit on a 4px base for every preset', () =
       for (const vp of Object.values(sys.type)) for (const [k, t] of Object.entries(vp)) assert.equal(t.lineHeightPx % 4, 0, `${density} ${k} lh ${t.lineHeightPx}`);
     }
   }
+});
+
+import { resolveSeeds, BRAND_FAMILIES, SEMANTIC_FAMILIES } from '../src/engine/tokens.js';
+import { deriveSecondary, deriveTertiary, harmonize, hueOf } from '../src/engine/color.js';
+import { decodeBrand, encodeBrand } from '../src/store.js';
+
+test('palette: primary, secondary, tertiary, neutral and four semantic families', () => {
+  assert.deepEqual(FAMILIES, [...BRAND_FAMILIES, 'neutral', ...SEMANTIC_FAMILIES]);
+  const sys = computeSystem(brand);
+  for (const ap of ['light', 'dark']) for (const f of FAMILIES) assert.equal(sys.appearances[ap].ramps[f].length, 12);
+  for (const f of [...BRAND_FAMILIES, ...SEMANTIC_FAMILIES]) assert.ok(sys.appearances.light.roles[`${f}-solid`], f);
+  const css = EXPORTS.find((e) => e.id === 'css').fn(sys);
+  assert.match(css, /--secondary-subtle:/);
+  assert.match(css, /--color-tertiary-12:/);
+});
+
+test('secondary and tertiary derive from primary until the user sets them', () => {
+  const { seeds, auto } = resolveSeeds(brand);
+  assert.equal(seeds.secondary, deriveSecondary(brand.colors.primary));
+  assert.equal(seeds.tertiary, deriveTertiary(brand.colors.primary));
+  assert.ok(auto.secondary && auto.tertiary);
+  const hueGap = Math.abs(((hueOf(seeds.tertiary) - hueOf(seeds.primary) + 540) % 360) - 180);
+  assert.ok(hueGap > 45 && hueGap < 75, `tertiary hue gap ${hueGap}`);
+  const fixed = resolveSeeds({ ...brand, colors: { ...brand.colors, secondary: '#0e7490' } });
+  assert.equal(fixed.seeds.secondary, '#0e7490');
+  assert.ok(!fixed.auto.secondary);
+});
+
+test('dark mode: adapts the light colour by default, honours a custom dark seed', () => {
+  const auto = computeSystem(brand);
+  assert.ok(auto.appearances.dark.auto['dark:primary']);
+  const custom = computeSystem({ ...brand, darkColors: { primary: '#b8a6ff' } });
+  assert.equal(custom.appearances.dark.ramps.primary[8], '#b8a6ff');
+  assert.equal(custom.appearances.light.ramps.primary[8], '#7c5cff', 'light mode untouched');
+  assert.ok(!custom.appearances.dark.auto['dark:primary']);
+});
+
+test('harmonize nudges semantic hues toward primary by at most 15 degrees', () => {
+  for (const f of SEMANTIC_FAMILIES) {
+    const before = brand.colors[f];
+    const after = harmonize(before, brand.colors.primary);
+    const moved = Math.abs(((hueOf(after) - hueOf(before) + 540) % 360) - 180);
+    assert.ok(moved <= 15.5, `${f} moved ${moved}`);
+  }
+  const off = computeSystem(brand).appearances.light.seeds.critical;
+  const on = computeSystem({ ...brand, harmonize: true }).appearances.light.seeds.critical;
+  assert.notEqual(off, on);
+});
+
+test('v1 brands with "accent" migrate to "primary"', () => {
+  const old = { name: 'Vieja', colors: { accent: '#0f62fe', neutral: '#6f6f6f' }, subbrands: [{ id: 's', name: 'Sub', colors: { accent: '#e11d48', neutral: '' } }] };
+  const b = decodeBrand(encodeBrand(old));
+  assert.equal(b.colors.primary, '#0f62fe');
+  assert.equal(b.colors.accent, undefined);
+  assert.equal(b.subbrands[0].colors.primary, '#e11d48');
+  assert.deepEqual(b.darkColors, {});
+});
+
+test('sub-brands can set their own dark seeds; master dark seeds do not leak', () => {
+  const master = { ...brand, darkColors: { primary: '#b8a6ff' }, subbrands: [{ id: 's1', name: 'Mar', colors: { primary: '#0e7490' }, darkColors: {} }] };
+  const eff = effectiveBrand(master, 's1');
+  assert.equal(eff.darkColors.primary, undefined);
+  const withDark = effectiveBrand({ ...master, subbrands: [{ ...master.subbrands[0], darkColors: { primary: '#67e8f9' } }] }, 's1');
+  assert.equal(computeSystem(withDark).appearances.dark.ramps.primary[8], '#67e8f9');
 });

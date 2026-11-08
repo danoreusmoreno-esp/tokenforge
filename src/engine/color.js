@@ -139,3 +139,30 @@ export function hueOf(hex) {
 export function tintedNeutral(accentHex, tint = 0.012) {
   return oklchHex(0.55, tint, hueOf(accentHex));
 }
+
+// ---------- Brand palette derivation (Material 3 style key colours) ----------
+const okl = (hex) => { const o = toOklch(parse(hex)); return { l: o.l, c: o.c ?? 0, h: o.h ?? 0 }; };
+
+/** Secondary: same hue as the primary, much quieter. For tonal fills, chips, selected states. */
+export function deriveSecondary(primaryHex) {
+  const p = okl(primaryHex);
+  return oklchHex(Math.min(0.62, Math.max(0.45, p.l)), Math.min(0.06, p.c * 0.35), p.h);
+}
+
+/** Tertiary: a contrasting hue (+60°) at similar strength. For highlights that must not compete with primary. */
+export function deriveTertiary(primaryHex) {
+  const p = okl(primaryHex);
+  return oklchHex(Math.min(0.66, Math.max(0.5, p.l)), Math.max(0.08, Math.min(0.16, p.c * 0.85)), (p.h + 60) % 360);
+}
+
+/**
+ * Harmonize: rotate a colour's hue toward the primary by at most 15° (half the distance),
+ * so status colours feel related to the brand while keeping their meaning (red stays red).
+ */
+export function harmonize(hex, sourceHex, max = 15) {
+  const a = okl(hex), s = okl(sourceHex);
+  if (a.c < 0.02 || s.c < 0.02) return formatHex(parse(hex));
+  let d = ((s.h - a.h + 540) % 360) - 180;
+  const rot = Math.sign(d) * Math.min(Math.abs(d) * 0.5, max);
+  return oklchHex(a.l, a.c, (a.h + rot + 360) % 360);
+}

@@ -207,9 +207,14 @@ Tokens live in \`tokens.css\` as CSS custom properties. Dark mode: set \`data-th
 | \`--bg-subtle\` / \`--bg-muted\` | ${r['bg-subtle']} / ${r['bg-muted']} | Secondary fills, hover backgrounds |
 | \`--border-subtle\` / \`--border-default\` / \`--border-strong\` | ${r['border-subtle']} / ${r['border-default']} / ${r['border-strong']} | Dividers / cards / form fields |
 | \`--text-primary\` / \`--text-secondary\` / \`--text-tertiary\` | ${r['text-primary']} / ${r['text-secondary']} / ${r['text-tertiary']} | Body / supporting / hints |
-| \`--accent-solid\` + \`--accent-on-solid\` | ${r['accent-solid']} + ${r['accent-on-solid']} | Primary button fill + its label |
-| \`--accent-text\` | ${r['accent-text']} | Links and accent text on surfaces |
-| \`--{success,warning,critical,info}-{solid,subtle,text,border}\` | — | Status UI |
+| \`--primary-solid\` + \`--primary-on-solid\` | ${r['primary-solid']} + ${r['primary-on-solid']} | Main action: primary button, selected control, focus |
+| \`--primary-text\` | ${r['primary-text']} | Links and brand text on surfaces |
+| \`--secondary-{solid,subtle,text}\` | ${r['secondary-solid']} / ${r['secondary-subtle']} / ${r['secondary-text']} | Quieter brand colour: tonal buttons, chips, selected rows |
+| \`--tertiary-{solid,subtle,text}\` | ${r['tertiary-solid']} / ${r['tertiary-subtle']} / ${r['tertiary-text']} | Contrasting highlight: badges, illustrations, data accents. Never for the main action |
+| \`--{success,warning,critical,info}-{solid,subtle,text,border}\` | — | Semantic status only: never decorate with them |
+
+Colour hierarchy: primary is for the one main action per view; secondary supports it; tertiary adds contrast.
+Every role has a dark value: switch themes with \`data-theme\`, never hard-code a hex for dark mode.
 
 Ramps \`--color-{family}-{1..12}\`: 1–2 backgrounds, 3–5 component fills, 6–8 borders, 9–10 solids, 11–12 text.
 
@@ -252,7 +257,7 @@ Files:
 - \`AGENTS.md\` — guide for AI coding agents (Claude Code, Cursor…)
 - \`BRIEF.md\` — goals, scope, principles and roadmap agreed in step 1
 
-Accent ${sys.brand.colors.accent} · ${sys.fonts.body} · base unit ${sys.spacingUnit}px
+Primary ${sys.appearances.light.seeds.primary} · Secondary ${sys.appearances.light.seeds.secondary} · Tertiary ${sys.appearances.light.seeds.tertiary} · ${sys.fonts.body} · base unit ${sys.spacingUnit}px
 `;
 }
 
@@ -281,7 +286,7 @@ export function family(sys) {
   return { master, m, subs };
 }
 
-const BRAND_KEYS = (k, roles) => k.startsWith('--color-accent-') || k.startsWith('--color-neutral-') || roles.has(k.slice(2)) || k === '--font-body' || k === '--font-heading';
+const BRAND_KEYS = (k, roles) => ['primary', 'secondary', 'tertiary', 'neutral'].some((f) => k.startsWith(`--color-${f}-`)) || roles.has(k.slice(2)) || k === '--font-body' || k === '--font-heading';
 
 function subCSS({ sub, slug: s, sys }) {
   const roles = new Set(Object.keys(sys.appearances.light.roles));
@@ -315,8 +320,8 @@ export function toDTCG(sys0) {
     for (const { sub, slug: s, sys } of subs) {
       const L = sys.appearances.light; const D = sys.appearances.dark;
       const modes = (l, d) => ({ $extensions: { modes: { light: l, dark: d } } });
-      const b = { $description: `Sub-brand ${sub.name}: overrides accent, neutral, roles and fonts`, color: {}, role: {}, font: {} };
-      for (const fam of ['accent', 'neutral']) {
+      const b = { $description: `Sub-brand ${sub.name}: overrides primary, secondary, tertiary, neutral, roles and fonts`, color: {}, role: {}, font: {} };
+      for (const fam of ['primary', 'secondary', 'tertiary', 'neutral']) {
         b.color[fam] = {};
         L.ramps[fam].forEach((hex, i) => (b.color[fam][i + 1] = { $type: 'color', $value: hex, ...modes(hex, D.ramps[fam][i]) }));
       }
@@ -351,7 +356,7 @@ export function toAgents(sys0) {
   let md = agentsCore(m) + motionAgents(m);
   const fonts = master.customFonts ?? [];
   if (subs.length) {
-    md += `\n## Brands in this system\nOne design system, ${subs.length + 1} brands. Structure (spacing, radius, shadow, motion, status colours, components) is shared; each sub-brand overrides accent, neutral, the colour roles and fonts.\n\n| Brand | Activate with | Accent | Fonts |\n|---|---|---|---|\n| ${master.name} (master) | default (\`:root\`) | ${master.colors.accent} | ${m.fonts.heading} / ${m.fonts.body} |\n${subs.map(({ sub, slug: s, sys }) => `| ${sub.name} | \`data-brand="${s}"\` | ${sys.brand.colors.accent} | ${sys.fonts.heading} / ${sys.fonts.body} |`).join('\n')}\n\nNever mix two brands' roles in one surface. Set \`data-brand\` on the page root or on a container to switch everything inside it.\n`;
+    md += `\n## Brands in this system\nOne design system, ${subs.length + 1} brands. Structure (spacing, radius, shadow, motion, status colours, components) is shared; each sub-brand overrides primary, secondary, tertiary, neutral, the colour roles and fonts.\n\n| Brand | Activate with | Primary | Fonts |\n|---|---|---|---|\n| ${master.name} (master) | default (\`:root\`) | ${m.appearances.light.seeds.primary} | ${m.fonts.heading} / ${m.fonts.body} |\n${subs.map(({ sub, slug: s, sys }) => `| ${sub.name} | \`data-brand="${s}"\` | ${sys.appearances.light.seeds.primary} | ${sys.fonts.heading} / ${sys.fonts.body} |`).join('\n')}\n\nNever mix two brands' roles in one surface. Set \`data-brand\` on the page root or on a container to switch everything inside it.\n`;
   }
   if (fonts.length) md += `\n## Brand fonts\nSelf-hosted via \`@font-face\` in tokens.css (files in \`./fonts/\`): ${fonts.map((f) => `${f.name} (${f.file})`).join(', ')}. Do not swap them for a Google font.\n`;
   if (master.logo || subs.some((x) => x.sub.logo)) md += `\n## Logos\nUse the supplied logo files as they are: no recolouring, no effects, keep clear space of at least the cap height around them.\n`;
