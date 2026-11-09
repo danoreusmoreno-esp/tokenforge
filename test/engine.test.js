@@ -31,7 +31,7 @@ test('every audited pair passes WCAG for 200 random brands', () => {
   for (let i = 0; i < 200; i++) {
     const primary = randomHex();
     // Mix auto and custom secondary/tertiary, harmonized semantics and custom dark seeds.
-    const colors = { ...brand.colors, primary, secondary: i % 3 ? '' : randomHex(), tertiary: i % 4 ? '' : randomHex() };
+    const colors = { ...brand.colors, primary, secondary: i % 3 ? '' : randomHex(), tertiary: i % 4 ? '' : randomHex(), ...(i % 2 ? { neutral: randomHex() } : {}) };
     const darkColors = i % 5 ? {} : { primary: randomHex(), secondary: randomHex(), neutral: randomHex() };
     const sys = computeSystem({ ...brand, colors, darkColors, harmonize: i % 2 === 0, density: Object.keys(DENSITIES)[i % 5], radius: { boxes: radius[i % 6], fields: radius[(i + 1) % 6], selectors: radius[(i + 2) % 6] } });
     const fails = sys.audit.filter((r) => !r.wcagPass);
@@ -41,9 +41,11 @@ test('every audited pair passes WCAG for 200 random brands', () => {
 
 test('all exports render and JSON exports parse', () => {
   const sys = computeSystem(brand);
-  for (const e of EXPORTS) assert.ok(e.fn(sys).length > 100, e.id);
+  // Exports that only apply to some systems (CHANGES.md: imported ones) declare it with when().
+  for (const e of EXPORTS.filter((x) => !x.when || x.when(sys))) assert.ok(e.fn(sys).length > 100, e.id);
   const dtcg = JSON.parse(toDTCG(sys));
-  assert.equal(Object.keys(dtcg.color).length, FAMILIES.length);
+  assert.equal(Object.keys(dtcg.color).length, FAMILIES.length + 1, 'families plus the base anchors');
+  assert.deepEqual(Object.keys(dtcg.color.base), ['white', 'ink']);
   assert.ok(dtcg.component.button);
   const fig = JSON.parse(toFigma(sys));
   assert.deepEqual(fig.$metadata.tokenSetOrder, ['global', 'light', 'dark']);
@@ -324,4 +326,138 @@ test('docs: site has every page and no broken internal links', () => {
   for (const id of ['ejemplos', 'anatomia', 'comportamiento', 'uso', 'accesibilidad', 'tokens', 'codigo', 'referencias']) assert.match(page, new RegExp(`id="${id}"`));
   assert.match(page, /--space-4/);
   assert.match(files.find((f) => f.file === 'components/hero.html').text, /No se pudo medir/, 'missing captures are said, not hidden');
+});
+
+import { readSystem, proposeMapping, buildBrand, placeRamp, toHex } from '../src/engine/importer.js';
+import { analyzeSystem, toAnalysisMd } from '../src/engine/analyze.js';
+import { systemSnapshot, toChanges } from '../src/engine/exporters.js';
+import { newBrand } from '../src/store.js';
+import { readFileSync } from 'node:fs';
+
+const ACME = readFileSync(new URL('./fixtures/acme-tokens-studio.json', import.meta.url), 'utf8');
+
+test('import: Tokens Studio file with sets, themes, references, math and composites', () => {
+  const m = readSystem(ACME, 'acme-tokens-studio.json');
+  assert.equal(m.format, 'tokens-studio');
+  assert.equal(m.name, 'Acme');
+  assert.ok(m.hasDark);
+  assert.deepEqual(m.sets, ['global', 'light', 'dark']);
+  const t = (p) => m.tokens.find((x) => x.path === p);
+  assert.equal(t('spacing.sm').light, 8, 'math: {spacing.base} * 2');
+  assert.equal(t('button.primary.background').light, '#2563eb', 'reference chain');
+  assert.equal(t('button.primary.background').aliasOf, 'brand.primary');
+  assert.equal(t('brand.primary').dark, '#60a5fa', 'dark theme value');
+  assert.equal(t('typography.body').light.fontFamily, 'Inter', 'references inside composites');
+  const map = proposeMapping(m);
+  assert.deepEqual({ p: map.colors.primary, n: map.colors.neutral, s: map.colors.success, w: map.colors.warning, c: map.colors.critical }, { p: 'brand.primary', n: 'color.gray', s: 'feedback.success', w: 'feedback.warning', c: 'feedback.danger' });
+  assert.equal(map.colors.secondary, null, 'usage tokens like text.secondary are not palette colours');
+  assert.deepEqual([map.type.h1.size, map.type.body.size, map.type.lead.size, map.type.h4.size], [44, 16, 18, 21]);
+  assert.deepEqual([map.fonts.body, map.fonts.heading, map.fonts.mono], ['Inter', 'Manrope', 'JetBrains Mono']);
+  assert.deepEqual([map.radius.boxes.px, map.radius.fields.px, map.radius.selectors.px], [12, 10, 4]);
+  assert.equal(map.spacing.unit, 4);
+  assert.deepEqual(map.spacing.offGrid.map((v) => v.px), [14, 22]);
+});
+
+test('import: the built brand keeps exact values and still passes AA everywhere', () => {
+  const m = readSystem(ACME, 'acme.json');
+  const b = buildBrand(m, proposeMapping(m), newBrand());
+  const sys = computeSystem(b);
+  assert.equal(sys.appearances.light.ramps.primary[8], '#2563eb', 'brand colour is the solid');
+  const blue = ['#eff6ff', '#dbeafe', '#bfdbfe', '#93c5fd', '#60a5fa', '#1d4ed8'];
+  for (const h of blue) assert.ok(sys.appearances.light.ramps.primary.includes(h), `${h} kept`);
+  assert.equal(new Set(sys.appearances.light.ramps.primary).size, 12, 'no step duplicated');
+  assert.deepEqual(sys.radius, { boxes: 12, fields: 10, selectors: 4 });
+  assert.equal(sys.type.desktop.h1.size, 44);
+  assert.equal(sys.fonts.heading, 'Manrope');
+  assert.equal(sys.appearances.dark.ramps.primary[8], '#60a5fa');
+  assert.deepEqual(sys.audit.filter((r) => !r.wcagPass).map((r) => `${r.appearance} ${r.label}`), []);
+  assert.deepEqual(b.source.kept.primary, { kept: 7, total: 10 });
+});
+
+test('import: placeRamp keeps the seed at step 9 and never duplicates', () => {
+  const slots = placeRamp(['#eff6ff', '#bfdbfe', '#3b82f6', '#2563eb', '#1e3a8a'], '#2563eb');
+  assert.equal(slots[8], '#2563eb');
+  assert.equal(slots[9], null, 'the hover step comes from the seed');
+  const used = slots.filter(Boolean);
+  assert.equal(new Set(used).size, used.length);
+});
+
+test('import: round trip of our own exports, 25 random brands', () => {
+  for (let i = 0; i < 25; i++) {
+    const src = { ...newBrand(), colors: { ...newBrand().colors, primary: randomHex(), neutral: randomHex() } };
+    const sys = computeSystem(src);
+    for (const id of ['json', 'figma', 'css']) {
+      const m = readSystem(EXPORTS.find((e) => e.id === id).fn(sys), `x.${id}`);
+      const map = proposeMapping(m);
+      const b = buildBrand(m, map, newBrand());
+      assert.equal(b.colors.primary, sys.appearances.light.ramps.primary[8], `${id} #${i} primary`);
+      const back = computeSystem(b);
+      assert.deepEqual(back.audit.filter((r) => !r.wcagPass).map((r) => r.label), [], `${id} #${i} AA`);
+      assert.deepEqual(back.radius, sys.radius, `${id} #${i} radius`);
+    }
+  }
+});
+
+test('import: hand-written W3C file (type inheritance, aliases, modes) and CSS with dark media query', () => {
+  const dtcg = JSON.stringify({
+    color: { $type: 'color', brand: { $value: '#0f766e' }, ink: { $value: '#0b1220' }, surface: { $value: '#ffffff', $extensions: { modes: { light: '#ffffff', dark: '#0b1220' } } } },
+    text: { body: { $type: 'color', $value: '{color.ink}' } },
+    radius: { $type: 'dimension', card: { $value: '16px' }, input: { $value: '0.5rem' } },
+  });
+  const m = readSystem(dtcg, 'mini.json');
+  assert.equal(m.format, 'dtcg');
+  assert.ok(m.hasDark);
+  const map = proposeMapping(m);
+  assert.equal(map.colors.primary, 'color.brand');
+  assert.equal(map.radius.boxes.px, 16);
+  assert.equal(map.radius.fields.px, 8, 'rem converted to px');
+  const css = ':root { --brand-500: #7c3aed; --brand-600: #6d28d9; --brand-400: #a78bfa; --gray-100: #f4f4f5; --gray-500: #71717a; --gray-900: #18181b; --text: var(--gray-900); }\n@media (prefers-color-scheme: dark) { :root { --text: var(--gray-100); } }\n@media (max-width: 640px) { :root { --brand-500: #000000; } }';
+  const c = readSystem(css, 'tokens.css');
+  assert.equal(c.format, 'css');
+  assert.ok(c.hasDark);
+  assert.equal(c.tokens.find((t) => t.path === 'brand.500').light, '#7c3aed', 'viewport media queries do not override');
+  assert.equal(c.tokens.find((t) => t.path === 'text').dark, '#f4f4f5');
+  assert.equal(proposeMapping(c).colors.primary, 'brand');
+});
+
+test('import: clear errors and strict colour parsing', () => {
+  assert.throws(() => readSystem('{ "hola": 1 }'), /No he encontrado tokens/);
+  assert.throws(() => readSystem('esto no es json'), /no es JSON válido/);
+  assert.equal(toHex('400'), null, 'a font weight is not a colour');
+  assert.equal(toHex('rgba(#ff0000, 0.5)'), null, 'translucent colours are not seeds');
+  assert.equal(toHex('rgb(37, 99, 235)'), '#2563eb');
+});
+
+test('analysis: finds the real problems, scores clean systems at 100, fixes apply', () => {
+  const m = readSystem(ACME, 'acme.json');
+  const map = proposeMapping(m);
+  const b = buildBrand(m, map, newBrand());
+  const r = analyzeSystem(m, map, b, computeSystem(b));
+  const ids = r.findings.map((f) => f.id);
+  for (const id of ['contrast-fails', 'hardcoded', 'dark-gaps', 'near-dups', 'type-lh', 'space-grid', 'radius-many', 'naming']) assert.ok(ids.includes(id), `finds ${id}`);
+  assert.match(r.findings.find((f) => f.id === 'contrast-fails').items[0], /text\.secondary \(#9ca3af\) sobre bg\.default \(#ffffff\): 2\.54:1/);
+  assert.ok(r.score > 60 && r.score < 95, `score ${r.score}`);
+  const fixed = r.findings.find((f) => f.id === 'type-lh').fix.apply(b);
+  assert.ok(Object.values(fixed.locked.type).every((t) => !t.lineHeightPx || t.lineHeightPx % 4 === 0));
+  assert.match(toAnalysisMd(r, m), /## Mejoras, por prioridad/);
+  // Our own exports are clean: no false positives.
+  const own = computeSystem(newBrand());
+  for (const id of ['json', 'figma', 'css']) {
+    const mm = readSystem(EXPORTS.find((e) => e.id === id).fn(own), 'x');
+    const mp = proposeMapping(mm);
+    const bb = buildBrand(mm, mp, newBrand());
+    const rr = analyzeSystem(mm, mp, bb, computeSystem(bb));
+    assert.equal(rr.score, 100, `${id}: ${rr.findings.map((f) => f.title).join('; ')}`);
+  }
+});
+
+test('changes: CHANGES.md lists what changed since the import', () => {
+  const m = readSystem(ACME, 'acme.json');
+  let b = buildBrand(m, proposeMapping(m), newBrand());
+  b = { ...b, source: { ...b.source, snapshot: systemSnapshot(computeSystem(b)) } };
+  assert.match(toChanges(computeSystem(b)), /Sin cambios todavía/);
+  const edited = { ...b, locked: { ...b.locked, radius: { ...b.locked.radius, boxes: 16 } } };
+  const md = toChanges(computeSystem(edited));
+  assert.match(md, /\| `--radius-boxes` \| `12px` \| `16px` \|/);
+  assert.ok(!EXPORTS.find((e) => e.id === 'changes').when(computeSystem(newBrand())), 'hidden for systems not imported');
 });

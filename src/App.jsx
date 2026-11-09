@@ -13,6 +13,7 @@ import Board from './views/Board.jsx';
 import Foundations from './views/Foundations.jsx';
 import Components from './views/Components.jsx';
 import Code from './views/Code.jsx';
+import Import from './views/Import.jsx';
 
 const NAV = [
   { id: 'home', label: 'Inicio', icon: 'home' },
@@ -170,10 +171,16 @@ export default function App() {
     if (id === draft.id) setDraft(rest[0]);
   };
   const go = (v) => { setView(v); setNavOpen(false); if (v !== 'components') setDetail(null); };
+  // An imported system becomes a new brand; the brand being edited is saved first and left as it was.
+  const importBrand = (b) => {
+    setBrands((l) => [...commit(l), b]);
+    setDraft(b);
+    setView('foundations');
+  };
 
   const common = { sys, brand: draft, appearance: theme, go };
 
-  const current = NAV.find((n) => n.id === view) ?? NAV[0];
+  const current = NAV.find((n) => n.id === view) ?? (view === 'import' ? { id: 'import', label: 'Importar' } : NAV[0]);
   // Highlights in the tool come from the brand being built: a pale step of its accent.
   const tint = sys.appearances.light.ramps.primary;
   const motionCfg = useMemo(() => ({ brand: draft, spring: systemSpring(sys) }), [draft, sys]);
@@ -232,6 +239,7 @@ export default function App() {
           )}
           {view === 'board' && <Board {...common} onOpen={(id) => { setDetail(id); setView('components'); }} />}
           {view === 'code' && <Code {...common} />}
+          {view === 'import' && <Import go={go} onImport={importBrand} />}
         </main>
       </div>
 

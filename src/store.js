@@ -31,7 +31,7 @@ function renameAccent(colors = {}) {
 function migrate(b) {
   const base = newBrand();
   const subbrands = (b.subbrands ?? []).map((x) => ({ ...x, colors: renameAccent(x.colors) }));
-  return { ...base, ...b, colors: { ...base.colors, ...renameAccent(b.colors) }, darkColors: b.darkColors ?? {}, harmonize: b.harmonize ?? false, customSemantics: b.customSemantics ?? [], subbrands, ...(b.brief ? { brief: { ...structuredClone(EMPTY_BRIEF), ...b.brief } } : {}), radius: { ...base.radius, ...b.radius }, components: b.components ?? base.components, componentTokens: b.componentTokens ?? {}, customFonts: b.customFonts ?? [], logo: b.logo ?? null, activeSub: b.activeSub ?? null };
+  return { ...base, ...b, colors: { ...base.colors, ...renameAccent(b.colors) }, darkColors: b.darkColors ?? {}, harmonize: b.harmonize ?? false, customSemantics: b.customSemantics ?? [], locked: b.locked ?? {}, source: b.source ?? null, subbrands, ...(b.brief ? { brief: { ...structuredClone(EMPTY_BRIEF), ...b.brief } } : {}), radius: { ...base.radius, ...b.radius }, components: b.components ?? base.components, componentTokens: b.componentTokens ?? {}, customFonts: b.customFonts ?? [], logo: b.logo ?? null, activeSub: b.activeSub ?? null };
 }
 
 /** Returns false when the browser refuses (usually quota: logos and fonts are stored inline). */

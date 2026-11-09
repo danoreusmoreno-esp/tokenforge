@@ -80,7 +80,7 @@ const RAW = [
     names: n('Text field (filled, outlined)', 'Text field', 'TextField', 'Text input', 'Input + Field'),
     desc: 'Single-line input with label, help text and error message.',
     variants: ['outline', 'filled'], sizes: ['sm', 'md', 'lg'], states: ['default', 'focus', 'error', 'disabled', 'read-only'],
-    tokens: { 'height-md': 40, 'padding-x': 12, 'label-gap': 6 } },
+    tokens: { 'height-md': 40, 'padding-x': 12, 'label-gap': 8 } },
   { id: 'textarea', name: 'Textarea', cat: 'inputs', core: true, others: SEC,
     names: n('Text field (multi-line)', 'Text view', 'TextField (multiline)', 'Text area', 'Textarea'),
     desc: 'Multi-line input that grows with its content.', variants: ['outline'], sizes: ['md'], states: ['default', 'focus', 'error', 'disabled'], tokens: { 'min-rows': 3 } },

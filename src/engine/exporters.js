@@ -52,10 +52,23 @@ export function componentTokens(sys, id) {
 
 const block = (sel, vars) => `${sel} {\n${Object.entries(vars).map(([k, v]) => `  ${k}: ${v};`).join('\n')}\n}`;
 
+/** Role values as references to their ramp step (var(--color-neutral-1)), so roles follow the palette. */
+function referenceRoles(sys, vars, appearance) {
+  const ap = sys.appearances[appearance];
+  const out = {};
+  for (const [k, v] of Object.entries(vars)) {
+    const role = k.slice(2);
+    const ref = ap.roles[role] ? rampRef(sys, ap, role, v) : null;
+    out[k] = ref ? `var(--${ref.slice(1, -1).replace(/\./g, '-')})` : v;
+  }
+  return out;
+}
+
 function cssCore(sys) {
   const comps = sys.brand.components ?? [];
-  const light = cssVars(sys, 'light', 'desktop', comps);
-  const dark = cssVars(sys, 'dark', 'desktop');
+  const baseVars = Object.fromEntries(Object.entries(BASE_COLORS).map(([k, h]) => [`--color-base-${k}`, h]));
+  const light = { ...baseVars, ...referenceRoles(sys, cssVars(sys, 'light', 'desktop', comps), 'light') };
+  const dark = referenceRoles(sys, cssVars(sys, 'dark', 'desktop'), 'dark');
   const darkOnly = {};
   // Everything that changes with the theme: ramps, colour roles (text-* roles included) and shadows.
   const themed = new Set(Object.keys(sys.appearances.dark.roles).map((r) => `--${r}`));
@@ -87,11 +100,12 @@ function dtcgCore(sys) {
   const D = sys.appearances.dark;
   const modes = (l, d) => ({ $extensions: { modes: { light: l, dark: d } } });
   const out = { $description: `${sys.brand.name} design tokens`, color: {}, role: {}, space: {}, radius: {}, shadow: {}, typography: {}, font: {}, motion: {}, layout: {}, component: {} };
+  out.color.base = Object.fromEntries(Object.entries(BASE_COLORS).map(([k, h]) => [k, { $type: 'color', $value: h }]));
   for (const fam of sys.families) {
     out.color[fam] = {};
     L.ramps[fam].forEach((hex, i) => (out.color[fam][i + 1] = { $type: 'color', $value: hex, ...modes(hex, D.ramps[fam][i]) }));
   }
-  for (const k of Object.keys(L.roles)) out.role[k] = { $type: 'color', $value: L.roles[k], ...modes(L.roles[k], D.roles[k]) };
+  for (const k of Object.keys(L.roles)) out.role[k] = { $type: 'color', $value: rampRef(sys, L, k, L.roles[k]) ?? L.roles[k], ...modes(L.roles[k], D.roles[k]) };
   for (const [k, px] of Object.entries(sys.spacing)) out.space[k] = { $type: 'dimension', $value: `${px}px` };
   for (const [k, px] of Object.entries(sys.radius)) out.radius[k] = { $type: 'dimension', $value: `${px}px` };
   for (const k of Object.keys(L.shadow)) out.shadow[k] = { $type: 'shadow', $value: L.shadow[k], ...modes(L.shadow[k], D.shadow[k]) };
@@ -125,17 +139,37 @@ function dtcgCore(sys) {
   return out;
 }
 
+/**
+ * The ramp step a role's colour comes from, as a reference ({color.primary.9}), or null when the
+ * role was solved to a colour outside the ramps (contrast adjustments, fixed inks).
+ */
+// Fixed anchors roles can point to: the plain surface white and the dark label ink.
+export const BASE_COLORS = { white: '#ffffff', ink: '#0b0b0f' };
+
+function rampRef(sys, ap, role, hex) {
+  const base = Object.entries(BASE_COLORS).find(([, h]) => h === hex.toLowerCase());
+  if (base) return `{color.base.${base[0]}}`;
+  const own = sys.families.find((f) => role.startsWith(`${f}-`));
+  const order = own ? [own, ...sys.families.filter((f) => f !== own)] : ['neutral', ...sys.families.filter((f) => f !== 'neutral')];
+  for (const fam of order) {
+    const i = ap.ramps[fam].findIndex((h) => h.toLowerCase() === hex.toLowerCase());
+    if (i >= 0) return `{color.${fam}.${i + 1}}`;
+  }
+  return null;
+}
+
 /** Tokens Studio for Figma (multi-file sets: global, light, dark). Import into Figma Variables. */
 function figmaCore(sys) {
   const L = sys.appearances.light;
   const D = sys.appearances.dark;
   const set = (ap) => {
-    const o = { color: {}, role: {} };
+    const o = { color: { base: Object.fromEntries(Object.entries(BASE_COLORS).map(([k, h]) => [k, { value: h, type: 'color' }])) }, role: {} };
     for (const fam of sys.families) {
       o.color[fam] = {};
       ap.ramps[fam].forEach((hex, i) => (o.color[fam][i + 1] = { value: hex, type: 'color' }));
     }
-    for (const [k, hex] of Object.entries(ap.roles)) o.role[k] = { value: hex, type: 'color' };
+    // Roles point at their ramp step (a reference), so they follow the palette when it changes.
+    for (const [k, hex] of Object.entries(ap.roles)) o.role[k] = { value: rampRef(sys, ap, k, hex) ?? hex, type: 'color' };
     return o;
   };
   const global = { space: {}, radius: {}, fontFamilies: {}, fontSize: {}, lineHeight: {}, fontWeight: {}, typography: {} };
@@ -263,6 +297,46 @@ Primary ${sys.appearances.light.seeds.primary} · Secondary ${sys.appearances.li
 `;
 }
 
+/** The values a system has right now, to compare against later (stored when a system is imported). */
+export function systemSnapshot(sys0) {
+  const { master, m } = family(sys0);
+  const light = cssVars(m, 'light', 'desktop', master.components ?? []);
+  const dark = cssVars(m, 'dark', 'desktop');
+  const darkOnly = Object.fromEntries(Object.entries(dark).filter(([k, v]) => light[k] !== v));
+  return { at: Date.now(), light, dark: darkOnly };
+}
+
+/** What changed since the system was imported, as Markdown for the team. */
+export function toChanges(sys0) {
+  const { master } = family(sys0);
+  const snap = master.source?.snapshot;
+  if (!snap) return `# Cambios\n\nEste sistema no se ha importado: no hay versión original con la que comparar.\n`;
+  const now = systemSnapshot(sys0);
+  const diff = (a, b) => {
+    const added = Object.keys(b).filter((k) => !(k in a));
+    const removed = Object.keys(a).filter((k) => !(k in b));
+    const changed = Object.keys(b).filter((k) => k in a && a[k] !== b[k]);
+    return { added, removed, changed };
+  };
+  const L = diff(snap.light, now.light);
+  const D = diff(snap.dark ?? {}, now.dark);
+  const date = (t) => new Date(t).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+  const total = L.added.length + L.removed.length + L.changed.length + D.added.length + D.removed.length + D.changed.length;
+  const section = (title, d, a, b) => [
+    d.changed.length ? `### ${title}: cambiados (${d.changed.length})\n\n| Token | Antes | Ahora |\n|---|---|---|\n${d.changed.map((k) => `| \`${k}\` | \`${a[k]}\` | \`${b[k]}\` |`).join('\n')}\n` : '',
+    d.added.length ? `### ${title}: añadidos (${d.added.length})\n\n${d.added.map((k) => `- \`${k}\`: \`${b[k]}\``).join('\n')}\n` : '',
+    d.removed.length ? `### ${title}: eliminados (${d.removed.length})\n\n${d.removed.map((k) => `- \`${k}\` (era \`${a[k]}\`)`).join('\n')}\n` : '',
+  ].filter(Boolean).join('\n');
+  return [
+    `# Cambios en ${master.name}`,
+    '',
+    `Comparado con la versión importada de «${master.source.name}» el ${date(snap.at)}. ${total ? `${total} cambios en total.` : 'Sin cambios todavía.'}`,
+    '',
+    section('Modo claro', L, snap.light, now.light),
+    section('Modo oscuro', D, snap.dark ?? {}, now.dark),
+  ].join('\n');
+}
+
 export const EXPORTS = [
   { id: 'css', label: 'CSS', file: 'tokens.css', fn: toCSS },
   { id: 'json', label: 'W3C JSON', file: 'tokens.json', fn: toDTCG },
@@ -272,6 +346,7 @@ export const EXPORTS = [
   { id: 'agents', label: 'Agente IA', file: 'AGENTS.md', fn: toAgents },
   { id: 'brief', label: 'Brief', file: 'BRIEF.md', fn: (sys) => toBrief(family(sys).m) },
   { id: 'readme', label: 'README', file: 'README.md', fn: toReadme },
+  { id: 'changes', label: 'Cambios', file: 'CHANGES.md', fn: toChanges, when: (sys) => !!family(sys).master.source?.snapshot },
 ];
 
 export { kebab };

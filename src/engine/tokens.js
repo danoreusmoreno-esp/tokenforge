@@ -161,7 +161,8 @@ function round(n, p = 2) {
   return Math.round(n * 10 ** p) / 10 ** p;
 }
 
-function typeScale(density, viewport = 'desktop') {
+/** locked: exact sizes imported from another system ({ body: { size, lineHeightPx, weight } }), desktop values. */
+function typeScale(density, viewport = 'desktop', locked = {}) {
   const d = DENSITIES[density] ?? DENSITIES.default;
   const vScale = viewport === 'mobile' ? 0.88 : viewport === 'tablet' ? 0.94 : 1;
   const step = (n) => d.base * Math.pow(d.ratio, n);
@@ -179,14 +180,19 @@ function typeScale(density, viewport = 'desktop') {
   const out = {};
   for (const [name, n, lh, weight, tracking] of def) {
     // Only headings shrink on smaller viewports; body text keeps its size.
-    const s = n >= 2 ? step(n) * vScale : step(n);
+    const own = locked[name];
+    const baseSize = own?.size ?? step(n);
+    const s = n >= 2 ? baseSize * vScale : baseSize;
     const size = Math.round(s);
+    // An imported line height is kept as a ratio, so it scales with the size on smaller screens.
+    const ratio = own?.lineHeightPx && own?.size ? own.lineHeightPx / own.size : lh;
+    const lineHeightPx = own?.lineHeightPx && viewport === 'desktop' ? Math.round(own.lineHeightPx) : Math.round(size * ratio / 4) * 4;
     out[name] = {
       size,
-      lineHeight: Math.round(size * lh / 4) * 4 / size,
-      lineHeightPx: Math.round(size * lh / 4) * 4,
-      weight,
-      tracking,
+      lineHeight: lineHeightPx / size,
+      lineHeightPx,
+      weight: own?.weight ?? weight,
+      tracking: own?.tracking ?? tracking,
     };
   }
   return out;
@@ -244,7 +250,8 @@ function roles(ramps, appearance, families) {
     // Form-field borders are non-text UI: they must clear 3:1 (WCAG 1.4.11).
     'border-strong': firstPassing(n, 7, surface, 3),
     'text-primary': n[11],
-    'text-secondary': n[10],
+    // Step 11, or 12 when a very chromatic neutral leaves step 11 short of AA.
+    'text-secondary': firstPassing(n, 10, surface, 4.5),
     'text-tertiary': firstPassing(n, 8, surface, 4.5),
     'text-disabled': n[7],
     'focus-ring': ramps.primary[7],
@@ -259,7 +266,8 @@ function roles(ramps, appearance, families) {
     r[`${fam}-subtle`] = ramp[2];
     r[`${fam}-subtle-hover`] = ramp[3];
     r[`${fam}-border`] = ramp[6];
-    r[`${fam}-text`] = pickReadable(ramp, r['bg-surface']);
+    // Used on the surface (links, labels) and on its own subtle fill (badges, alerts).
+    r[`${fam}-text`] = pickReadable(ramp, [r['bg-surface'], ramp[2]]);
   }
   return r;
 }
@@ -270,9 +278,10 @@ function firstPassing(ramp, start, bg, min) {
   return ramp[ramp.length - 1];
 }
 
-/** Choose step 11, falling back to 12, so text clears AA on the surface. */
-function pickReadable(ramp, surface) {
-  return wcag(ramp[10], surface) >= 4.5 ? ramp[10] : ramp[11];
+/** Step 11, falling back to 12, so the family's text clears AA on every background it is used on. */
+function pickReadable(ramp, backgrounds) {
+  const list = Array.isArray(backgrounds) ? backgrounds : [backgrounds];
+  return list.every((bg) => wcag(ramp[10], bg) >= 4.5) ? ramp[10] : ramp[11];
 }
 
 /** Compute the whole system from a brand payload. Pure. */
@@ -282,13 +291,19 @@ export function computeSystem(brand) {
   for (const appearance of ['light', 'dark']) {
     const ramps = {};
     const { seeds, auto } = resolveSeeds(brand, appearance);
-    for (const fam of families) ramps[fam] = buildRamp(seeds[fam], appearance);
+    const lockedRamps = brand.locked?.ramps?.[appearance] ?? {};
+    for (const fam of families) {
+      ramps[fam] = buildRamp(seeds[fam], appearance);
+      // Imported steps replace the generated ones where the source had a colour at that lightness.
+      const own = lockedRamps[fam];
+      if (Array.isArray(own)) ramps[fam] = ramps[fam].map((h, i) => (own[i] && /^#[0-9a-f]{6}$/i.test(own[i]) ? own[i].toLowerCase() : h));
+    }
     out.appearances[appearance] = {
       seeds,
       auto,
       ramps,
       roles: roles(ramps, appearance, families),
-      shadow: shadowTokens(brand.shadow, appearance),
+      shadow: { ...shadowTokens(brand.shadow, appearance), ...(brand.locked?.shadow?.[appearance] ?? {}) },
     };
   }
   const sp = spacingScale();
@@ -296,12 +311,14 @@ export function computeSystem(brand) {
   out.spacingUnit = sp.unit;
   out.layout = layoutSpacing(sp.unit, SPACING_PRESETS[brand.spacing] ?? 1);
   out.type = {};
-  for (const vp of VIEWPORTS) out.type[vp] = typeScale(brand.density, vp);
+  for (const vp of VIEWPORTS) out.type[vp] = typeScale(brand.density, vp, brand.locked?.type ?? {});
+  const lr = brand.locked?.radius ?? {};
   out.radius = {
-    boxes: RADIUS_PRESETS[brand.radius.boxes] ?? 8,
-    fields: RADIUS_PRESETS[brand.radius.fields] ?? 8,
-    selectors: RADIUS_PRESETS[brand.radius.selectors] ?? 8,
+    boxes: lr.boxes ?? RADIUS_PRESETS[brand.radius.boxes] ?? 8,
+    fields: lr.fields ?? RADIUS_PRESETS[brand.radius.fields] ?? 8,
+    selectors: lr.selectors ?? RADIUS_PRESETS[brand.radius.selectors] ?? 8,
   };
+  out.locked = brand.locked ?? {};
   out.motion = MOTION_PRESETS[brand.motion] ?? MOTION_PRESETS.standard;
   out.fonts = { body: brand.font, heading: brand.headingFont || brand.font, mono: brand.monoFont || 'JetBrains Mono' };
   out.audit = auditContrast(out);

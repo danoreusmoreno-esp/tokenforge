@@ -32,6 +32,7 @@ const WHY = {
   agents: 'Guía para agentes de IA (Claude Code, Cursor…) para que usen tus tokens y no inventen.',
   brief: 'Objetivos, principios y hoja de ruta para compartir con el equipo.',
   readme: 'Índice de los archivos y cómo usarlos.',
+  changes: 'Qué ha cambiado desde que importaste tu sistema: tokens añadidos, cambiados y eliminados, en claro y en oscuro. Compártelo con el equipo en cada versión.',
   docs: 'Sitio web de documentación con tu marca: foundations, y por cada componente ejemplos, anatomía con medidas, comportamiento, uso, accesibilidad, tokens y código. Es HTML estático: publícalo en GitHub Pages, Netlify o tu intranet.',
   react: 'Componentes React con TypeScript, uno por cada componente de tu sistema, con sus estilos y tus tokens. Copia la carpeta en tu app y envuélvela en DesignSystemProvider.',
 };
@@ -51,7 +52,7 @@ export default function Code({ sys, brand, go }) {
   const rec = recommended(brand);
   const [tab, setTab] = useState('css');
   const [copied, setCopied] = useState('');
-  const files = useMemo(() => EXPORTS.map((e) => ({ ...e, text: e.fn(sys) })), [sys]);
+  const files = useMemo(() => EXPORTS.filter((e) => !e.when || e.when(sys)).map((e) => ({ ...e, text: e.fn(sys) })), [sys]);
   const pkg = useMemo(() => toReactPackage(sys, { componentsCss: dsCss, tokensCss: files.find((f) => f.id === 'css').text }), [sys, files]);
   const [pkgFile, setPkgFile] = useState('README.md');
   const pkgName = `${slug(sys.brand.__master?.name ?? sys.brand.name)}-react`;

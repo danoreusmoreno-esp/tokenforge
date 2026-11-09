@@ -81,7 +81,10 @@ export default function Home({ sys, brand, brands, activeId, go, onStarter, onNe
           <h1 className="t-h1">{brand.name}</h1>
           <p className="muted">{inSystem.size} componentes · {passing} de {sys.audit.length} pares de contraste cumplen WCAG AA</p>
         </div>
-        <button className="pill" onClick={onNew}><Icon name="plus" size={16} />Nueva marca</button>
+        <div className="row" style={{ gap: 8 }}>
+          <button className="pill" onClick={() => go('import')}><Icon name="upload" size={16} />Importar sistema</button>
+          <button className="pill" onClick={onNew}><Icon name="plus" size={16} />Nueva marca</button>
+        </div>
       </header>
 
       <div className="bento">
